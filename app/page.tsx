@@ -114,7 +114,7 @@ export default function Dashboard() {
   const kartlar = TUM_KARTLAR.filter(k => izin.includes(k.key))
 
   return (
-    <div className="fade-in" style={{ padding:"28px 24px" }}>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Genel Bakış</h1>

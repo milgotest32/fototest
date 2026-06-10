@@ -74,7 +74,7 @@ export default function HekimEkrani() {
     : 'Tüm Kayıtlar'
 
   return (
-    <div className="page-wrap fade-in" style={{ padding:'28px 24px' }}>
+    <div className="page-wrap" >
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora, sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Hekim Ekranı</h1>
