@@ -3,12 +3,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { UserCog, Menu, X, LogOut, LayoutDashboard, Building2, HeartPulse, FileText, Wallet, ClipboardList, CalendarDays, MapPin, Stethoscope, Package, Truck, Activity } from 'lucide-react'
+import { UserCog, Menu, X, LogOut, LayoutDashboard, Building2, HeartPulse, FileText, Wallet, ClipboardList, CalendarDays, MapPin, Stethoscope, Package, Truck, Activity, BarChart2 } from 'lucide-react'
 
 const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim', satis:'Satış', muhasebe:'Muhasebe', saha:'Saha Uzmanı' }
 
 const ERISIM: any = {
-  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller'],
+  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar'],
   operasyon: ['/','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar'],
   hekim:     ['/','/saglik','/hekim','/koordinasyon'],
   satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
@@ -29,6 +29,7 @@ const TUM_LINKLER = [
   { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
   { href:'/koordinasyon', label:'Koordinasyon', icon:CalendarDays },
   { href:'/idari', label:'İdari İşler', icon:ClipboardList },
+  { href:'/raporlar', label:'Raporlar', icon:BarChart2 },
   { href:'/personeller', label:'Personel & Yetkiler', icon:UserCog },
 ]
 
