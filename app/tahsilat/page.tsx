@@ -11,6 +11,9 @@ export default function Tahsilat() {
   const [modal, setModal] = useState(false)
   const [tahsilatModal, setTahsilatModal] = useState<any>(null)
   const [gecmisModal, setGecmisModal] = useState<any>(null)
+  const [donemAy, setDonemAy] = useState(() => new Date().toISOString().slice(0,7))
+  const [donemTahsilatlar, setDonemTahsilatlar] = useState<any[]>([])
+  const [donemGoster, setDonemGoster] = useState(false)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState('')
   const [form, setForm] = useState<any>(bosForm())
@@ -22,6 +25,14 @@ export default function Tahsilat() {
 
   const sb = createClient()
   useEffect(() => { yukle() }, [])
+  useEffect(() => { donemYukle(donemAy) }, [donemAy])
+
+  async function donemYukle(ay: string) {
+    const bas = ay + '-01'
+    const son = new Date(parseInt(ay.split('-')[0]), parseInt(ay.split('-')[1]), 0).toISOString().slice(0,10)
+    const { data } = await sb.from('tahsilatlar').select('*, cariler(unvan)').gte('tarih', bas).lte('tarih', son).order('tarih', { ascending:false })
+    setDonemTahsilatlar(data || [])
+  }
 
   async function yukle() {
     const [cariRes, tahsilatRes] = await Promise.all([
@@ -178,6 +189,57 @@ export default function Tahsilat() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* DÖNEM TAHSİLAT ANALİZİ */}
+      <div className="card" style={{ padding:20, marginBottom:24 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:donemGoster?16:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <h3 style={{ fontFamily:'Sora,sans-serif', fontSize:15, fontWeight:600 }}>Dönem Tahsilat Analizi</h3>
+            <input type="month" value={donemAy} onChange={e=>setDonemAy(e.target.value)} style={{ width:'auto', padding:'6px 10px', fontSize:13 }}/>
+          </div>
+          <button onClick={()=>setDonemGoster(!donemGoster)}
+            style={{ padding:'7px 14px', borderRadius:8, fontSize:13, cursor:'pointer', fontFamily:'inherit',
+              background:donemGoster?'var(--accent-soft)':'var(--surface-2)',
+              border:\`1px solid \${donemGoster?'var(--accent)':'var(--border)'}\`,
+              color:donemGoster?'var(--accent)':'var(--text-dim)' }}>
+            {donemGoster?'Gizle':'Göster'}
+          </button>
+        </div>
+        {donemGoster && (
+          <>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:12, marginBottom:16 }}>
+              {[
+                { label:'Toplam Tahsilat', val:tl(donemTahsilatlar.reduce((s,t)=>s+(Number(t.tutar)||0),0)), renk:'var(--green)' },
+                { label:'İşlem Sayısı', val:donemTahsilatlar.length, renk:'var(--accent)' },
+                { label:'Nakit', val:tl(donemTahsilatlar.filter(t=>t.odeme_turu==='Nakit').reduce((s,t)=>s+(Number(t.tutar)||0),0)), renk:'var(--text)' },
+                { label:'Havale', val:tl(donemTahsilatlar.filter(t=>t.odeme_turu==='Havale').reduce((s,t)=>s+(Number(t.tutar)||0),0)), renk:'var(--blue)' },
+                { label:'Çek/Senet', val:tl(donemTahsilatlar.filter(t=>t.odeme_turu==='Çek'||t.odeme_turu==='Senet').reduce((s,t)=>s+(Number(t.tutar)||0),0)), renk:'var(--amber)' },
+              ].map(k=>(
+                <div key={k.label} style={{ background:'var(--surface-2)', borderRadius:10, padding:'12px 14px' }}>
+                  <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:4 }}>{k.label}</div>
+                  <div style={{ fontWeight:700, color:k.renk, fontFamily:'Sora,sans-serif' }}>{k.val}</div>
+                </div>
+              ))}
+            </div>
+            {donemTahsilatlar.length > 0 ? (
+              <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:280, overflowY:'auto' }}>
+                {donemTahsilatlar.map(t=>(
+                  <div key={t.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 12px', background:'var(--surface-2)', borderRadius:8 }}>
+                    <div>
+                      <div style={{ fontWeight:500, fontSize:14 }}>{t.cariler?.unvan||'—'}</div>
+                      <div style={{ fontSize:12, color:'var(--text-dim)' }}>{t.odeme_turu} {t.aciklama?\`· \${t.aciklama}\`:''}</div>
+                    </div>
+                    <div style={{ textAlign:'right' }}>
+                      <div style={{ fontWeight:700, color:'var(--green)' }}>{tl(Number(t.tutar))}</div>
+                      <div style={{ fontSize:11, color:'var(--text-faint)' }}>{new Date(t.tarih+'T00:00:00').toLocaleDateString('tr-TR')}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <div style={{ textAlign:'center', color:'var(--text-faint)', padding:24, fontSize:14 }}>Bu dönemde tahsilat yok</div>}
+          </>
+        )}
       </div>
 
       {/* YENİ CARİ MODAL */}
