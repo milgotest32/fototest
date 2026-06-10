@@ -107,7 +107,7 @@ export default function Tahsilat() {
   const toplamVade = filtreli.reduce((s,c)=>s+(Number(c.vadesi_gecen_tutar)||0),0)
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora, sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Tahsilat & Cari</h1>
@@ -244,8 +244,8 @@ export default function Tahsilat() {
 
       {/* YENİ CARİ MODAL */}
       {modal && (
-        <div style={ovl} onClick={()=>setModal(false)}>
-          <div className="card modal-box" style={modalBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={modalHead}><h2 style={modalTitle}><Wallet size={20} color="var(--accent)" /> Yeni Cari</h2><button onClick={()=>setModal(false)} style={xBtn}><X size={22} /></button></div>
             <div className="modal-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
               <div style={{ gridColumn:'1/3' }}><label style={lbl}>Ünvan *</label><input value={form.unvan} onChange={e=>setForm({...form, unvan:e.target.value})} /></div>
@@ -269,7 +269,7 @@ export default function Tahsilat() {
 
       {/* TAHSİLAT MODAL */}
       {tahsilatModal && (
-        <div style={ovl} onClick={()=>setTahsilatModal(null)}>
+        <div className="modal-overlay" onClick={()=>setTahsilatModal(null)}>
           <div className="card" style={{ ...modalBox, maxWidth:420 }} onClick={e=>e.stopPropagation()}>
             <div style={modalHead}><h2 style={modalTitle}><Wallet size={20} color="var(--green)" /> Tahsilat Al</h2><button onClick={()=>setTahsilatModal(null)} style={xBtn}><X size={22} /></button></div>
             <div style={{ background:'var(--surface-2)', borderRadius:10, padding:14, marginBottom:16 }}>
@@ -305,7 +305,7 @@ export default function Tahsilat() {
 
       {/* TAHSİLAT GEÇMİŞİ MODAL */}
       {gecmisModal && (
-        <div style={ovl} onClick={()=>setGecmisModal(null)}>
+        <div className="modal-overlay" onClick={()=>setGecmisModal(null)}>
           <div className="card" style={{ ...modalBox, maxWidth:480 }} onClick={e=>e.stopPropagation()}>
             <div style={modalHead}>
               <h2 style={modalTitle}><History size={20} color="var(--blue)" /> Tahsilat Geçmişi</h2>

@@ -77,7 +77,7 @@ export default function Taramalar() {
   const sayilar = ASAMALAR.reduce((acc:any,a) => ({ ...acc, [a]: taramalar.filter(t=>t.asama===a).length }), {})
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Sağlık Tarama Operasyonları</h1>
@@ -136,8 +136,8 @@ export default function Taramalar() {
       </div>
 
       {modal && (
-        <div style={ovl} onClick={()=>setModal(false)}>
-          <div className="card modal-box" style={mBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><Activity size={20} color="var(--green)"/> Yeni Tarama Operasyonu</h2><button onClick={()=>setModal(false)} style={xBtn}><X size={22}/></button></div>
             <div className="modal-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
               <div style={{ gridColumn:'1/3' }}>

@@ -81,7 +81,7 @@ export default function Malzemeler() {
   const tl = (n:number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits:2 }).format(n) + ' ₺'
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Malzeme Stok</h1>
@@ -152,7 +152,7 @@ export default function Malzemeler() {
 
       {/* STOK HAREKET MODAL */}
       {hareketModal && (
-        <div style={ovl} onClick={()=>setHareketModal(null)}>
+        <div className="modal-overlay" onClick={()=>setHareketModal(null)}>
           <div className="card" style={{ ...mBox, maxWidth:400 }} onClick={e=>e.stopPropagation()}>
             <div style={mHead}>
               <h2 style={mTitle}>{hForm.hareket_turu === 'Giriş' ? <ArrowUpCircle size={20} color="var(--green)"/> : <ArrowDownCircle size={20} color="var(--amber)"/>} {hareketModal.ad}</h2>
@@ -185,8 +185,8 @@ export default function Malzemeler() {
 
       {/* YENİ MALZEME MODAL */}
       {modal && (
-        <div style={ovl} onClick={()=>setModal(false)}>
-          <div className="card modal-box" style={mBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><Package size={20} color="var(--accent)"/> Yeni Malzeme</h2><button onClick={()=>setModal(false)} style={xBtn}><X size={22}/></button></div>
             <div className="modal-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
               <div style={{ gridColumn:'1/3' }}><label style={lbl}>Malzeme Adı *</label><input value={form.ad} onChange={e=>setForm({...form, ad:e.target.value})} placeholder="Yangın tüpü 6kg" /></div>

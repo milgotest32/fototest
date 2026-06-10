@@ -111,7 +111,7 @@ export default function Firmalar() {
   ]
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Firmalar</h1>
@@ -166,7 +166,7 @@ export default function Firmalar() {
 
       {/* DETAY MODAL */}
       {detay && (
-        <div style={ovl} onClick={()=>setDetay(null)}>
+        <div className="modal-overlay" onClick={()=>setDetay(null)}>
           <div className="card" style={{ ...mBox, maxWidth:560 }} onClick={e=>e.stopPropagation()}>
             <div style={mHead}>
               <h2 style={mTitle}><Building2 size={20} color="var(--blue)"/> {detay.unvan}</h2>
@@ -220,8 +220,8 @@ export default function Firmalar() {
 
       {/* EKLE / DÜZENLE MODAL */}
       {(modal || duzenle) && (
-        <div style={ovl} onClick={()=>{ setModal(false); setDuzenle(null) }}>
-          <div className="card modal-box" style={mBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>{ setModal(false); setDuzenle(null) }}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}>
               <h2 style={mTitle}><Building2 size={20} color="var(--blue)"/> {duzenle?'Firma Düzenle':'Yeni Firma'}</h2>
               <button onClick={()=>{ setModal(false); setDuzenle(null) }} style={xBtn}><X size={22}/></button>

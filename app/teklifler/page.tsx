@@ -66,7 +66,7 @@ export default function Teklifler() {
   const turSayilari = TURLER.reduce((acc:any,t)=>({ ...acc, [t]:teklifler.filter(x=>x.tur===t).length }),{})
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Satış Teklifleri</h1>
@@ -148,7 +148,7 @@ export default function Teklifler() {
       </div>
 
       {detayModal && (
-        <div style={ovl} onClick={()=>setDetayModal(null)}>
+        <div className="modal-overlay" onClick={()=>setDetayModal(null)}>
           <div className="card" style={{ ...mBox, maxWidth:520 }} onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><FileText size={20} color="var(--amber)"/> Teklif Detayı</h2><button onClick={()=>setDetayModal(null)} style={xBtn}><X size={22}/></button></div>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -164,8 +164,8 @@ export default function Teklifler() {
       )}
 
       {modal && (
-        <div style={ovl} onClick={()=>setModal(false)}>
-          <div className="card modal-box" style={mBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><FileText size={20} color="var(--amber)"/> Yeni Teklif</h2><button onClick={()=>setModal(false)} style={xBtn}><X size={22}/></button></div>
             <div style={{ marginBottom:14 }}>
               <label style={lbl}>Teklif Türü</label>

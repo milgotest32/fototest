@@ -92,7 +92,7 @@ export default function Ziyaretler() {
   const ayLabel = new Date(ay + '-15').toLocaleDateString('tr-TR', { month:'long', year:'numeric' })
 
   return (
-    <div className="page-pad fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="page-wrap fade-in" style={{ padding:'32px 28px', maxWidth:1400, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
         <div>
           <h1 style={{ fontFamily:'Sora, sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>İSG Ziyaretleri</h1>
@@ -172,8 +172,8 @@ export default function Ziyaretler() {
       </div>
 
       {modal && (
-        <div style={ovl} onClick={()=>setModal(false)}>
-          <div className="card modal-box" style={modalBox} onClick={e=>e.stopPropagation()}>
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={modalHead}>
               <h2 style={modalTitle}><MapPin size={20} color="var(--blue)" /> Ziyaret Ekle</h2>
               <button onClick={()=>setModal(false)} style={xBtn}><X size={22} /></button>
