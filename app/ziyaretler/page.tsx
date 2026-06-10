@@ -164,7 +164,7 @@ export default function Ziyaretler() {
                   <td style={{ color:'var(--text-dim)', whiteSpace:'nowrap' }}>{new Date(z.tarih+'T00:00:00').toLocaleDateString('tr-TR')}</td>
                   <td style={{ fontWeight:500 }}>{z.firmalar?.unvan||'—'}</td>
                   <td>{z.personeller?.ad_soyad || z.ziyaret_eden || '—'}</td>
-                  <td style={{ fontSize:12, color:'var(--text-faint)' }}>{z.personeller?.rol ? ({yonetici:'Yönetici',operasyon:'Operasyon',hekim:'Hekim',satis:'Satış',muhasebe:'Muhasebe',saha:'Saha'}[z.personeller.rol]) : '—'}</td>
+                  <td style={{ fontSize:12, color:'var(--text-faint)' }}>{z.personeller?.rol ? (({'yonetici':'Yönetici','operasyon':'Operasyon','hekim':'Hekim','satis':'Satış','muhasebe':'Muhasebe','saha':'Saha'} as Record<string,string>)[String(z.personeller.rol)]||'—') : '—'}</td>
                   <td><span className="badge" style={{ background:`${TUR_RENK[z.tur]}22`, color:TUR_RENK[z.tur] }}>{z.tur}</span></td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{z.notlar||'—'}</td>
                   <td><button onClick={()=>sil(z)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button></td>
