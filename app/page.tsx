@@ -114,7 +114,7 @@ export default function Dashboard() {
   const kartlar = TUM_KARTLAR.filter(k => izin.includes(k.key))
 
   return (
-    <div className="page-wrap fade-in">
+    <div className="fade-in" style={{ padding:"28px 24px" }}>
       <div className="page-header">
         <div>
           <h1 className="page-title">Genel Bakış</h1>
@@ -123,7 +123,7 @@ export default function Dashboard() {
       </div>
 
       {/* METRİK KARTLARI */}
-      <div className="stat-grid" style={{ display:"grid", gap:14, marginBottom:20 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:20 }}>
         {kartlar.map((k, i) => {
           const Icon = k.icon
           return (
