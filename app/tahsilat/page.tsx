@@ -201,7 +201,7 @@ export default function Tahsilat() {
           <button onClick={()=>setDonemGoster(!donemGoster)}
             style={{ padding:'7px 14px', borderRadius:8, fontSize:13, cursor:'pointer', fontFamily:'inherit',
               background:donemGoster?'var(--accent-soft)':'var(--surface-2)',
-              border:\`1px solid \${donemGoster?'var(--accent)':'var(--border)'}\`,
+              border:`1px solid ${donemGoster?'var(--accent)':'var(--border)'}`,
               color:donemGoster?'var(--accent)':'var(--text-dim)' }}>
             {donemGoster?'Gizle':'Göster'}
           </button>
@@ -228,7 +228,7 @@ export default function Tahsilat() {
                   <div key={t.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 12px', background:'var(--surface-2)', borderRadius:8 }}>
                     <div>
                       <div style={{ fontWeight:500, fontSize:14 }}>{t.cariler?.unvan||'—'}</div>
-                      <div style={{ fontSize:12, color:'var(--text-dim)' }}>{t.odeme_turu} {t.aciklama?\`· \${t.aciklama}\`:''}</div>
+                      <div style={{ fontSize:12, color:'var(--text-dim)' }}>{t.odeme_turu} {t.aciklama?`· ${t.aciklama}`:''}</div>
                     </div>
                     <div style={{ textAlign:'right' }}>
                       <div style={{ fontWeight:700, color:'var(--green)' }}>{tl(Number(t.tutar))}</div>
