@@ -149,7 +149,7 @@ export default function Teklifler() {
 
       {detayModal && (
         <div className="modal-overlay" onClick={()=>setDetayModal(null)}>
-          <div className="card" style={{ ...mBox, maxWidth:520 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><FileText size={20} color="var(--amber)"/> Teklif Detayı</h2><button onClick={()=>setDetayModal(null)} style={xBtn}><X size={22}/></button></div>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
               {[['Tür', detayModal.tur||'ISG'],['Müşteri',detayModal.musteri_unvan],['Yetkili',detayModal.yetkili||'—'],['Telefon',detayModal.telefon||'—'],['Adres',detayModal.adres||'—'],

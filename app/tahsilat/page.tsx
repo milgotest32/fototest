@@ -270,7 +270,7 @@ export default function Tahsilat() {
       {/* TAHSİLAT MODAL */}
       {tahsilatModal && (
         <div className="modal-overlay" onClick={()=>setTahsilatModal(null)}>
-          <div className="card" style={{ ...modalBox, maxWidth:420 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={modalHead}><h2 style={modalTitle}><Wallet size={20} color="var(--green)" /> Tahsilat Al</h2><button onClick={()=>setTahsilatModal(null)} style={xBtn}><X size={22} /></button></div>
             <div style={{ background:'var(--surface-2)', borderRadius:10, padding:14, marginBottom:16 }}>
               <div style={{ fontWeight:600 }}>{tahsilatModal.unvan}</div>
@@ -306,7 +306,7 @@ export default function Tahsilat() {
       {/* TAHSİLAT GEÇMİŞİ MODAL */}
       {gecmisModal && (
         <div className="modal-overlay" onClick={()=>setGecmisModal(null)}>
-          <div className="card" style={{ ...modalBox, maxWidth:480 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={modalHead}>
               <h2 style={modalTitle}><History size={20} color="var(--blue)" /> Tahsilat Geçmişi</h2>
               <button onClick={()=>setGecmisModal(null)} style={xBtn}><X size={22} /></button>

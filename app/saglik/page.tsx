@@ -110,7 +110,7 @@ export default function Saglik() {
 
       {detay && (
         <div className="modal-overlay" onClick={()=>setDetay(null)}>
-          <div className="card" style={{ ...mBox, maxWidth:480 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}><h2 style={mTitle}><HeartPulse size={20} color="var(--green)"/> Hasta Detayı</h2><button onClick={()=>setDetay(null)} style={xBtn}><X size={22}/></button></div>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
               {[['Ad Soyad',detay.ad_soyad],['Doğum Tarihi',detay.dogum_tarihi?new Date(detay.dogum_tarihi+'T00:00:00').toLocaleDateString('tr-TR'):'—'],

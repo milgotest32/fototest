@@ -167,7 +167,7 @@ export default function Firmalar() {
       {/* DETAY MODAL */}
       {detay && (
         <div className="modal-overlay" onClick={()=>setDetay(null)}>
-          <div className="card" style={{ ...mBox, maxWidth:560 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}>
               <h2 style={mTitle}><Building2 size={20} color="var(--blue)"/> {detay.unvan}</h2>
               <div style={{ display:'flex', gap:8 }}>

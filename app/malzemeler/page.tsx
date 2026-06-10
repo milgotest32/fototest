@@ -153,7 +153,7 @@ export default function Malzemeler() {
       {/* STOK HAREKET MODAL */}
       {hareketModal && (
         <div className="modal-overlay" onClick={()=>setHareketModal(null)}>
-          <div className="card" style={{ ...mBox, maxWidth:400 }} onClick={e=>e.stopPropagation()}>
+          <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={mHead}>
               <h2 style={mTitle}>{hForm.hareket_turu === 'Giriş' ? <ArrowUpCircle size={20} color="var(--green)"/> : <ArrowDownCircle size={20} color="var(--amber)"/>} {hareketModal.ad}</h2>
               <button onClick={()=>setHareketModal(null)} style={xBtn}><X size={22}/></button>
