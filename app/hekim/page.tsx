@@ -80,8 +80,8 @@ export default function HekimEkrani() {
     }, { onConflict: 'firma_id,hekim_id,ay' })
     if (error) { setHata(error.message); return }
 
-    // Gidildi işaretlenince ziyaretler tablosuna da İH kaydı oluştur
     if (gidildi) {
+      // ziyaretler tablosuna İH kaydı
       await sb.from('ziyaretler').insert({
         firma_id,
         tarih: bugun,
@@ -90,9 +90,20 @@ export default function HekimEkrani() {
         tur: 'İH',
         notlar: 'Hekim ziyareti — otomatik oluşturuldu',
       })
+      // aylik_ziyaretler JSONB güncelle — İH ziyareti de görünsün
+      const { data: firma } = await sb.from('firmalar').select('aylik_ziyaretler').eq('id', firma_id).single()
+      const mevcut = firma?.aylik_ziyaretler || {}
+      const guncellenmis = {
+        ...mevcut,
+        [buAy]: {
+          ...(mevcut[buAy] || {}),
+          ih_tarih: bugun,
+          ih_ziyaret_eden: mevcutHekim.ad_soyad,
+        }
+      }
+      await sb.from('firmalar').update({ aylik_ziyaretler: guncellenmis }).eq('id', firma_id)
     }
 
-    // Lokal güncelle
     setZiyaretDurumlari(prev => {
       const filtered = prev.filter(d => d.firma_id !== firma_id)
       return [...filtered, { firma_id, hekim_id: mevcutHekim.id, ay: buAy, gidildi, gidilen_tarih: gidildi ? bugun : null }]

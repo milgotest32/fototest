@@ -6,6 +6,7 @@ import { Plus, Search, X, Wallet, AlertTriangle, Trash2, History } from 'lucide-
 
 export default function Tahsilat() {
   const [cariler, setCariler] = useState<any[]>([])
+  const [firmalar, setFirmalar] = useState<any[]>([])
   const [tahsilatlar, setTahsilatlar] = useState<any[]>([])
   const [arama, setArama] = useState('')
   const [modal, setModal] = useState(false)
@@ -20,7 +21,7 @@ export default function Tahsilat() {
   const [tForm, setTForm] = useState<any>({ tutar:'', odeme_turu:'Havale', aciklama:'' })
 
   function bosForm() {
-    return { unvan:'', musteri_no:'', telefon:'', sinif:'MERKEZ', musteri_vadesi:'', acik_bakiye:'', vadesi_gecen_tutar:'', gecen_gun_sayisi:'', cek_senet_bakiyesi:'', son_tahsilat:'' }
+    return { unvan:'', firma_id:'', musteri_no:'', telefon:'', sinif:'MERKEZ', musteri_vadesi:'', acik_bakiye:'', vadesi_gecen_tutar:'', gecen_gun_sayisi:'', cek_senet_bakiyesi:'', son_tahsilat:'' }
   }
 
   const sb = createClient()
@@ -35,13 +36,15 @@ export default function Tahsilat() {
   }
 
   async function yukle() {
-    const [cariRes, tahsilatRes] = await Promise.all([
+    const [cariRes, tahsilatRes, firmaRes] = await Promise.all([
       sb.from('cariler').select('*').order('vadesi_gecen_tutar', { ascending:false }),
-      sb.from('tahsilatlar').select('*, cariler(unvan)').order('tarih', { ascending:false }).limit(200)
+      sb.from('tahsilatlar').select('*, cariler(unvan)').order('tarih', { ascending:false }).limit(200),
+      sb.from('firmalar').select('id, unvan').order('unvan'),
     ])
     if (cariRes.error) { setHata('Veriler yüklenemedi.'); return }
     setCariler(cariRes.data || [])
     setTahsilatlar(tahsilatRes.data || [])
+    setFirmalar(firmaRes.data || [])
     setYukleniyor(false)
   }
 
@@ -50,6 +53,7 @@ export default function Tahsilat() {
     setHata('')
     const { error } = await sb.from('cariler').insert({
       ...form,
+      firma_id: form.firma_id || null,
       musteri_vadesi: Number(form.musteri_vadesi)||null,
       acik_bakiye: Number(form.acik_bakiye)||0,
       vadesi_gecen_tutar: Number(form.vadesi_gecen_tutar)||0,
@@ -254,6 +258,16 @@ export default function Tahsilat() {
           <div className="modal-content" onClick={e=>e.stopPropagation()}>
             <div style={modalHead}><h2 style={modalTitle}><Wallet size={20} color="var(--accent)" /> Yeni Cari</h2><button onClick={()=>setModal(false)} style={xBtn}><X size={22} /></button></div>
             <div className="modal-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+              <div style={{ gridColumn:'1/3' }}>
+                <label style={lbl}>Firmaya Bağla (opsiyonel)</label>
+                <select value={form.firma_id} onChange={e=>{
+                  const f = firmalar.find((x:any)=>x.id===e.target.value)
+                  setForm({...form, firma_id:e.target.value, unvan: f?.unvan||form.unvan})
+                }}>
+                  <option value="">Bağlantısız</option>
+                  {firmalar.map((f:any)=><option key={f.id} value={f.id}>{f.unvan}</option>)}
+                </select>
+              </div>
               <div style={{ gridColumn:'1/3' }}><label style={lbl}>Ünvan *</label><input value={form.unvan} onChange={e=>setForm({...form, unvan:e.target.value})} /></div>
               <div><label style={lbl}>Müşteri No</label><input value={form.musteri_no} onChange={e=>setForm({...form, musteri_no:e.target.value})} /></div>
               <div><label style={lbl}>Telefon</label><input value={form.telefon} onChange={e=>setForm({...form, telefon:e.target.value})} /></div>

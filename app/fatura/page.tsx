@@ -65,7 +65,7 @@ export default function Fatura() {
     const onceki = oncekiAy(ay)
     const yil = ay.slice(0,4)
     const [fRes, dRes, kRes, oncekiRes, yilRes] = await Promise.all([
-      sb.from('firmalar').select('id, unvan, isg_katip_unvan, sgk_sicil, tehlike_sinifi, calisan_sayisi, kisi_basi_ucret, kisi_basi_ucret_yeni, paket_2808, fatura, fatura_aciklama, bolge, gorevli_igu, gorevli_ih').order('unvan'),
+      sb.from('firmalar').select('id, unvan, isg_katip_unvan, sgk_sicil, tehlike_sinifi, calisan_sayisi, kisi_basi_ucret, kisi_basi_ucret_yeni, paket_2808, paket_3000, paket_3434, aktif_paket, fatura, fatura_aciklama, bolge, gorevli_igu, gorevli_ih').order('unvan'),
       sb.from('donem_takip').select('*').eq('ay', ay),
       sb.from('katip_sozlesmeleri').select('*').order('sozlesme_turu'),
       sb.from('donem_takip').select('firma_id, calisan_sayisi').eq('ay', onceki),
@@ -111,14 +111,16 @@ export default function Fatura() {
   async function calisanGuncelle(firma: any, calisan: number) {
     const mevcut = donemBul(firma.id)
     const kisi_basi = Number(firma.kisi_basi_ucret) || 0
-    // Önceki ay calisan_sayisi: önce DB'deki oncekiAyMap, yoksa firmadan al
     const oncekiCalisan = oncekiAyMap[firma.id] ?? firma.calisan_sayisi ?? 0
+    const sur = sureler(firma.tehlike_sinifi, calisan)
 
     if (mevcut) {
       await sb.from('donem_takip').update({
         calisan_sayisi: calisan,
         kisi_basi_ucret: kisi_basi,
-        onceki_ay_calisan: oncekiCalisan
+        onceki_ay_calisan: oncekiCalisan,
+        dr_sure_dk: sur.dr,
+        uzman_sure_dk: sur.uzman,
       }).eq('id', mevcut.id)
     } else {
       await sb.from('donem_takip').insert({
@@ -127,12 +129,12 @@ export default function Fatura() {
         calisan_sayisi: calisan,
         onceki_ay_calisan: oncekiCalisan,
         kisi_basi_ucret: kisi_basi,
+        dr_sure_dk: sur.dr,
+        uzman_sure_dk: sur.uzman,
       })
     }
-    // Lokal state'i güncelle (sayfa reload etmeden)
     setDonemler(prev => {
       const filtered = prev.filter(d => d.firma_id !== firma.id)
-      const sur = sureler(firma.tehlike_sinifi, calisan)
       return [...filtered, {
         ...(mevcut || {}),
         firma_id: firma.id,
@@ -241,14 +243,18 @@ export default function Fatura() {
 
   async function importKaydet() {
     setImportYukleniyor(true)
-    for (const r of importOnizleme) {
+    await Promise.all(importOnizleme.map(async r => {
       const mevcut = donemBul(r.firma_id)
       const oncekiCalisan = oncekiAyMap[r.firma_id] ?? r.mevcut_calisan ?? 0
+      const firma = firmalar.find((f: any) => f.id === r.firma_id)
+      const sur = sureler(firma?.tehlike_sinifi || '', r.yeni_calisan)
       if (mevcut) {
         await sb.from('donem_takip').update({
           calisan_sayisi: r.yeni_calisan,
           kisi_basi_ucret: r.kisi_basi_ucret,
           onceki_ay_calisan: oncekiCalisan,
+          dr_sure_dk: sur.dr,
+          uzman_sure_dk: sur.uzman,
         }).eq('id', mevcut.id)
       } else {
         await sb.from('donem_takip').insert({
@@ -257,9 +263,11 @@ export default function Fatura() {
           calisan_sayisi: r.yeni_calisan,
           onceki_ay_calisan: oncekiCalisan,
           kisi_basi_ucret: r.kisi_basi_ucret,
+          dr_sure_dk: sur.dr,
+          uzman_sure_dk: sur.uzman,
         })
       }
-    }
+    }))
     setImportModal(false)
     setImportOnizleme([])
     setImportYukleniyor(false)
@@ -352,7 +360,16 @@ export default function Fatura() {
           {firmalar.map(firma => {
             const donem = donemBul(firma.id)
             const calisan = donem?.calisan_sayisi ?? firma.calisan_sayisi ?? 0
-            const kisiBasiUcret = Number(firma.kisi_basi_ucret) || 0
+            // Aktif pakete göre kişi başı ücret
+            const paketMap: Record<string,number> = {
+              kisi_basi: Number(firma.kisi_basi_ucret)||0,
+              kisi_basi_yeni: Number(firma.kisi_basi_ucret_yeni)||0,
+              paket_2808: Number(firma.paket_2808)||0,
+              paket_3000: Number(firma.paket_3000)||0,
+              paket_3434: Number(firma.paket_3434)||0,
+            }
+            const aktifPaket = firma.aktif_paket || 'kisi_basi'
+            const kisiBasiUcret = paketMap[aktifPaket] || Number(firma.kisi_basi_ucret) || 0
             const faturaTutar = donem?.fatura_tutari ?? (calisan * kisiBasiUcret)
             const sur = sureler(firma.tehlike_sinifi, calisan)
             const drSure = donem?.dr_sure_dk ?? sur.dr
@@ -418,19 +435,24 @@ export default function Fatura() {
                     )}
                   </div>
 
-                  {/* Kişi Başı Ücret */}
+                  {/* Kişi Başı Ücret + Paket Seçici */}
                   <div style={{ background:'var(--surface-2)', borderRadius:10, padding:'12px 14px' }}>
-                    <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:6 }}>
-                      Kişi Başı Ücret
-                      {/* NOT: Excel'deki N kolonu (K.BAŞI 26) */}
-                    </div>
-                    <div style={{ fontSize:18, fontWeight:700 }}>{tl(kisiBasiUcret)}</div>
-                    {firma.kisi_basi_ucret_yeni > 0 && (
-                      <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>Yeni: {tl(Number(firma.kisi_basi_ucret_yeni))}</div>
-                    )}
-                    {firma.paket_2808 > 0 && (
-                      <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>2808: {tl(Number(firma.paket_2808))}</div>
-                    )}
+                    <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:6 }}>Kişi Başı Ücret</div>
+                    <div style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>{tl(kisiBasiUcret)}</div>
+                    <select
+                      value={aktifPaket}
+                      onChange={async e => {
+                        await sb.from('firmalar').update({ aktif_paket: e.target.value }).eq('id', firma.id)
+                        yukle()
+                      }}
+                      style={{ fontSize:11, padding:'4px 8px', borderRadius:6, background:'var(--surface)', border:'1px solid var(--border)', color:'var(--text-dim)', width:'100%' }}
+                    >
+                      {Number(firma.kisi_basi_ucret) > 0 && <option value="kisi_basi">K.Başı: {tl(Number(firma.kisi_basi_ucret))}</option>}
+                      {Number(firma.kisi_basi_ucret_yeni) > 0 && <option value="kisi_basi_yeni">Yeni: {tl(Number(firma.kisi_basi_ucret_yeni))}</option>}
+                      {Number(firma.paket_2808) > 0 && <option value="paket_2808">2808: {tl(Number(firma.paket_2808))}</option>}
+                      {Number(firma.paket_3000) > 0 && <option value="paket_3000">3000: {tl(Number(firma.paket_3000))}</option>}
+                      {Number(firma.paket_3434) > 0 && <option value="paket_3434">3434: {tl(Number(firma.paket_3434))}</option>}
+                    </select>
                   </div>
 
                   {/* Fatura Tutarı (Otomatik) */}
