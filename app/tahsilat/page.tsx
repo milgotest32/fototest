@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, Wallet, AlertTriangle, Trash2, History } from 'lucide-react'
 
 export default function Tahsilat() {
@@ -9,6 +10,7 @@ export default function Tahsilat() {
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [tahsilatlar, setTahsilatlar] = useState<any[]>([])
   const [arama, setArama] = useState('')
+  const [bakiyeFiltre, setBakiyeFiltre] = useState('Hepsi')
   const [modal, setModal] = useState(false)
   const [tahsilatModal, setTahsilatModal] = useState<any>(null)
   const [gecmisModal, setGecmisModal] = useState<any>(null)
@@ -105,7 +107,20 @@ export default function Tahsilat() {
     yukle()
   }
 
-  const filtreli = cariler.filter(c => c.unvan?.toLowerCase().includes(arama.toLowerCase()))
+  const filtreli = cariler.filter(c => {
+    const aramaOk = !arama || c.unvan?.toLowerCase().includes(arama.toLowerCase())
+    const bakiyeOk = bakiyeFiltre === 'Hepsi' ||
+      (bakiyeFiltre === 'Vadesi Geçen' && Number(c.vadesi_gecen_tutar) > 0) ||
+      (bakiyeFiltre === 'Temiz' && Number(c.vadesi_gecen_tutar) === 0)
+    return aramaOk && bakiyeOk
+  })
+  function exportCSV() {
+    csvIndir(filtreli.map(c => ({
+      'Ünvan': c.unvan||'', 'Müşteri No': c.musteri_no||'', 'Telefon': c.telefon||'',
+      'Açık Bakiye': c.acik_bakiye||0, 'Vadesi Geçen': c.vadesi_gecen_tutar||0,
+      'Geçen Gün': c.gecen_gun_sayisi||0, 'Son Tahsilat': c.son_tahsilat||'',
+    })), 'cariler')
+  }
   const tl = (n:number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits:2, maximumFractionDigits:2 }).format(n) + ' ₺'
   const toplamAcik = filtreli.reduce((s,c)=>s+(Number(c.acik_bakiye)||0),0)
   const toplamVade = filtreli.reduce((s,c)=>s+(Number(c.vadesi_gecen_tutar)||0),0)
@@ -117,6 +132,10 @@ export default function Tahsilat() {
           <h1 style={{ fontFamily:'Sora, sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Tahsilat & Cari</h1>
           <p style={{ color:'var(--text-dim)', fontSize:14, marginTop:4 }}>Vade aşım listesi</p>
         </div>
+        <select value={bakiyeFiltre} onChange={e=>setBakiyeFiltre(e.target.value)} style={{ padding:'10px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          {['Hepsi','Vadesi Geçen','Temiz'].map(b=><option key={b}>{b}</option>)}
+        </select>
+        <button onClick={exportCSV} style={{ padding:'10px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
         <button className="btn" onClick={()=>setModal(true)}><Plus size={18} /> Yeni Cari</button>
       </div>
 

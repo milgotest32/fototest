@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, FileText, Trash2 } from 'lucide-react'
 
 const DURUMLAR = ['Beklemede','Görüşülüyor','Olumlu','Olumsuz']
@@ -14,8 +15,8 @@ const ILETIM = ['Whatsapp','Mail','Telefon','Yüz yüze']
 export default function Teklifler() {
   const [teklifler, setTeklifler] = useState<any[]>([])
   const [arama, setArama] = useState('')
-  const [filtre, setFiltre] = useState('Hepsi')
   const [turFiltre, setTurFiltre] = useState('Hepsi')
+  const [filtre, setFiltre] = useState('Hepsi')
   const [modal, setModal] = useState(false)
   const [detayModal, setDetayModal] = useState<any>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -55,6 +56,12 @@ export default function Teklifler() {
     await sb.from('teklifler').delete().eq('id', id); yukle()
   }
 
+  function exportCSV() {
+    csvIndir(filtreli.map(t => ({
+      'Firma': t.firma_unvan||'', 'Yetkili': t.yetkili||'', 'Telefon': t.telefon||'',
+      'Tür': t.teklif_turu||t.tur||'', 'Durum': t.surec_durumu||'', 'İletim': t.iletim_turu||'',
+    })), 'teklifler')
+  }
   const filtreli = teklifler.filter(t => {
     const aramaOk = t.musteri_unvan?.toLowerCase().includes(arama.toLowerCase()) || t.yetkili?.toLowerCase().includes(arama.toLowerCase())
     const durum = filtre === 'Hepsi' || t.surec_durumu === filtre
@@ -72,6 +79,7 @@ export default function Teklifler() {
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Satış Teklifleri</h1>
           <p style={{ color:'var(--text-dim)', fontSize:14, marginTop:4 }}>{filtreli.length} teklif</p>
         </div>
+        <button onClick={exportCSV} style={{ padding:'9px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
         <button className="btn" onClick={()=>setModal(true)}><Plus size={18}/> Yeni Teklif</button>
       </div>
 

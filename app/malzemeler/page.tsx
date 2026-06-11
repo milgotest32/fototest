@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Package, Trash2, ArrowUpCircle, ArrowDownCircle, AlertTriangle } from 'lucide-react'
 
 const KATEGORILER = ['Yangın Güvenliği','İlk Yardım','Kişisel Koruyucu','Ölçüm Cihazı','Ofis','Diğer']
@@ -13,6 +14,7 @@ export default function Malzemeler() {
   const [hareketModal, setHareketModal] = useState<any>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState('')
+  const [arama, setArama] = useState('')
   const [katFiltre, setKatFiltre] = useState('Hepsi')
   const [form, setForm] = useState<any>(bosForm())
   const [hForm, setHForm] = useState<any>({ hareket_turu:'Giriş', miktar:'', birim_fiyat:'', aciklama:'' })
@@ -76,7 +78,18 @@ export default function Malzemeler() {
     yukle()
   }
 
-  const filtreli = katFiltre === 'Hepsi' ? malzemeler : malzemeler.filter(m => m.kategori === katFiltre)
+  const filtreli = malzemeler.filter(m => {
+    const aramaOk = !arama || m.ad?.toLowerCase().includes(arama.toLowerCase())
+    const katOk = katFiltre === 'Hepsi' || m.kategori === katFiltre
+    return aramaOk && katOk
+  })
+  function exportCSV() {
+    csvIndir(filtreli.map(m => ({
+      'Ad': m.ad||'', 'Kategori': m.kategori||'', 'Birim': m.birim||'',
+      'Stok': m.stok||0, 'Kritik Stok': m.kritik_stok||0,
+      'Alış': m.alis_fiyat||0, 'Satış': m.satis_fiyat||0, 'Tedarikçi': m.tedarikci||'',
+    })), 'malzemeler')
+  }
   const kritikler = malzemeler.filter(m => m.stok <= m.kritik_stok && m.kritik_stok > 0)
   const tl = (n:number) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits:2 }).format(n) + ' ₺'
 
@@ -104,6 +117,10 @@ export default function Malzemeler() {
 
       {hata && <div style={{ background:'var(--red-soft)', color:'var(--red)', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{hata}</div>}
 
+      <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center', marginBottom:12 }}>
+        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Malzeme ara..." style={{ padding:'8px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:180 }}/>
+        <button onClick={exportCSV} style={{ padding:'8px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
+      </div>
       <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:20 }}>
         {['Hepsi',...KATEGORILER].map(k => (
           <button key={k} onClick={()=>setKatFiltre(k)}

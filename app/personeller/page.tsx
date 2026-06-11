@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Users, Trash2, Pencil, Shield } from 'lucide-react'
 
 const ROLLER = ['yonetici','operasyon','hekim','satis','muhasebe','saha']
@@ -10,6 +11,7 @@ const ROL_RENK: any = { yonetici:'var(--accent)', operasyon:'var(--blue)', hekim
 
 export default function Personeller() {
   const [personeller, setPersoneller] = useState<any[]>([])
+  const [arama, setArama] = useState('')
   const [modal, setModal] = useState(false)
   const [duzenle, setDuzenle] = useState<any>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -92,8 +94,16 @@ export default function Personeller() {
     setModal(true)
   }
 
-  const aktifler = personeller.filter(p => p.aktif)
-  const pasifler = personeller.filter(p => !p.aktif)
+  const hepsiFiltresiz = [...personeller]
+  const aramaFiltresiz = !arama ? personeller : personeller.filter(p => p.ad_soyad?.toLowerCase().includes(arama.toLowerCase()) || p.email?.toLowerCase().includes(arama.toLowerCase()))
+  const aktifler = aramaFiltresiz.filter(p => p.aktif)
+  const pasifler = aramaFiltresiz.filter(p => !p.aktif)
+  function exportCSV() {
+    csvIndir(hepsiFiltresiz.map(p => ({
+      'Ad Soyad': p.ad_soyad||'', 'E-posta': p.email||'', 'Rol': p.rol||'', 'Aktif': p.aktif ? 'Evet' : 'Hayır',
+    })), 'personeller')
+  }
+
 
   return (
     <div className="page-wrap">
@@ -102,6 +112,8 @@ export default function Personeller() {
           <h1 className="page-title">Personel Yönetimi</h1>
           <p className="page-sub">{aktifler.length} aktif · {pasifler.length} pasif</p>
         </div>
+        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Personel ara..." style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:180 }}/>
+        <button onClick={exportCSV} style={{ padding:'9px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
         <button className="btn" onClick={()=>{ setDuzenle(null); setForm(bosForm()); setModal(true) }}>
           <Plus size={18}/> Yeni Personel
         </button>

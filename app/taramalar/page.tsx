@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Activity, Trash2, ChevronRight } from 'lucide-react'
 
 const ASAMALAR = ['Planlandı','Tarama Yapıldı','Rapor Hazırlanıyor','Teslim Edildi','Faturalandı','Tahsil Edildi']
@@ -13,6 +14,8 @@ const ASAMA_RENK: any = {
 
 export default function Taramalar() {
   const [taramalar, setTaramalar] = useState<any[]>([])
+  const [arama, setArama] = useState('')
+  const [asamaFiltre, setAsamaFiltre] = useState('Hepsi')
   const [teklifler, setTeklifler] = useState<any[]>([])
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [modal, setModal] = useState(false)
@@ -71,7 +74,17 @@ export default function Taramalar() {
     yukle()
   }
 
-  const filtreli = filtre === 'Hepsi' ? taramalar : taramalar.filter(t => t.asama === filtre)
+  const filtreli = taramalar.filter(t => {
+    const aramaOk = !arama || t.firma_adi?.toLowerCase().includes(arama.toLowerCase())
+    const asamaOk = filtre === 'Hepsi' || t.asama === filtre
+    return aramaOk && asamaOk
+  })
+  function exportCSV() {
+    csvIndir(filtreli.map(t => ({
+      'Firma': t.firma_adi||'', 'Planlanan': t.planlanan_tarih||'', 'Gerçekleşen': t.gerceklesen_tarih||'',
+      'Kişi Sayısı': t.kisi_sayisi||'', 'Aşama': t.asama||'', 'Tutar': t.tutar||0, 'Fatura No': t.fatura_no||'',
+    })), 'taramalar')
+  }
   const tl = (n:number) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺'
   const toplamTutar = filtreli.reduce((s,t)=>s+(Number(t.tutar)||0),0)
   const sayilar = ASAMALAR.reduce((acc:any,a) => ({ ...acc, [a]: taramalar.filter(t=>t.asama===a).length }), {})
@@ -82,6 +95,10 @@ export default function Taramalar() {
         <div>
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>Sağlık Tarama Operasyonları</h1>
           <p style={{ color:'var(--text-dim)', fontSize:14, marginTop:4 }}>{filtreli.length} operasyon · {tl(toplamTutar)}</p>
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:12 }}>
+            <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Firma ara..." style={{ padding:'8px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:180 }}/>
+            <button onClick={exportCSV} style={{ padding:'8px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
+          </div>
         </div>
         <button className="btn" onClick={()=>setModal(true)}><Plus size={18}/> Yeni Operasyon</button>
       </div>

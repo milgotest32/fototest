@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, HeartPulse, Trash2 } from 'lucide-react'
 
 const TETKIKLER = ['EK2','AKC','ODİO','SFT','EKG','CBC','AST','ALT','ÜRE','KREATİNİN','GLUKOZ','BURUN','BOĞAZ']
@@ -13,6 +14,10 @@ export default function Saglik() {
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [personeller, setPersoneller] = useState<any[]>([])
   const [arama, setArama] = useState('')
+  const [hekimFiltre, setHekimFiltre] = useState('Hepsi')
+  const [odemeFiltre, setOdemeFiltre] = useState('Hepsi')
+  const [basTarih, setBasTarih] = useState('')
+  const [bitTarih, setBitTarih] = useState('')
   const [modal, setModal] = useState(false)
   const [detay, setDetay] = useState<any>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -61,11 +66,23 @@ export default function Saglik() {
     setForm((f:any) => ({ ...f, tetkikler:{ ...f.tetkikler, [t]:!f.tetkikler[t] } }))
   }
 
-  const filtreli = kayitlar.filter(k =>
-    k.ad_soyad?.toLowerCase().includes(arama.toLowerCase()) ||
-    k.firma?.toLowerCase().includes(arama.toLowerCase())
-  )
+  const hekimler = personeller.filter((p:any) => ['hekim','yonetici'].includes(p.rol))
+  const filtreli = kayitlar.filter(k => {
+    const aramaOk = !arama || k.ad_soyad?.toLowerCase().includes(arama.toLowerCase()) || k.firma?.toLowerCase().includes(arama.toLowerCase())
+    const hekimOk = hekimFiltre === 'Hepsi' || k.hekim_id === hekimFiltre
+    const odemeOk = odemeFiltre === 'Hepsi' || k.odeme_sekli === odemeFiltre
+    const basOk = !basTarih || k.tarih >= basTarih
+    const bitOk = !bitTarih || k.tarih <= bitTarih
+    return aramaOk && hekimOk && odemeOk && basOk && bitOk
+  })
   const tl = (n:number) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺'
+  function exportCSV() {
+    csvIndir(filtreli.map(k => ({
+      'Tarih': k.tarih||'', 'Ad Soyad': k.ad_soyad||'', 'Doğum Tarihi': k.dogum_tarihi||'',
+      'Telefon': k.telefon||'', 'Firma': k.firma||'', 'Hekim': k.hekim_id||'',
+      'Ücret': k.ucret||0, 'Ödeme': k.odeme_sekli||'',
+    })), 'saglik_tarama')
+  }
   const toplamCiro = filtreli.reduce((s,k)=>s+(Number(k.ucret)||0),0)
 
   return (
@@ -85,9 +102,21 @@ export default function Saglik() {
 
       {hata && <div style={{ background:'var(--red-soft)', color:'var(--red)', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{hata}</div>}
 
-      <div style={{ position:'relative', marginBottom:20, maxWidth:360 }}>
-        <Search size={17} style={{ position:'absolute', left:14, top:12, color:'var(--text-faint)' }}/>
-        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Hasta veya firma ara..." style={{ paddingLeft:40 }}/>
+      <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center', marginBottom:20 }}>
+        <div style={{ position:'relative' }}>
+          <Search size={15} style={{ position:'absolute', left:10, top:11, color:'var(--text-faint)' }}/>
+          <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Hasta veya firma ara..." style={{ paddingLeft:34, width:200 }}/>
+        </div>
+        <input type="date" value={basTarih} onChange={e=>setBasTarih(e.target.value)} style={{ padding:'10px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}/>
+        <input type="date" value={bitTarih} onChange={e=>setBitTarih(e.target.value)} style={{ padding:'10px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}/>
+        <select value={hekimFiltre} onChange={e=>setHekimFiltre(e.target.value)} style={{ padding:'10px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          <option value="Hepsi">Tüm Hekimler</option>
+          {hekimler.map((h:any)=><option key={h.id} value={h.id}>{h.ad_soyad}</option>)}
+        </select>
+        <select value={odemeFiltre} onChange={e=>setOdemeFiltre(e.target.value)} style={{ padding:'10px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          {['Hepsi','Peşin','Cari','İBAN','POS'].map(o=><option key={o}>{o}</option>)}
+        </select>
+        <button onClick={exportCSV} style={{ padding:'10px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
       </div>
 
       <div className="card" style={{ overflow:'hidden' }}>

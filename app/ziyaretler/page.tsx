@@ -2,12 +2,16 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, MapPin, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const TUR_RENK: any = { 'İGU':'var(--blue)', 'İH':'var(--green)', 'DSP':'var(--amber)' }
 
 export default function Ziyaretler() {
   const [ziyaretler, setZiyaretler] = useState<any[]>([])
+  const [arama, setArama] = useState('')
+  const [turFiltre, setTurFiltre] = useState('Hepsi')
+  const [uzmanFiltre, setUzmanFiltre] = useState('Hepsi')
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [personeller, setPersoneller] = useState<any[]>([])
   const [modal, setModal] = useState(false)
@@ -97,6 +101,18 @@ export default function Ziyaretler() {
 
   // Personelleri role göre grupla
   const uzmanlar = personeller.filter(p => ['operasyon','saha','yonetici'].includes(p.rol))
+  const filtreli = ziyaretler.filter(z => {
+    const aramaOk = !arama || z.firmalar?.unvan?.toLowerCase().includes(arama.toLowerCase()) || z.ziyaret_eden?.toLowerCase().includes(arama.toLowerCase())
+    const turOk = turFiltre === 'Hepsi' || z.tur === turFiltre
+    const uzmanOk = uzmanFiltre === 'Hepsi' || z.ziyaret_eden === uzmanFiltre
+    return aramaOk && turOk && uzmanOk
+  })
+  function exportCSV() {
+    csvIndir(filtreli.map(z => ({
+      'Tarih': z.tarih||'', 'Firma': z.firmalar?.unvan||'', 'Tür': z.tur||'',
+      'Ziyaret Eden': z.ziyaret_eden||'', 'Not': z.notlar||'',
+    })), 'ziyaretler')
+  }
   const hekimler = personeller.filter(p => p.rol === 'hekim')
 
   return (
@@ -114,6 +130,17 @@ export default function Ziyaretler() {
         <p style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.7, margin:0 }}>ISG Ziyaretleri — Aylık firma ziyaret takibi. Üst tabloda firma bazında İGU, İH, DSP sayıları görünür. Ziyaret eklerken personeli listeden seçin. Her kayıt firmanın aylık sayacına otomatik eklenir.</p>
       </div>
 
+      <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center', marginBottom:16 }}>
+        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Firma veya kişi ara..." style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:180 }}/>
+        <select value={turFiltre} onChange={e=>setTurFiltre(e.target.value)} style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          {['Hepsi','İGU','İH','DSP'].map(t=><option key={t}>{t}</option>)}
+        </select>
+        <select value={uzmanFiltre} onChange={e=>setUzmanFiltre(e.target.value)} style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          <option value="Hepsi">Tüm Uzmanlar</option>
+          {[...uzmanlar,...hekimler].map((p:any)=><option key={p.id} value={p.ad_soyad}>{p.ad_soyad}</option>)}
+        </select>
+        <button onClick={exportCSV} style={{ padding:'9px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
+      </div>
       {hata && <div style={{ background:'var(--red-soft)', color:'var(--red)', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{hata}</div>}
 
       <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:20 }}>
@@ -172,7 +199,7 @@ export default function Ziyaretler() {
             <tbody>
               {yukleniyor ? <tr><td colSpan={7} style={{ textAlign:'center', color:'var(--text-faint)', padding:32 }}>Yükleniyor...</td></tr>
                : ziyaretler.length === 0 ? <tr><td colSpan={7} style={{ textAlign:'center', color:'var(--text-faint)', padding:32 }}>Bu ay ziyaret yok</td></tr>
-               : ziyaretler.map(z => (
+               : filtreli.map(z => (
                 <tr key={z.id}>
                   <td style={{ color:'var(--text-dim)', whiteSpace:'nowrap' }}>{new Date(z.tarih+'T00:00:00').toLocaleDateString('tr-TR')}</td>
                   <td style={{ fontWeight:500 }}>{z.firmalar?.unvan||'—'}</td>

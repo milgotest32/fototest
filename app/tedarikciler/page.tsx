@@ -2,12 +2,15 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Truck, Trash2, Pencil } from 'lucide-react'
 
 const KATEGORILER = ['Yangın Güvenliği','Sağlık','Kişisel Koruyucu','Ölçüm','Ofis','Genel']
 
 export default function Tedarikciler() {
   const [tedarikciler, setTedarikciler] = useState<any[]>([])
+  const [arama, setArama] = useState('')
+  const [katFiltre, setKatFiltre] = useState('Hepsi')
   const [modal, setModal] = useState(false)
   const [duzenle, setDuzenle] = useState<any>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -18,6 +21,17 @@ export default function Tedarikciler() {
     return { unvan:'', yetkili:'', telefon:'', email:'', adres:'', kategori:'Genel', notlar:'' }
   }
 
+  const filtreli = tedarikciler.filter(t => {
+    const aramaOk = !arama || t.unvan?.toLowerCase().includes(arama.toLowerCase()) || t.yetkili?.toLowerCase().includes(arama.toLowerCase())
+    const katOk = katFiltre === 'Hepsi' || t.kategori === katFiltre
+    return aramaOk && katOk
+  })
+  function exportCSV() {
+    csvIndir(filtreli.map(t => ({
+      'Ünvan': t.unvan||'', 'Yetkili': t.yetkili||'', 'Telefon': t.telefon||'',
+      'E-posta': t.email||'', 'Kategori': t.kategori||'',
+    })), 'tedarikciler')
+  }
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
@@ -69,12 +83,19 @@ export default function Tedarikciler() {
         <p style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.7, margin:0 }}>Tedarikçiler — Malzeme ve hizmet tedarikçilerinin listesi. Malzemeler sayfasında tedarikçi seçiminde kullanılır. ✏️ ile düzenleyebilir, 🗑️ ile silebilirsiniz.</p>
       </div>
 
+      <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center', marginBottom:16 }}>
+        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Tedarikçi ara..." style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:180 }}/>
+        <select value={katFiltre} onChange={e=>setKatFiltre(e.target.value)} style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+          {['Hepsi','Genel','Yangın','KKD','Tıbbi','İnşaat','Yazılım'].map(k=><option key={k}>{k}</option>)}
+        </select>
+        <button onClick={exportCSV} style={{ padding:'9px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
+      </div>
       {hata && <div style={{ background:'var(--red-soft)', color:'var(--red)', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{hata}</div>}
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))', gap:14 }}>
         {yukleniyor ? <div style={{ color:'var(--text-faint)', padding:40 }}>Yükleniyor...</div>
          : tedarikciler.length === 0 ? <div className="card" style={{ padding:48, textAlign:'center', color:'var(--text-faint)', gridColumn:'1/-1' }}>Tedarikçi yok</div>
-         : tedarikciler.map(t => (
+         : filtreli.map(t => (
           <div key={t.id} className="card" style={{ padding:20 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
               <div>

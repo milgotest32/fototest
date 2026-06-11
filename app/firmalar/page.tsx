@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, Building2, Trash2, Pencil } from 'lucide-react'
 
 const TEHLIKE_RENK: any = { 'Az Tehlikeli':'var(--green)', 'Tehlikeli':'var(--amber)', 'Çok Tehlikeli':'var(--red)' }
@@ -11,6 +12,8 @@ export default function Firmalar() {
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [personeller, setPersoneller] = useState<any[]>([])
   const [arama, setArama] = useState('')
+  const [tehlikeFiltre, setTehlikeFiltre] = useState('Hepsi')
+  const [bolgeFiltre, setBolgeFiltre] = useState('Hepsi')
   const [modal, setModal] = useState(false)
   const [duzenle, setDuzenle] = useState<any>(null)
   const [detay, setDetay] = useState<any>(null)
@@ -133,6 +136,16 @@ export default function Firmalar() {
       kisi_basi_ucret_yeni: f.kisi_basi_ucret_yeni?.toString()||'',
       paket_2808: f.paket_2808?.toString()||'', paket_3000: f.paket_3000?.toString()||'', paket_3434: f.paket_3434?.toString()||''
     })
+  }
+
+  function exportCSV() {
+    csvIndir(filtreli.map(f => ({
+      'Ünvan': f.unvan||'', 'Katip Ünvan': f.isg_katip_unvan||'', 'SGK Sicil': f.sgk_sicil||'',
+      'Tehlike Sınıfı': f.tehlike_sinifi||'', 'Çalışan': f.calisan_sayisi||'',
+      'Bölge': f.bolge||'', 'Kişi Başı': f.kisi_basi_ucret||'',
+      'İGU': f.gorevli_igu||'', 'İH': f.gorevli_ih||'',
+      'Fatura': f.fatura ? 'Evet' : 'Hayır',
+    })), 'firmalar')
   }
 
   const filtreli = firmalar.filter(f =>

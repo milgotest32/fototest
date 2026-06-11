@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, ClipboardList, Trash2, AlertCircle } from 'lucide-react'
 
 const KATEGORILER = ['Araç','Ofis','İzin','Proje','Personel','Cihaz','Yazışma','Diğer']
@@ -10,6 +11,7 @@ const DURUM_RENK: any = { 'Açık':'var(--blue)', 'Devam':'var(--amber)', 'Tamam
 
 export default function Idari() {
   const [isler, setIsler] = useState<any[]>([])
+  const [arama, setArama] = useState('')
   const [katFiltre, setKatFiltre] = useState('Hepsi')
   const [durumFiltre, setDurumFiltre] = useState('Aktif') // Aktif = Açık + Devam
   const [modal, setModal] = useState(false)
@@ -21,6 +23,12 @@ export default function Idari() {
     return { kategori:'Ofis', baslik:'', detay:'', durum:'Açık', son_tarih:'', sorumlu:'' }
   }
 
+  function exportCSV() {
+    csvIndir(filtreli.map(i => ({
+      'Konu': i.konu||'', 'Kategori': i.kategori||'', 'Durum': i.durum||'',
+      'Son Tarih': i.son_tarih||'', 'Açıklama': i.aciklama||'',
+    })), 'idari_isler')
+  }
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
@@ -55,7 +63,7 @@ export default function Idari() {
     return new Date(tarih) < new Date(new Date().toDateString())
   }
 
-  let filtreli = isler
+  let filtreli = isler.filter(i => !arama || i.konu?.toLowerCase().includes(arama.toLowerCase()) || i.aciklama?.toLowerCase().includes(arama.toLowerCase()))
   if (katFiltre !== 'Hepsi') filtreli = filtreli.filter(i => i.kategori === katFiltre)
   if (durumFiltre === 'Aktif') filtreli = filtreli.filter(i => i.durum === 'Açık' || i.durum === 'Devam')
   else if (durumFiltre !== 'Hepsi') filtreli = filtreli.filter(i => i.durum === durumFiltre)
@@ -71,6 +79,8 @@ export default function Idari() {
           <h1 style={{ fontFamily:'Sora, sans-serif', fontSize:28, fontWeight:700, letterSpacing:-0.5 }}>İdari İşler</h1>
           <p style={{ color:'var(--text-dim)', fontSize:14, marginTop:4 }}>{filtreli.length} kayıt</p>
         </div>
+        <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Konu ara..." style={{ padding:'9px 12px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text)', fontSize:13, fontFamily:'inherit', width:160 }}/>
+        <button onClick={exportCSV} style={{ padding:'9px 14px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-dim)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>↓ CSV</button>
         <button className="btn" onClick={()=>setModal(true)}><Plus size={18} /> Yeni Kayıt</button>
       </div>
 
