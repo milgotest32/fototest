@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const adminClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
-
 export async function POST(req: NextRequest) {
+  // Runtime'da oluştur — build sırasında env yoksa hata vermesin
+  const adminClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
   const { email, password, ad_soyad, rol, secret } = await req.json()
 
   const validSecret = process.env.ADMIN_SECRET || 'osgb-admin-2026'

@@ -9,7 +9,10 @@ const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim'
 
 const ERISIM: any = {
   yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura'],
-  muhasebe:  ['/','/tahsilat','/saglik'],
+  operasyon: ['/','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar'],
+  hekim:     ['/','/saglik','/hekim','/koordinasyon'],
+  satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
+  muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
   saha:      ['/','/koordinasyon','/firmalar','/ziyaretler'],
 }
 
