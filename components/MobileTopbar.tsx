@@ -8,7 +8,8 @@ import { UserCog, Menu, X, LogOut, LayoutDashboard, Building2, HeartPulse, FileT
 const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim', satis:'Satış', muhasebe:'Muhasebe', saha:'Saha Uzmanı' }
 
 const ERISIM: any = {
-  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar'],
+  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura'],
+  muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
   operasyon: ['/','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar'],
   hekim:     ['/','/saglik','/hekim','/koordinasyon'],
   satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
@@ -29,6 +30,7 @@ const TUM_LINKLER = [
   { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
   { href:'/koordinasyon', label:'Koordinasyon', icon:CalendarDays },
   { href:'/idari', label:'İdari İşler', icon:ClipboardList },
+  { href:'/fatura', label:'Fatura Takibi', icon:ReceiptIcon },
   { href:'/raporlar', label:'Raporlar', icon:BarChart2 },
   { href:'/personeller', label:'Personel & Yetkiler', icon:UserCog },
 ]

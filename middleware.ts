@@ -2,11 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const ROL_ERISIM: Record<string, string[]> = {
-  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar'],
+  yonetici:  ['/','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura'],
   operasyon: ['/','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar'],
   hekim:     ['/','/saglik','/hekim','/koordinasyon'],
   satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
-  muhasebe:  ['/','/tahsilat','/saglik'],
+  muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
   saha:      ['/','/koordinasyon','/firmalar','/ziyaretler'],
 }
 
