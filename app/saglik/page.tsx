@@ -307,7 +307,7 @@ export default function Saglik() {
                       style={{ flex: 1, padding: '9px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', background: form.odeme_sekli === o ? `${ODEME_RENK[o]}22` : 'var(--surface-2)', border: `1px solid ${form.odeme_sekli === o ? ODEME_RENK[o] : 'var(--border)'}`, color: form.odeme_sekli === o ? ODEME_RENK[o] : 'var(--text-dim)' }}>{o}</button>
                   ))}
                 </div>
-              </div>
+              </div>}
             </div>
             <label style={lbl}>Tetkikler</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
