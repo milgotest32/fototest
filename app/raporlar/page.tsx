@@ -17,7 +17,7 @@ const TT_STYLE = { background:'#1a1a24', border:'1px solid rgba(255,255,255,0.1)
 export default function Raporlar() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [yil, setYil] = useState(new Date().getFullYear())
-  const [aktifSekme, setAktifSekme] = useState<'genel'|'saglik'|'tahsilat'|'satis'|'isg'>('genel')
+  const [aktifSekme, setAktifSekme] = useState<'genel'|'saglik'|'tahsilat'|'satis'|'isg'|'denetim'>('genel')
 
   // Hedefler (yönetici ayarlar)
   const [hedefler, setHedefler] = useState({ gunlukTahsilat: 2000, aylikArama: 50, aylikTahsilat: 50000, aylikHasta: 30 })
@@ -35,6 +35,7 @@ export default function Raporlar() {
   const [malzemeler, setMalzemeler] = useState<any[]>([])
   const [cariler, setCariler] = useState<any[]>([])
   const [cokYilHasta, setCokYilHasta] = useState<any[]>([])
+  const [gidilmeyenler, setGidilmeyenler] = useState<any[]>([])
 
   const sb = createClient()
   useEffect(() => { yukle() }, [yil])
@@ -83,6 +84,39 @@ export default function Raporlar() {
       return obj
     })
     setCokYilHasta(cokYilSeri)
+
+    // Denetim gecikmeleri - bu ay gidilmesi gereken ama gidilmemiş firmalar
+    const buAyKey = new Date().toISOString().slice(0, 7) // "2026-06"
+    const gecenAyKey = new Date(new Date().getFullYear(), new Date().getMonth() - 1).toISOString().slice(0, 7)
+    const { data: firmalarData } = await sb.from('firmalar')
+      .select('id, unvan, gorevli_ih, ih_periyot, aylik_ziyaretler, tehlike_sinifi')
+      .eq('aktif', true)
+      .not('ih_periyot', 'eq', 'GİDİLMİYOR')
+      .not('ih_periyot', 'is', null)
+    
+    if (firmalarData) {
+      const gidilmeyenList = firmalarData.filter(f => {
+        const periyot = parseFloat(f.ih_periyot)
+        if (isNaN(periyot)) return false
+        const ziyaretler = f.aylik_ziyaretler || {}
+        // Bu ay gidilmemiş
+        const buAyGidildi = !!ziyaretler[buAyKey]
+        if (!buAyGidildi) {
+          // Periyoda göre gerçekten bu ay gitmesi gerekiyor mu?
+          if (periyot <= 1.0) return true // Her ay veya 2 ayda bir - bu ay gitmeli
+          if (periyot <= 2.0) {
+            // 4 ayda bir - geçen ay da gitmediyse gecikmiş
+            return !ziyaretler[gecenAyKey]
+          }
+        }
+        return false
+      }).map(f => ({
+        ...f,
+        buAyGidildi: !!(f.aylik_ziyaretler || {})[buAyKey],
+        sonZiyaret: Object.keys(f.aylik_ziyaretler || {}).sort().reverse()[0] || null,
+      })).sort((a, b) => (a.gorevli_ih || '').localeCompare(b.gorevli_ih || ''))
+      setGidilmeyenler(gidilmeyenList)
+    }
 
     setYukleniyor(false)
   }
@@ -194,6 +228,7 @@ export default function Raporlar() {
     { key:'tahsilat', label:'Tahsilat' },
     { key:'satis', label:'Satış' },
     { key:'isg', label:'ISG' },
+    { key:'denetim', label:'Denetim' },
   ] as const
 
   if (yukleniyor) return (
@@ -654,6 +689,83 @@ export default function Raporlar() {
                 ))}
               </div>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ── DENETİM SEKMESİ ── */}
+      {aktifSekme === 'denetim' && (
+        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+          {/* ÖZET KARTLAR */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+            {[
+              { label:'Bu Ay Gidilmemiş', val:gidilmeyenler.length, renk:'var(--red)' },
+              { label:'Her Ay Gitmesi Gereken', val:gidilmeyenler.filter(f=>parseFloat(f.ih_periyot)<=0.5).length, renk:'var(--amber)' },
+              { label:'2 Ayda Bir Gitmesi Gereken', val:gidilmeyenler.filter(f=>parseFloat(f.ih_periyot)===1.0).length, renk:'var(--blue)' },
+            ].map((k,i) => (
+              <div key={i} className="card" style={{ padding:'16px 14px' }}>
+                <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:8 }}>{k.label}</div>
+                <div style={{ fontFamily:'Sora,sans-serif', fontSize:28, fontWeight:700, color:k.renk }}>{k.val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* DOKTOR BAZLI LİSTE */}
+          {gidilmeyenler.length === 0 ? (
+            <div className="card" style={{ padding:40, textAlign:'center', color:'var(--green)' }}>
+              ✓ Bu ay tüm firmalar ziyaret edilmiş
+            </div>
+          ) : (
+            (() => {
+              const doktorlar = [...new Set(gidilmeyenler.map(f => f.gorevli_ih || 'Atanmamış'))]
+              return doktorlar.map(doktor => {
+                const firmalarList = gidilmeyenler.filter(f => (f.gorevli_ih || 'Atanmamış') === doktor)
+                return (
+                  <div key={doktor} className="card" style={{ padding:20 }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <div style={{ width:32, height:32, borderRadius:8, background:'var(--accent-soft)', color:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:14 }}>
+                          {doktor.charAt(0)}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight:600, fontSize:14 }}>{doktor}</div>
+                          <div style={{ fontSize:11, color:'var(--text-faint)' }}>İş Hijyeni Uzmanı</div>
+                        </div>
+                      </div>
+                      <span style={{ background:'var(--red-soft)', color:'var(--red)', fontSize:12, fontWeight:600, padding:'4px 10px', borderRadius:6 }}>
+                        {firmalarList.length} firma bekliyor
+                      </span>
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                      {firmalarList.map((f:any) => (
+                        <div key={f.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', background:'var(--surface-2)', borderRadius:8 }}>
+                          <div>
+                            <span style={{ fontSize:13, fontWeight:500 }}>{f.unvan}</span>
+                            {f.tehlike_sinifi && (
+                              <span style={{ marginLeft:8, fontSize:10, opacity:0.6 }}>{f.tehlike_sinifi}</span>
+                            )}
+                          </div>
+                          <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
+                            <span style={{ fontSize:11, color:'var(--text-faint)' }}>
+                              {f.ih_periyot === '0.5' ? 'Her ay' : f.ih_periyot === '1.0' ? '2 ayda bir' : `${parseFloat(f.ih_periyot)*2} ayda bir`}
+                            </span>
+                            {f.sonZiyaret ? (
+                              <span style={{ fontSize:11, color:'var(--amber)', background:'var(--amber-soft)', padding:'2px 8px', borderRadius:5 }}>
+                                Son: {f.sonZiyaret}
+                              </span>
+                            ) : (
+                              <span style={{ fontSize:11, color:'var(--red)', background:'var(--red-soft)', padding:'2px 8px', borderRadius:5 }}>
+                                Hiç gidilmedi
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })
+            })()
           )}
         </div>
       )}
