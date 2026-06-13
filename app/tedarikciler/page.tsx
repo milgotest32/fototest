@@ -21,7 +21,9 @@ export default function Tedarikciler() {
     return { unvan:'', yetkili:'', telefon:'', email:'', adres:'', kategori:'Genel', notlar:'' }
   }
 
-  const filtreli = tedarikciler // server-side filtre aktif  function exportCSV() {
+  const filtreli = tedarikciler // server-side filtre aktif
+
+  function exportCSV() {
     csvIndir(filtreli.map(t => ({
       'Ünvan': t.unvan||'', 'Yetkili': t.yetkili||'', 'Telefon': t.telefon||'',
       'E-posta': t.email||'', 'Kategori': t.kategori||'',
