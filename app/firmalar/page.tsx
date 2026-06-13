@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, Building2, Trash2, Pencil } from 'lucide-react'
@@ -45,16 +45,29 @@ export default function Firmalar() {
   }
 
   const sb = createClient()
-  useEffect(() => { yukle() }, [])
+  const debounceRef = useRef<any>(null)
+
+  useEffect(() => {
+    sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad')
+      .then(({ data }) => setPersoneller(data || []))
+    yukle()
+  }, [])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama, tehlikeFiltre, bolgeFiltre])
 
   async function yukle() {
-    const [fRes, pRes] = await Promise.all([
-      sb.from('firmalar').select('*').order('unvan'),
-      sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad')
-    ])
-    if (fRes.error) { setHata('Yüklenemedi'); return }
-    setFirmalar(fRes.data || [])
-    setPersoneller(pRes.data || [])
+    setYukleniyor(true)
+    let q = sb.from('firmalar').select('*').order('unvan')
+    if (arama) q = q.ilike('unvan', \`%\${arama}%\`)
+    if (tehlikeFiltre !== 'Hepsi') q = q.eq('tehlike_sinifi', tehlikeFiltre)
+    if (bolgeFiltre !== 'Hepsi') q = q.eq('bolge', bolgeFiltre)
+    const { data, error } = await q
+    if (error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
+    setFirmalar(data || [])
     setYukleniyor(false)
   }
 
@@ -148,11 +161,7 @@ export default function Firmalar() {
     })), 'firmalar')
   }
 
-  const filtreli = firmalar.filter(f =>
-    f.unvan?.toLowerCase().includes(arama.toLowerCase()) ||
-    f.bolge?.toLowerCase().includes(arama.toLowerCase()) ||
-    f.faaliyet?.toLowerCase().includes(arama.toLowerCase())
-  )
+  const filtreli = firmalar // Filtreleme server-side yapılıyor
 
   const tl = (n:number) => n > 0 ? new Intl.NumberFormat('tr-TR').format(n) + ' ₺' : '—'
 
