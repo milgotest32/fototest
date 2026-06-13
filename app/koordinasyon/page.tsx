@@ -13,6 +13,7 @@ const AY_KISA = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','
 export default function Koordinasyon() {
   const [sekme, setSekme] = useState<'liste'|'takvim'|'grid'>('liste')
   const [gorevler, setGorevler] = useState<any[]>([])
+  const [ziyaretlerData, setZiyaretlerData] = useState<any[]>([])
   const [personeller, setPersoneller] = useState<any[]>([])
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [mevcutPersonel, setMevcutPersonel] = useState<any>(null)
@@ -51,14 +52,16 @@ export default function Koordinasyon() {
     if (rol === 'saha' && mevcutPersonel?.id) q = q.eq('uzman_id', mevcutPersonel.id)
     if (durumFiltre !== 'Hepsi') q = q.eq('durum', durumFiltre)
 
-    const [gRes, pRes, fRes] = await Promise.all([
+    const [gRes, pRes, fRes, zRes] = await Promise.all([
       q.limit(500),
       sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad'),
-      sb.from('firmalar').select('id, unvan, gorevli_igu, gorevli_ih, igu_id, ih_id').order('unvan').limit(300)
+      sb.from('firmalar').select('id, unvan, gorevli_igu, gorevli_ih, igu_id, ih_id').order('unvan').limit(300),
+      sb.from('ziyaretler').select('firma_id, tarih, tur, ziyaret_eden_id').order('tarih')
     ])
     setGorevler(gRes.data || [])
     setPersoneller(pRes.data || [])
     setFirmalar(fRes.data || [])
+    setZiyaretlerData(zRes.data || [])
     setYukleniyor(false)
   }
 
@@ -125,33 +128,20 @@ export default function Koordinasyon() {
       (g.uzman||'').toLowerCase().includes(s) || (g.aciklama||'').toLowerCase().includes(s)
   })
 
-  // GRID: firma başına IGU/IH aylık ziyaret durumu
-  // gorev_turu = 'Saha ziyareti' ve uzman_id ile eşleşme
+  // GRID: firma başına IGU/IH aylık ziyaret durumu — ziyaretler tablosundan
   function gridHesapla() {
     return firmalar.map(f => {
       const iguAylar: Record<number, boolean> = {}
       const ihAylar: Record<number, boolean> = {}
-      gorevler.forEach(g => {
-        if (!g.tarih) return
-        const tarihYil = new Date(g.tarih).getFullYear()
+      ziyaretlerData.forEach(z => {
+        if (!z.tarih || !z.firma_id) return
+        const tarihYil = new Date(z.tarih).getFullYear()
         if (tarihYil !== gridYil) return
-        const ay = new Date(g.tarih).getMonth() // 0-11
-        const firmaEsles = g.firma_id === f.id
-        if (!firmaEsles) return
-        if (g.durum === 'Tamamlandı') {
-          // IGU ziyareti
-          if (g.gorev_turu === 'Saha ziyareti' && (g.uzman_id === f.igu_id || (f.gorevli_igu && (g.uzman||'').includes(f.gorevli_igu.split(' ')[0])))) {
-            iguAylar[ay] = true
-          }
-          // IH ziyareti
-          if ((g.gorev_turu === 'Saha ziyareti' || g.gorev_turu === 'Diğer') && g.uzman_id === f.ih_id) {
-            ihAylar[ay] = true
-          }
-          // Genel: hepsini IGU say (basit yaklaşım: tamamlanan saha ziyareti)
-          if (g.gorev_turu === 'Saha ziyareti') {
-            iguAylar[ay] = true
-          }
-        }
+        if (z.firma_id !== f.id) return
+        const ay = new Date(z.tarih).getMonth() // 0-11
+        if (z.tur === 'İGU') iguAylar[ay] = true
+        if (z.tur === 'İH') ihAylar[ay] = true
+        if (z.tur === 'DSP') iguAylar[ay] = true // DSP'yi IGU satırında göster
       })
       return { ...f, iguAylar, ihAylar }
     })

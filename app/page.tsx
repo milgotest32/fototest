@@ -62,7 +62,7 @@ export default function Dashboard() {
       if (izin.includes('uyari')) queries.push(sb.from('borcuyarilari').select('*').eq('goruldu', false).order('gecen_gun_sayisi', { ascending:false }).limit(10))
       else queries.push(Promise.resolve({ data: [] }))
 
-      if (izin.includes('gorev')) queries.push(sb.from('gorevler').select('id', { count:'exact', head:true }).eq('durum','Planlandı').gte('tarih', ayBas).lte('tarih', ayBit))
+      if (izin.includes('gorev')) queries.push(sb.from('gorevler').select('id', { count:'exact', head:true }).in('durum',['Planlandı','Bekliyor']).gte('tarih', ayBas).lte('tarih', ayBit))
       else queries.push(Promise.resolve({ count: 0 }))
 
       const [firma, hasta, teklif, cariler, ziyaret, uyari, gorev] = await Promise.all(queries)

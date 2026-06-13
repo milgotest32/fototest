@@ -40,6 +40,8 @@ export default function Firmalar() {
     return {
       unvan:'', isg_katip_unvan:'', yetkili:'', telefon:'', adres:'', bolge:'', faaliyet:'',
       tehlike_sinifi:'Az Tehlikeli', sgk_sicil:'', calisan_sayisi:'', plan_sayi:'',
+      ocak_kisi:'', subat_kisi:'', mart_kisi:'', nisan_kisi:'', mayis_kisi:'',
+      haziran_kisi:'', temmuz_kisi:'', agustos_kisi:'', eylul_kisi:'', ekim_kisi:'', kasim_kisi:'', aralik_kisi:'',
       fatura: false, fatura_aciklama:'', klasor:'', cari_sozlesme: false,
       gorevli_igu:'', igu_id:'', igu_atama_tarihi:'', gorevli_ih:'', ih_id:'', ih_atama_tarihi:'',
       gorevli_dsp:'', dsp_id:'', bhl_atama:'', atama_aciklama:'', dr_sure:'', uzman_sure:'',
@@ -88,6 +90,12 @@ export default function Firmalar() {
       ...form,
       calisan_sayisi: Number(form.calisan_sayisi)||null,
       plan_sayi: Number(form.plan_sayi)||null,
+      ocak_kisi: Number(form.ocak_kisi)||null, subat_kisi: Number(form.subat_kisi)||null,
+      mart_kisi: Number(form.mart_kisi)||null, nisan_kisi: Number(form.nisan_kisi)||null,
+      mayis_kisi: Number(form.mayis_kisi)||null, haziran_kisi: Number(form.haziran_kisi)||null,
+      temmuz_kisi: Number(form.temmuz_kisi)||null, agustos_kisi: Number(form.agustos_kisi)||null,
+      eylul_kisi: Number(form.eylul_kisi)||null, ekim_kisi: Number(form.ekim_kisi)||null,
+      kasim_kisi: Number(form.kasim_kisi)||null, aralik_kisi: Number(form.aralik_kisi)||null,
       dr_sure: Number(form.dr_sure)||null,
       uzman_sure: Number(form.uzman_sure)||null,
       kisi_basi_ucret: Number(form.kisi_basi_ucret)||0,
@@ -166,6 +174,12 @@ export default function Firmalar() {
       telefon: f.telefon||'', adres: f.adres||'', bolge: f.bolge||'', faaliyet: f.faaliyet||'',
       tehlike_sinifi: f.tehlike_sinifi||'Az Tehlikeli', sgk_sicil: f.sgk_sicil||'',
       calisan_sayisi: f.calisan_sayisi?.toString()||'', plan_sayi: f.plan_sayi?.toString()||'',
+      ocak_kisi: f.ocak_kisi?.toString()||'', subat_kisi: f.subat_kisi?.toString()||'',
+      mart_kisi: f.mart_kisi?.toString()||'', nisan_kisi: f.nisan_kisi?.toString()||'',
+      mayis_kisi: f.mayis_kisi?.toString()||'', haziran_kisi: f.haziran_kisi?.toString()||'',
+      temmuz_kisi: f.temmuz_kisi?.toString()||'', agustos_kisi: f.agustos_kisi?.toString()||'',
+      eylul_kisi: f.eylul_kisi?.toString()||'', ekim_kisi: f.ekim_kisi?.toString()||'',
+      kasim_kisi: f.kasim_kisi?.toString()||'', aralik_kisi: f.aralik_kisi?.toString()||'',
       fatura: f.fatura||false, fatura_aciklama: f.fatura_aciklama||'', klasor: f.klasor||'',
       cari_sozlesme: f.cari_sozlesme||false,
       gorevli_igu: f.gorevli_igu||'', igu_id: f.igu_id||'', igu_atama_tarihi: f.igu_atama_tarihi||'',
@@ -370,6 +384,23 @@ export default function Firmalar() {
                 <div><label style={lbl}>SGK Sicil No</label><input value={form.sgk_sicil} onChange={e=>setForm({...form, sgk_sicil:e.target.value})} /></div>
                 <div><label style={lbl}>Çalışan Sayısı</label><input type="number" value={form.calisan_sayisi} onChange={e=>setForm({...form, calisan_sayisi:e.target.value})} /></div>
                 <div><label style={lbl}>Plan Sayısı</label><input type="number" value={form.plan_sayi} onChange={e=>setForm({...form, plan_sayi:e.target.value})} /></div>
+                {/* Aylık kişi sayısı */}
+                <div style={{ gridColumn:'1/3', marginTop:8 }}>
+                  <label style={{ ...lbl, fontSize:11, textTransform:'uppercase', letterSpacing:0.5, color:'var(--accent)' }}>Aylık Kişi Sayıları</label>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:8 }}>
+                    {[
+                      ['Ocak','ocak_kisi'],['Şubat','subat_kisi'],['Mart','mart_kisi'],
+                      ['Nisan','nisan_kisi'],['Mayıs','mayis_kisi'],['Haziran','haziran_kisi'],
+                      ['Temmuz','temmuz_kisi'],['Ağustos','agustos_kisi'],['Eylül','eylul_kisi'],
+                      ['Ekim','ekim_kisi'],['Kasım','kasim_kisi'],['Aralık','aralik_kisi'],
+                    ].map(([ad, key]) => (
+                      <div key={key}>
+                        <label style={{ ...lbl, fontSize:10 }}>{ad}</label>
+                        <input type="number" value={(form as any)[key]} onChange={e=>setForm({...form, [key]:e.target.value})} style={{ textAlign:'center' }} placeholder="—"/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <div><label style={lbl}>Klasör</label><input value={form.klasor} onChange={e=>setForm({...form, klasor:e.target.value})} /></div>
                 <div style={{ display:'flex', alignItems:'center', gap:10, paddingTop:20 }}>
                   <input type="checkbox" id="fatura" checked={form.fatura} onChange={e=>setForm({...form, fatura:e.target.checked})} style={{ width:16, height:16 }} />
