@@ -17,7 +17,9 @@ export default function Firmalar() {
   const [modal, setModal] = useState(false)
   const [duzenle, setDuzenle] = useState<any>(null)
   const [detay, setDetay] = useState<any>(null)
-  const [sekme, setSekme] = useState<'temel'|'atama'|'ucret'|'ziyaret'|'katip'>('temel')
+  const [sekme, setSekme] = useState<'temel'|'atama'|'ucret'|'ziyaret'|'katip'|'evraklar'>('temel')
+  const [evraklar, setEvraklar] = useState<any>(null)
+  const [evrakKayit, setEvrakKayit] = useState(false)
   const [katipSozlesmeler, setKatipSozlesmeler] = useState<any[]>([])
   const [katipForm, setKatipForm] = useState<any>(bosKatipForm())
   const [katipYukleniyor, setKatipYukleniyor] = useState(false)
@@ -31,6 +33,7 @@ export default function Firmalar() {
 
   // sekme değişince katip yükle
   useEffect(() => { if (sekme==='katip' && duzenle) katipYukle(duzenle.id) }, [sekme, duzenle])
+  useEffect(() => { if (sekme==='evraklar' && duzenle) evraklarYukle(duzenle.id) }, [sekme, duzenle])
 
   function bosForm() {
     return {
@@ -107,6 +110,25 @@ export default function Firmalar() {
   async function sil(id: string) {
     if (!confirm('Silmek istiyor musunuz?')) return
     await sb.from('firmalar').delete().eq('id', id); yukle()
+  }
+
+  async function evraklarYukle(firma_id: string) {
+    const { data } = await sb.from('firma_evraklar').select('*').eq('firma_id', firma_id).single()
+    setEvraklar(data || null)
+  }
+
+  async function evraklarKaydet(firma_id: string, yeniEvraklar: any) {
+    setEvrakKayit(true)
+    const sb2 = createClient()
+    const { data: user } = await sb2.auth.getUser()
+    const guncelleyen = user.user?.email || ''
+    if (evraklar) {
+      await sb.from('firma_evraklar').update({ ...yeniEvraklar, guncelleme_tarihi: new Date().toISOString(), guncelleyen }).eq('firma_id', firma_id)
+    } else {
+      await sb.from('firma_evraklar').insert({ firma_id, ...yeniEvraklar, guncelleyen })
+    }
+    await evraklarYukle(firma_id)
+    setEvrakKayit(false)
   }
 
   async function katipYukle(firma_id: string) {
@@ -472,6 +494,281 @@ export default function Firmalar() {
                     </div>
                   ))}
                   {katipSozlesmeler.length===0 && <div style={{ fontSize:13, color:'var(--text-faint)', textAlign:'center', padding:20 }}>Henüz sözleşme eklenmemiş</div>}
+                </div>
+              </div>
+            )}
+
+
+            {sekme === 'evraklar' && duzenle && (
+              <div>
+                {(() => {
+                  const toplam = 25
+                  const tamamlanan = (evraklar?.['dr_sozlesme']?1:0) + (evraklar?.['igu_sozlesme']?1:0) + (evraklar?.['bhl_sozlesmesi']?1:0) + (evraklar?.['acil_durum_ekipleri']?1:0) + (evraklar?.['acil_durum_plani']?1:0) + (evraklar?.['ad_tatbikatlari']?1:0) + (evraklar?.['calisan_temsilcisi']?1:0) + (evraklar?.['egitim_kayitlari']?1:0) + (evraklar?.['risk_analizi']?1:0) + (evraklar?.['yillik_calisma_plani']?1:0) + (evraklar?.['yillik_egitim_plani']?1:0) + (evraklar?.['yillik_degerlendirme']?1:0) + (evraklar?.['defter_nushasi']?1:0) + (evraklar?.['isg_kurul']?1:0) + (evraklar?.['kroki']?1:0) + (evraklar?.['calisma_talimati']?1:0) + (evraklar?.['ilk_yardim_belgeleri']?1:0) + (evraklar?.['is_kazasi_evraklari']?1:0) + (evraklar?.['levha_calismalari']?1:0) + (evraklar?.['mesleki_egitimler']?1:0) + (evraklar?.['ortam_olcumleri']?1:0) + (evraklar?.['periyodik_kontroller']?1:0) + (evraklar?.['saglik_kayitlari']?1:0) + (evraklar?.['ysc_kontrolleri']?1:0) + (evraklar?.['ziyaret_formlari']?1:0)
+                  const oran = Math.round((tamamlanan/toplam)*100)
+                  return (
+                    <div style={{marginBottom:16}}>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginBottom:6}}>
+                        <span style={{fontWeight:600}}>Tamamlama Oranı</span>
+                        <span style={{fontWeight:700,color:oran>=70?'#22c55e':oran>=40?'#f59e0b':'#ef4444'}}>%{oran} ({tamamlanan}/{toplam})</span>
+                      </div>
+                      <div style={{height:8,background:'var(--surface-2)',borderRadius:4,overflow:'hidden'}}>
+                        <div style={{height:'100%',width:`${oran}%`,background:oran>=70?'#22c55e':oran>=40?'#f59e0b':'#ef4444',borderRadius:4,transition:'width 0.3s'}}/>
+                      </div>
+                      <div style={{fontSize:11,color:'var(--text-faint)',marginTop:6}}>Tıklayarak onay durumunu değiştirin — otomatik kaydedilir{evrakKayit?' · kaydediliyor...':''}</div>
+                    </div>
+                  )
+                })()}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                <div key="dr_sozlesme" onClick={()=>{
+                  const yeni = {...(evraklar||{}), dr_sozlesme: !(evraklar?.['dr_sozlesme']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['dr_sozlesme'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['dr_sozlesme'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['dr_sozlesme'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['dr_sozlesme'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['dr_sozlesme']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['dr_sozlesme'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['dr_sozlesme'])?500:400}}>Dr. Sözleşmesi</span>
+                </div>
+                <div key="igu_sozlesme" onClick={()=>{
+                  const yeni = {...(evraklar||{}), igu_sozlesme: !(evraklar?.['igu_sozlesme']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['igu_sozlesme'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['igu_sozlesme'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['igu_sozlesme'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['igu_sozlesme'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['igu_sozlesme']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['igu_sozlesme'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['igu_sozlesme'])?500:400}}>İGU Sözleşmesi</span>
+                </div>
+                <div key="bhl_sozlesmesi" onClick={()=>{
+                  const yeni = {...(evraklar||{}), bhl_sozlesmesi: !(evraklar?.['bhl_sozlesmesi']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['bhl_sozlesmesi'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['bhl_sozlesmesi'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['bhl_sozlesmesi'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['bhl_sozlesmesi'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['bhl_sozlesmesi']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['bhl_sozlesmesi'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['bhl_sozlesmesi'])?500:400}}>BHL Sözleşmesi</span>
+                </div>
+                <div key="acil_durum_ekipleri" onClick={()=>{
+                  const yeni = {...(evraklar||{}), acil_durum_ekipleri: !(evraklar?.['acil_durum_ekipleri']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['acil_durum_ekipleri'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['acil_durum_ekipleri'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['acil_durum_ekipleri'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['acil_durum_ekipleri'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['acil_durum_ekipleri']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['acil_durum_ekipleri'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['acil_durum_ekipleri'])?500:400}}>Acil Durum Ekipleri</span>
+                </div>
+                <div key="acil_durum_plani" onClick={()=>{
+                  const yeni = {...(evraklar||{}), acil_durum_plani: !(evraklar?.['acil_durum_plani']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['acil_durum_plani'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['acil_durum_plani'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['acil_durum_plani'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['acil_durum_plani'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['acil_durum_plani']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['acil_durum_plani'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['acil_durum_plani'])?500:400}}>Acil Durum Planı</span>
+                </div>
+                <div key="ad_tatbikatlari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), ad_tatbikatlari: !(evraklar?.['ad_tatbikatlari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['ad_tatbikatlari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['ad_tatbikatlari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['ad_tatbikatlari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['ad_tatbikatlari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['ad_tatbikatlari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['ad_tatbikatlari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['ad_tatbikatlari'])?500:400}}>AD Tatbikatları</span>
+                </div>
+                <div key="calisan_temsilcisi" onClick={()=>{
+                  const yeni = {...(evraklar||{}), calisan_temsilcisi: !(evraklar?.['calisan_temsilcisi']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['calisan_temsilcisi'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['calisan_temsilcisi'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['calisan_temsilcisi'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['calisan_temsilcisi'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['calisan_temsilcisi']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['calisan_temsilcisi'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['calisan_temsilcisi'])?500:400}}>Çalışan Temsilcisi</span>
+                </div>
+                <div key="egitim_kayitlari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), egitim_kayitlari: !(evraklar?.['egitim_kayitlari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['egitim_kayitlari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['egitim_kayitlari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['egitim_kayitlari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['egitim_kayitlari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['egitim_kayitlari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['egitim_kayitlari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['egitim_kayitlari'])?500:400}}>Eğitim Kayıtları</span>
+                </div>
+                <div key="risk_analizi" onClick={()=>{
+                  const yeni = {...(evraklar||{}), risk_analizi: !(evraklar?.['risk_analizi']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['risk_analizi'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['risk_analizi'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['risk_analizi'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['risk_analizi'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['risk_analizi']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['risk_analizi'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['risk_analizi'])?500:400}}>Risk Analizi</span>
+                </div>
+                <div key="yillik_calisma_plani" onClick={()=>{
+                  const yeni = {...(evraklar||{}), yillik_calisma_plani: !(evraklar?.['yillik_calisma_plani']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['yillik_calisma_plani'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['yillik_calisma_plani'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['yillik_calisma_plani'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['yillik_calisma_plani'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['yillik_calisma_plani']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['yillik_calisma_plani'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['yillik_calisma_plani'])?500:400}}>Yıllık Ç. Planı</span>
+                </div>
+                <div key="yillik_egitim_plani" onClick={()=>{
+                  const yeni = {...(evraklar||{}), yillik_egitim_plani: !(evraklar?.['yillik_egitim_plani']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['yillik_egitim_plani'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['yillik_egitim_plani'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['yillik_egitim_plani'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['yillik_egitim_plani'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['yillik_egitim_plani']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['yillik_egitim_plani'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['yillik_egitim_plani'])?500:400}}>Yıllık Eğitim Planı</span>
+                </div>
+                <div key="yillik_degerlendirme" onClick={()=>{
+                  const yeni = {...(evraklar||{}), yillik_degerlendirme: !(evraklar?.['yillik_degerlendirme']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['yillik_degerlendirme'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['yillik_degerlendirme'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['yillik_degerlendirme'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['yillik_degerlendirme'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['yillik_degerlendirme']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['yillik_degerlendirme'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['yillik_degerlendirme'])?500:400}}>Yıllık Değerlendirme</span>
+                </div>
+                <div key="defter_nushasi" onClick={()=>{
+                  const yeni = {...(evraklar||{}), defter_nushasi: !(evraklar?.['defter_nushasi']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['defter_nushasi'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['defter_nushasi'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['defter_nushasi'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['defter_nushasi'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['defter_nushasi']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['defter_nushasi'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['defter_nushasi'])?500:400}}>Defter Nüshası</span>
+                </div>
+                <div key="isg_kurul" onClick={()=>{
+                  const yeni = {...(evraklar||{}), isg_kurul: !(evraklar?.['isg_kurul']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['isg_kurul'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['isg_kurul'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['isg_kurul'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['isg_kurul'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['isg_kurul']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['isg_kurul'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['isg_kurul'])?500:400}}>İSG Kurul</span>
+                </div>
+                <div key="kroki" onClick={()=>{
+                  const yeni = {...(evraklar||{}), kroki: !(evraklar?.['kroki']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['kroki'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['kroki'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['kroki'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['kroki'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['kroki']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['kroki'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['kroki'])?500:400}}>Kroki</span>
+                </div>
+                <div key="calisma_talimati" onClick={()=>{
+                  const yeni = {...(evraklar||{}), calisma_talimati: !(evraklar?.['calisma_talimati']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['calisma_talimati'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['calisma_talimati'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['calisma_talimati'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['calisma_talimati'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['calisma_talimati']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['calisma_talimati'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['calisma_talimati'])?500:400}}>Çalışma Talimatı</span>
+                </div>
+                <div key="ilk_yardim_belgeleri" onClick={()=>{
+                  const yeni = {...(evraklar||{}), ilk_yardim_belgeleri: !(evraklar?.['ilk_yardim_belgeleri']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['ilk_yardim_belgeleri'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['ilk_yardim_belgeleri'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['ilk_yardim_belgeleri'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['ilk_yardim_belgeleri'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['ilk_yardim_belgeleri']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['ilk_yardim_belgeleri'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['ilk_yardim_belgeleri'])?500:400}}>İlk Yardım Belgeleri</span>
+                </div>
+                <div key="is_kazasi_evraklari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), is_kazasi_evraklari: !(evraklar?.['is_kazasi_evraklari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['is_kazasi_evraklari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['is_kazasi_evraklari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['is_kazasi_evraklari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['is_kazasi_evraklari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['is_kazasi_evraklari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['is_kazasi_evraklari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['is_kazasi_evraklari'])?500:400}}>İş Kazası Evrakları</span>
+                </div>
+                <div key="levha_calismalari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), levha_calismalari: !(evraklar?.['levha_calismalari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['levha_calismalari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['levha_calismalari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['levha_calismalari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['levha_calismalari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['levha_calismalari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['levha_calismalari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['levha_calismalari'])?500:400}}>Levha Çalışmaları</span>
+                </div>
+                <div key="mesleki_egitimler" onClick={()=>{
+                  const yeni = {...(evraklar||{}), mesleki_egitimler: !(evraklar?.['mesleki_egitimler']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['mesleki_egitimler'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['mesleki_egitimler'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['mesleki_egitimler'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['mesleki_egitimler'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['mesleki_egitimler']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['mesleki_egitimler'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['mesleki_egitimler'])?500:400}}>Mesleki Eğitimler</span>
+                </div>
+                <div key="ortam_olcumleri" onClick={()=>{
+                  const yeni = {...(evraklar||{}), ortam_olcumleri: !(evraklar?.['ortam_olcumleri']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['ortam_olcumleri'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['ortam_olcumleri'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['ortam_olcumleri'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['ortam_olcumleri'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['ortam_olcumleri']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['ortam_olcumleri'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['ortam_olcumleri'])?500:400}}>Ortam Ölçümleri</span>
+                </div>
+                <div key="periyodik_kontroller" onClick={()=>{
+                  const yeni = {...(evraklar||{}), periyodik_kontroller: !(evraklar?.['periyodik_kontroller']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['periyodik_kontroller'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['periyodik_kontroller'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['periyodik_kontroller'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['periyodik_kontroller'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['periyodik_kontroller']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['periyodik_kontroller'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['periyodik_kontroller'])?500:400}}>Periyodik Kontroller</span>
+                </div>
+                <div key="saglik_kayitlari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), saglik_kayitlari: !(evraklar?.['saglik_kayitlari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['saglik_kayitlari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['saglik_kayitlari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['saglik_kayitlari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['saglik_kayitlari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['saglik_kayitlari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['saglik_kayitlari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['saglik_kayitlari'])?500:400}}>Sağlık Kayıtları</span>
+                </div>
+                <div key="ysc_kontrolleri" onClick={()=>{
+                  const yeni = {...(evraklar||{}), ysc_kontrolleri: !(evraklar?.['ysc_kontrolleri']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['ysc_kontrolleri'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['ysc_kontrolleri'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['ysc_kontrolleri'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['ysc_kontrolleri'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['ysc_kontrolleri']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['ysc_kontrolleri'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['ysc_kontrolleri'])?500:400}}>YSC Kontrolleri</span>
+                </div>
+                <div key="ziyaret_formlari" onClick={()=>{
+                  const yeni = {...(evraklar||{}), ziyaret_formlari: !(evraklar?.['ziyaret_formlari']||false)}
+                  setEvraklar(yeni)
+                  evraklarKaydet(duzenle.id, yeni)
+                }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:8,cursor:'pointer',background:(evraklar?.['ziyaret_formlari'])?'rgba(34,197,94,0.1)':'var(--surface-2)',border:`1px solid ${(evraklar?.['ziyaret_formlari'])?'#22c55e':'var(--border)'}`,transition:'all 0.15s'}}>
+                  <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${(evraklar?.['ziyaret_formlari'])?'#22c55e':'var(--border)'}`,background:(evraklar?.['ziyaret_formlari'])?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    {(evraklar?.['ziyaret_formlari']) && <span style={{color:'white',fontSize:11,fontWeight:700}}>✓</span>}
+                  </div>
+                  <span style={{fontSize:13,color:(evraklar?.['ziyaret_formlari'])?'var(--text)':'var(--text-dim)',fontWeight:(evraklar?.['ziyaret_formlari'])?500:400}}>Ziyaret Formları</span>
+                </div>
                 </div>
               </div>
             )}
