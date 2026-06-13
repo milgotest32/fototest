@@ -8,16 +8,18 @@ import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip, BarChart, Bar, Ce
 
 // Rollere göre hangi kartlar görünür
 const ROL_KARTLAR: Record<string, string[]> = {
-  yonetici:  ['firma','hasta','teklif','acikBakiye','ziyaret','ciro','grafik','uyari'],
-  muhasebe:  ['acikBakiye','ziyaret','uyari'],
-  operasyon: ['firma','ziyaret','gorev'],
-  hekim:     ['hasta'],
+  yonetici:  ['firma','hasta','teklif','acikBakiye','ziyaret','ciro','grafik','uyari','saglikRaporu'],
+  muhasebe:  ['acikBakiye','ziyaret','uyari','saglikRaporu'],
+  operasyon: ['firma','ziyaret','gorev','saglikRaporu'],
+  hekim:     ['hasta','saglikRaporu'],
   satis:     ['firma','teklif'],
   saha:      ['firma','ziyaret'],
 }
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>({ firma:0, hasta:0, teklif:0, acikBakiye:0, vadeGecen:0, aylikCiro:0, ziyaret:0, gorev:0 })
+  const [saglikStat, setSaglikStat] = useState<any>({ bugun:0, hafta:0, ay:0, yil:0, ciroBugun:0, ciroAy:0 })
+  const [bekleyenTeklif, setBekleyenTeklif] = useState<number>(0)
   const [ciroData, setCiroData] = useState<any[]>([])
   const [vadeData, setVadeData] = useState<any[]>([])
   const [uyarilar, setUyarilar] = useState<any[]>([])
@@ -71,6 +73,27 @@ export default function Dashboard() {
       const vadeGecen = (cariler.data||[]).reduce((s:number, c:any) => s + (Number(c.vadesi_gecen_tutar)||0), 0)
 
       setStats({ firma: firma.count||0, hasta: hastaList.length, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
+
+      // Sağlık Raporu istatistikleri (tarama_operasyonlari)
+      if (izin.includes('saglikRaporu')) {
+        const bugunStr = new Date().toISOString().slice(0,10)
+        const haftaBas = (() => { const d = new Date(); d.setDate(d.getDate()-d.getDay()+1); return d.toISOString().slice(0,10) })()
+        const { data: taramalar } = await sb.from('tarama_operasyonlari').select('tarih, planlanan_tarih, tutar')
+        const tList = taramalar || []
+        setSaglikStat({
+          bugun: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) === bugunStr).length,
+          hafta: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) >= haftaBas).length,
+          ay: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) >= ayBas).length,
+          yil: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) >= ayBas.slice(0,4)+'-01-01').length,
+          ciroBugun: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) === bugunStr).reduce((s:number,t:any)=>s+(Number(t.tutar)||0),0),
+          ciroAy: tList.filter((t:any) => (t.tarih||t.planlanan_tarih) >= ayBas).reduce((s:number,t:any)=>s+(Number(t.tutar)||0),0),
+        })
+      }
+      // Bekleyen teklif sayısı
+      if (izin.includes('teklif')) {
+        const { count } = await sb.from('teklifler').select('id', { count:'exact', head:true }).eq('surec_durumu','Beklemede')
+        setBekleyenTeklif(count||0)
+      }
       setUyarilar(uyari.data || [])
 
       // Grafikler sadece yönetici + muhasebe
@@ -186,6 +209,45 @@ export default function Dashboard() {
           <AlertTriangle size={18} color="var(--red)"/>
           <span style={{ flex:1, fontSize:14 }}><strong style={{ color:'var(--red)' }}>{tl(stats.vadeGecen)}</strong> vadesi geçmiş tahsilat</span>
           <ArrowUpRight size={16} color="var(--red)"/>
+        </Link>
+      )}
+
+      {/* SAĞLIK RAPORU WIDGET */}
+      {izin.includes('saglikRaporu') && (
+        <Link href="/taramalar" style={{ textDecoration:'none', color:'inherit', display:'block', marginBottom:16 }}>
+          <div className="card" style={{ padding:20 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <HeartPulse size={18} color="var(--green)"/>
+                <span style={{ fontFamily:'Sora,sans-serif', fontWeight:600, fontSize:15 }}>Sağlık Raporu</span>
+              </div>
+              <ArrowUpRight size={15} color="var(--text-faint)"/>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:12 }}>
+              {([['Bugün', saglikStat.bugun],['Bu Hafta', saglikStat.hafta],['Bu Ay', saglikStat.ay],['Bu Yıl', saglikStat.yil]] as any[]).map(([k,v]:[string,number]) => (
+                <div key={k} style={{ textAlign:'center', padding:'8px 4px', background:'var(--surface-2)', borderRadius:8 }}>
+                  <div style={{ fontFamily:'Sora,sans-serif', fontSize:20, fontWeight:700 }}>{yukleniyor ? '—' : v}</div>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>{k}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--text-dim)', paddingTop:10, borderTop:'1px solid var(--border)' }}>
+              <span>Bugün ciro: <strong style={{ color:'var(--green)' }}>{yukleniyor ? '—' : tl(saglikStat.ciroBugun)}</strong></span>
+              <span>Aylık ciro: <strong style={{ color:'var(--green)' }}>{yukleniyor ? '—' : tl(saglikStat.ciroAy)}</strong></span>
+            </div>
+          </div>
+        </Link>
+      )}
+
+      {/* BEKLEYEN TEKLİFLER WIDGET */}
+      {izin.includes('teklif') && (
+        <Link href="/teklifler" style={{ textDecoration:'none', color:'inherit', display:'block', marginBottom:16 }}>
+          <div className="card" style={{ padding:'14px 20px', display:'flex', alignItems:'center', gap:14 }}>
+            <FileText size={18} color="var(--amber)"/>
+            <span style={{ flex:1, fontSize:14 }}>Bekleyen Teklif</span>
+            <span style={{ fontFamily:'Sora,sans-serif', fontSize:22, fontWeight:700, color:'var(--amber)' }}>{yukleniyor ? '—' : bekleyenTeklif}</span>
+            <ArrowUpRight size={15} color="var(--text-faint)"/>
+          </div>
         </Link>
       )}
 

@@ -26,6 +26,7 @@ export default function Firmalar() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState('')
   const [form, setForm] = useState<any>(bosForm())
+  const [kulRol, setKulRol] = useState<string>('operasyon')
 
   function bosKatipForm() {
     return { sozlesme_id:'', sozlesme_turu:'İGU', gorevlendirilen_tc:'', gorevlendirilen_ad:'', sertifika_tipi:'C Sınıfı', sertifika_no:'', calisma_suresi_dk:'', baslangic_tarihi:'', bitis_tarihi:'', sozlesme_durumu:'Devam Ediyor' }
@@ -53,6 +54,12 @@ export default function Firmalar() {
   useEffect(() => {
     sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad')
       .then(({ data }) => setPersoneller(data || []))
+    sb.auth.getUser().then(async ({ data }) => {
+      if (data.user) {
+        const { data: p } = await sb.from('personeller').select('rol').eq('id', data.user.id).single()
+        setKulRol(p?.rol || 'operasyon')
+      }
+    })
     yukle()
   }, [])
 
@@ -221,7 +228,9 @@ export default function Firmalar() {
         <div style={{ overflowX:'auto' }}>
           <table>
             <thead>
-              <tr><th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>Çalışan</th><th>İGU</th><th>İH</th><th>DSP</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th><th></th></tr>
+              <tr><th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>Çalışan</th><th>İGU</th><th>İH</th><th>DSP</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th>
+                {(kulRol === 'muhasebe' || kulRol === 'yonetici') && (<><th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th><th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th><th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th><th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th><th style={{ color:'var(--accent)', fontSize:11 }}>May</th><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>)}
+              <th></th></tr>
             </thead>
             <tbody>
               {yukleniyor ? <tr><td colSpan={11} style={{ textAlign:'center', color:'var(--text-faint)', padding:40 }}>Yükleniyor...</td></tr>
@@ -241,6 +250,25 @@ export default function Firmalar() {
                   <td style={{ fontSize:13, color:'var(--text-dim)' }}>{tl(Number(f.kisi_basi_ucret)||0)}</td>
                   <td>{f.fatura ? <span style={{ color:'var(--green)', fontSize:12 }}>✓</span> : <span style={{ color:'var(--text-faint)', fontSize:12 }}>—</span>}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.ziyaret_periyodu||'—'}</td>
+                  {(kulRol === 'muhasebe' || kulRol === 'yonetici') && (() => {
+                    const aylar = [f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi]
+                    const dolu = aylar.filter(Boolean)
+                    const sonAy = dolu.length > 0 ? Number(dolu[dolu.length-1]) : 0
+                    const oncekiAy = dolu.length > 1 ? Number(dolu[dolu.length-2]) : sonAy
+                    const fark = sonAy - oncekiAy
+                    const toplamTl = sonAy * (Number(f.kisi_basi_ucret)||0)
+                    return (<>
+                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi].map((v, i) => (
+                        <td key={i} style={{ textAlign:'center', fontSize:12, color: v ? 'var(--text)' : 'var(--text-faint)' }}>{v||'—'}</td>
+                      ))}
+                      <td style={{ textAlign:'center', fontSize:12, fontWeight:600, color: fark > 0 ? 'var(--green)' : fark < 0 ? 'var(--red)' : 'var(--text-faint)' }}>
+                        {fark !== 0 ? (fark > 0 ? '+' : '') + fark : '—'}
+                      </td>
+                      <td style={{ fontSize:12, fontWeight:600, whiteSpace:'nowrap', color:'var(--green)' }}>
+                        {toplamTl > 0 ? new Intl.NumberFormat('tr-TR').format(toplamTl) + ' ₺' : '—'}
+                      </td>
+                    </>)
+                  })()}
                   <td onClick={e=>e.stopPropagation()}>
                     <div style={{ display:'flex', gap:4 }}>
                       <button onClick={()=>duzenleAc(f)} style={{ background:'none', border:'none', color:'var(--text-dim)', cursor:'pointer', padding:4 }}><Pencil size={14}/></button>

@@ -29,7 +29,7 @@ const GRUPLAR = [
   { baslik:'Sağlık', linkler:[
     { href:'/saglik', label:'Sağlık Tarama', icon:HeartPulse },
     { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
-    { href:'/taramalar', label:'Tarama Ops.', icon:Activity },
+    { href:'/taramalar', label:'Sağlık Raporu', icon:Activity },
   ]},
   { baslik:'Satış', linkler:[
     { href:'/teklifler', label:'Teklifler', icon:FileText },
