@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Activity, Trash2, ChevronRight } from 'lucide-react'
@@ -31,13 +31,24 @@ export default function Taramalar() {
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
+
   async function yukle() {
+    setYukleniyor(true)
+    let q = sb.from('tarama_operasyonlari').select('*').order('planlanan_tarih', { ascending:false })
+    if (arama) q = q.ilike('firma_adi', `%${arama}%`)
     const [tRes, tekRes, fRes] = await Promise.all([
-      sb.from('tarama_operasyonlari').select('*').order('planlanan_tarih', { ascending:false }),
+      q,
       sb.from('teklifler').select('id, musteri_unvan, teklif_tarihi').eq('surec_durumu', 'Olumlu').order('created_at', { ascending:false }),
       sb.from('firmalar').select('id, unvan').order('unvan')
     ])
-    if (tRes.error) { setHata('Yüklenemedi'); return }
+    if (tRes.error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
     setTaramalar(tRes.data || [])
     setTeklifler(tekRes.data || [])
     setFirmalar(fRes.data || [])
@@ -74,12 +85,7 @@ export default function Taramalar() {
     yukle()
   }
 
-  const filtreli = taramalar.filter(t => {
-    const aramaOk = !arama || t.firma_adi?.toLowerCase().includes(arama.toLowerCase())
-    const asamaOk = filtre === 'Hepsi' || t.asama === filtre
-    return aramaOk && asamaOk
-  })
-  function exportCSV() {
+  const filtreli = taramalar // server-side  function exportCSV() {
     csvIndir(filtreli.map(t => ({
       'Firma': t.firma_adi||'', 'Planlanan': t.planlanan_tarih||'', 'Gerçekleşen': t.gerceklesen_tarih||'',
       'Kişi Sayısı': t.kisi_sayisi||'', 'Aşama': t.asama||'', 'Tutar': t.tutar||0, 'Fatura No': t.fatura_no||'',

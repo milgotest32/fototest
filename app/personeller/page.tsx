@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Users, Trash2, Pencil, Shield } from 'lucide-react'
@@ -25,6 +25,14 @@ export default function Personeller() {
 
   const sb = createClient()
   useEffect(() => { yukle() }, [])
+
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
 
   async function yukle() {
     const { data, error } = await sb

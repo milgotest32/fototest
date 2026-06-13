@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, FileText, Trash2 } from 'lucide-react'
@@ -32,9 +32,22 @@ export default function Teklifler() {
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama, filtre, turFiltre])
+
+
   async function yukle() {
-    const { data, error } = await sb.from('teklifler').select('*').order('created_at', { ascending:false })
-    if (error) { setHata('Yüklenemedi'); return }
+    setYukleniyor(true)
+    let q = sb.from('teklifler').select('*').order('created_at', { ascending:false })
+    if (arama) q = q.ilike('musteri_unvan', `%${arama}%`)
+    if (filtre !== 'Hepsi') q = q.eq('surec_durumu', filtre)
+    if (turFiltre !== 'Hepsi') q = q.eq('tur', turFiltre)
+    const { data, error } = await q
+    if (error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
     setTeklifler(data || [])
     setYukleniyor(false)
   }
@@ -62,13 +75,7 @@ export default function Teklifler() {
       'Tür': t.teklif_turu||t.tur||'', 'Durum': t.surec_durumu||'', 'İletim': t.iletim_turu||'',
     })), 'teklifler')
   }
-  const filtreli = teklifler.filter(t => {
-    const aramaOk = t.musteri_unvan?.toLowerCase().includes(arama.toLowerCase()) || t.yetkili?.toLowerCase().includes(arama.toLowerCase())
-    const durum = filtre === 'Hepsi' || t.surec_durumu === filtre
-    const tur = turFiltre === 'Hepsi' || t.tur === turFiltre
-    return aramaOk && durum && tur
-  })
-
+  const filtreli = teklifler // server-side
   const sayilar = DURUMLAR.reduce((acc:any,d)=>({ ...acc, [d]:teklifler.filter(t=>t.surec_durumu===d).length }),{})
   const turSayilari = TURLER.reduce((acc:any,t)=>({ ...acc, [t]:teklifler.filter(x=>x.tur===t).length }),{})
 

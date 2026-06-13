@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, Search, X, Wallet, AlertTriangle, Trash2, History } from 'lucide-react'
@@ -28,6 +28,14 @@ export default function Tahsilat() {
 
   const sb = createClient()
   useEffect(() => { yukle() }, [])
+
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
   useEffect(() => { donemYukle(donemAy) }, [donemAy])
 
   async function donemYukle(ay: string) {
@@ -39,8 +47,8 @@ export default function Tahsilat() {
 
   async function yukle() {
     const [cariRes, tahsilatRes, firmaRes] = await Promise.all([
-      sb.from('cariler').select('*').order('vadesi_gecen_tutar', { ascending:false }),
-      sb.from('tahsilatlar').select('*, cariler(unvan)').order('tarih', { ascending:false }).limit(200),
+      (() => { let q = sb.from('cariler').select('*').order('vadesi_gecen_tutar', { ascending:false }); if (arama) q = q.ilike('unvan', `%${arama}%`); return q })(),
+      sb.from('tahsilatlar').select('*, cariler(unvan)').order('tarih', { ascending:false }),
       sb.from('firmalar').select('id, unvan').order('unvan'),
     ])
     if (cariRes.error) { setHata('Veriler yüklenemedi.'); return }
@@ -107,14 +115,7 @@ export default function Tahsilat() {
     yukle()
   }
 
-  const filtreli = cariler.filter(c => {
-    const aramaOk = !arama || c.unvan?.toLowerCase().includes(arama.toLowerCase())
-    const bakiyeOk = bakiyeFiltre === 'Hepsi' ||
-      (bakiyeFiltre === 'Vadesi Geçen' && Number(c.vadesi_gecen_tutar) > 0) ||
-      (bakiyeFiltre === 'Temiz' && Number(c.vadesi_gecen_tutar) === 0)
-    return aramaOk && bakiyeOk
-  })
-  function exportCSV() {
+  const filtreli = cariler // server-side  function exportCSV() {
     csvIndir(filtreli.map(c => ({
       'Ünvan': c.unvan||'', 'Müşteri No': c.musteri_no||'', 'Telefon': c.telefon||'',
       'Açık Bakiye': c.acik_bakiye||0, 'Vadesi Geçen': c.vadesi_gecen_tutar||0,

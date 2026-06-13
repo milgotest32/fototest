@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Package, Trash2, ArrowUpCircle, ArrowDownCircle, AlertTriangle } from 'lucide-react'
@@ -26,12 +26,23 @@ export default function Malzemeler() {
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
+
   async function yukle() {
+    setYukleniyor(true)
+    let q = sb.from('malzemeler').select('*').order('ad')
+    if (arama) q = q.ilike('ad', `%${arama}%`)
     const [mRes, tRes] = await Promise.all([
-      sb.from('malzemeler').select('*').order('ad'),
+      q,
       sb.from('tedarikciler').select('id, unvan').order('unvan')
     ])
-    if (mRes.error) { setHata('Yüklenemedi'); return }
+    if (mRes.error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
     setMalzemeler(mRes.data || [])
     setTedarikciler(tRes.data || [])
     setYukleniyor(false)
@@ -78,12 +89,7 @@ export default function Malzemeler() {
     yukle()
   }
 
-  const filtreli = malzemeler.filter(m => {
-    const aramaOk = !arama || m.ad?.toLowerCase().includes(arama.toLowerCase())
-    const katOk = katFiltre === 'Hepsi' || m.kategori === katFiltre
-    return aramaOk && katOk
-  })
-  function exportCSV() {
+  const filtreli = malzemeler // server-side  function exportCSV() {
     csvIndir(filtreli.map(m => ({
       'Ad': m.ad||'', 'Kategori': m.kategori||'', 'Birim': m.birim||'',
       'Stok': m.stok||0, 'Kritik Stok': m.kritik_stok||0,

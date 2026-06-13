@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, MapPin, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -31,7 +31,7 @@ export default function Ziyaretler() {
     const [ayBas, ayBit] = ayAraligi(ay)
     const [zRes, fRes, pRes] = await Promise.all([
       sb.from('ziyaretler').select('*, firmalar(unvan, tehlike_sinifi), personeller(ad_soyad, rol)').gte('tarih', ayBas).lte('tarih', ayBit).order('tarih', { ascending:false }),
-      sb.from('firmalar').select('id, unvan, ziyaret_periyodu, tehlike_sinifi, aylik_ziyaretler, gorevli_ih').order('unvan'),
+      (() => { let q = sb.from('firmalar').select('id, unvan, ziyaret_periyodu, tehlike_sinifi, aylik_ziyaretler, gorevli_ih').order('unvan'); if (arama) q = q.ilike('unvan', `%${arama}%`); return q })(),
       sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad')
     ])
     if (zRes.error) { setHata('Yüklenemedi'); return }
@@ -101,13 +101,7 @@ export default function Ziyaretler() {
 
   // Personelleri role göre grupla
   const uzmanlar = personeller.filter(p => ['operasyon','saha','yonetici'].includes(p.rol))
-  const filtreli = ziyaretler.filter(z => {
-    const aramaOk = !arama || z.firmalar?.unvan?.toLowerCase().includes(arama.toLowerCase()) || z.ziyaret_eden?.toLowerCase().includes(arama.toLowerCase())
-    const turOk = turFiltre === 'Hepsi' || z.tur === turFiltre
-    const uzmanOk = uzmanFiltre === 'Hepsi' || z.ziyaret_eden === uzmanFiltre
-    return aramaOk && turOk && uzmanOk
-  })
-  function exportCSV() {
+  const filtreli = ziyaretler // server-side  function exportCSV() {
     csvIndir(filtreli.map(z => ({
       'Tarih': z.tarih||'', 'Firma': z.firmalar?.unvan||'', 'Tür': z.tur||'',
       'Ziyaret Eden': z.ziyaret_eden||'', 'Not': z.notlar||'',

@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, Truck, Trash2, Pencil } from 'lucide-react'
@@ -21,12 +21,7 @@ export default function Tedarikciler() {
     return { unvan:'', yetkili:'', telefon:'', email:'', adres:'', kategori:'Genel', notlar:'' }
   }
 
-  const filtreli = tedarikciler.filter(t => {
-    const aramaOk = !arama || t.unvan?.toLowerCase().includes(arama.toLowerCase()) || t.yetkili?.toLowerCase().includes(arama.toLowerCase())
-    const katOk = katFiltre === 'Hepsi' || t.kategori === katFiltre
-    return aramaOk && katOk
-  })
-  function exportCSV() {
+  const filtreli = tedarikciler // server-side filtre aktif  function exportCSV() {
     csvIndir(filtreli.map(t => ({
       'Ünvan': t.unvan||'', 'Yetkili': t.yetkili||'', 'Telefon': t.telefon||'',
       'E-posta': t.email||'', 'Kategori': t.kategori||'',
@@ -35,8 +30,19 @@ export default function Tedarikciler() {
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
+
   async function yukle() {
-    const { data, error } = await sb.from('tedarikciler').select('*').order('unvan')
+    setYukleniyor(true)
+    let q = sb.from('tedarikciler').select('*').order('unvan', { ascending:false })
+    if (arama) q = q.ilike('unvan', \`%${arama}%\`)
+    const { data, error } = await q
     if (error) { setHata('Yüklenemedi'); return }
     setTedarikciler(data || [])
     setYukleniyor(false)

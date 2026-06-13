@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import { Plus, X, ClipboardList, Trash2, AlertCircle } from 'lucide-react'
@@ -32,8 +32,19 @@ export default function Idari() {
   const sb = createClient()
   useEffect(() => { yukle() }, [])
 
+  const debounceRef = useRef<any>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => yukle(), 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [arama])
+
+
   async function yukle() {
-    const { data, error } = await sb.from('idari_isler').select('*').order('created_at', { ascending:false })
+    setYukleniyor(true)
+    let q = sb.from('idari_isler').select('*').order('created_at', { ascending:false })
+    if (arama) q = q.ilike('konu', \`%${arama}%\`)
+    const { data, error } = await q
     if (error) { setHata('Veriler yüklenemedi.'); return }
     setIsler(data || [])
     setYukleniyor(false)
