@@ -18,6 +18,7 @@ export default function Saglik() {
   const [aramaDebounced, setAramaDebounced] = useState('')
   const [hekimFiltre, setHekimFiltre] = useState('Hepsi')
   const [odemeFiltre, setOdemeFiltre] = useState('Hepsi')
+  const [mevcutRol, setMevcutRol] = useState<string>('saha')
   const [basTarih, setBasTarih] = useState('')
   const [bitTarih, setBitTarih] = useState('')
   const [modal, setModal] = useState(false)
@@ -49,6 +50,16 @@ export default function Saglik() {
   useEffect(() => { setSayfa(0) }, [hekimFiltre, odemeFiltre, basTarih, bitTarih])
 
   // Sayfayı yükle
+  useEffect(() => {
+    const sb2 = createClient()
+    sb2.auth.getUser().then(async ({ data }) => {
+      if (data.user) {
+        const { data: p } = await sb2.from('personeller').select('rol').eq('id', data.user.id).single()
+        setMevcutRol(p?.rol || 'saha')
+      }
+    })
+  }, [])
+
   useEffect(() => { yukle() }, [aramaDebounced, hekimFiltre, odemeFiltre, basTarih, bitTarih, sayfa])
 
   // İlk yüklemede firmalar ve personeller
@@ -129,6 +140,7 @@ export default function Saglik() {
   }
 
   const hekimler = personeller.filter((p: any) => ['hekim', 'yonetici'].includes(p.rol))
+  const paraMi = ['yonetici', 'muhasebe'].includes(mevcutRol)
   const tl = (n: number) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺'
   const toplamSayfa = Math.ceil(toplamKayit / SAYFA_BOYUTU)
 
@@ -172,7 +184,7 @@ export default function Saglik() {
         <div style={{ overflowX: 'auto' }}>
           <table>
             <thead>
-              <tr><th>Tarih</th><th>Ad Soyad</th><th>D. Tarihi</th><th>Firma</th><th>Ücret</th><th>Ödeme</th><th>Tetkikler</th><th></th></tr>
+              <tr><th>Tarih</th><th>Ad Soyad</th><th>D. Tarihi</th><th>Firma</th>{paraMi && <th>Ücret</th>}{paraMi && <th>Ödeme</th>}<th>Tetkikler</th><th></th></tr>
             </thead>
             <tbody>
               {yukleniyor
@@ -187,8 +199,8 @@ export default function Saglik() {
                         <td style={{ fontWeight: 500 }}>{k.ad_soyad}</td>
                         <td style={{ color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{k.dogum_tarihi ? new Date(k.dogum_tarihi + 'T00:00:00').toLocaleDateString('tr-TR') : '—'}</td>
                         <td style={{ color: 'var(--text-dim)' }}>{k.firma || '—'}</td>
-                        <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{tl(Number(k.ucret) || 0)}</td>
-                        <td><span className="badge" style={{ background: `${ODEME_RENK[k.odeme_sekli]}22`, color: ODEME_RENK[k.odeme_sekli] }}>{k.odeme_sekli}</span></td>
+                        {paraMi && <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{tl(Number(k.ucret) || 0)}</td>}
+                        {paraMi && <td><span className="badge" style={{ background: `${ODEME_RENK[k.odeme_sekli]}22`, color: ODEME_RENK[k.odeme_sekli] }}>{k.odeme_sekli}</span></td>}
                         <td>
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 260 }}>
                             {aktifTetkik.length === 0
@@ -244,7 +256,7 @@ export default function Saglik() {
               {[['Ad Soyad', detay.ad_soyad], ['Doğum Tarihi', detay.dogum_tarihi ? new Date(detay.dogum_tarihi + 'T00:00:00').toLocaleDateString('tr-TR') : '—'],
                 ['Telefon', detay.telefon || '—'], ['Firma', detay.firma || '—'],
                 ['Tarih', new Date(detay.tarih + 'T00:00:00').toLocaleDateString('tr-TR')],
-                ['Ücret', tl(Number(detay.ucret) || 0)], ['Ödeme', detay.odeme_sekli]
+                ...(paraMi ? [['Ücret', tl(Number(detay.ucret) || 0)], ['Ödeme', detay.odeme_sekli]] : [])
               ].map(([k, v]) => (<div key={k} style={{ display: 'flex', gap: 12, fontSize: 14 }}><span style={{ color: 'var(--text-dim)', minWidth: 110 }}>{k}</span><span style={{ fontWeight: 500 }}>{v}</span></div>))}
               <div style={{ display: 'flex', gap: 12, fontSize: 14 }}>
                 <span style={{ color: 'var(--text-dim)', minWidth: 110 }}>Tetkikler</span>
@@ -286,8 +298,8 @@ export default function Saglik() {
                   {personeller.map((p: any) => <option key={p.id} value={p.id}>{p.ad_soyad}</option>)}
                 </select>
               </div>
-              <div><label style={lbl}>Ücret (₺)</label><input type="number" value={form.ucret} onChange={e => setForm({ ...form, ucret: e.target.value })} /></div>
-              <div style={{ gridColumn: '1/3' }}>
+              {paraMi && <div><label style={lbl}>Ücret (₺)</label><input type="number" value={form.ucret} onChange={e => setForm({ ...form, ucret: e.target.value })} /></div>}
+              {paraMi && <div style={{ gridColumn: '1/3' }}>
                 <label style={lbl}>Ödeme Şekli</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {ODEME.map(o => (
