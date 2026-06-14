@@ -27,6 +27,7 @@ export default function Firmalar() {
   const [hata, setHata] = useState('')
   const [form, setForm] = useState<any>(bosForm())
   const [kulRol, setKulRol] = useState<string>('operasyon')
+  const [donemTakip, setDonemTakip] = useState<any[]>([])
 
   function bosKatipForm() {
     return { sozlesme_id:'', sozlesme_turu:'İGU', gorevlendirilen_tc:'', gorevlendirilen_ad:'', sertifika_tipi:'C Sınıfı', sertifika_no:'', calisma_suresi_dk:'', baslangic_tarihi:'', bitis_tarihi:'', sozlesme_durumu:'Devam Ediyor' }
@@ -35,6 +36,40 @@ export default function Firmalar() {
   // sekme değişince katip yükle
   useEffect(() => { if (sekme==='katip' && duzenle) katipYukle(duzenle.id) }, [sekme, duzenle])
   useEffect(() => { if (sekme==='evraklar' && duzenle) evraklarYukle(duzenle.id) }, [sekme, duzenle])
+
+  const buYil = new Date().getFullYear()
+  const AY_KODLARI = ['01','02','03','04','05','06','07','08','09','10','11','12']
+  const AY_ADLARI = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
+
+  function getDonem(firma_id: string, ayIdx: number) {
+    const ay = buYil + '-' + AY_KODLARI[ayIdx]
+    return donemTakip.find(d => d.firma_id === firma_id && d.ay === ay)
+  }
+
+  function ayToplamCiro(ayIdx: number) {
+    const ay = buYil + '-' + AY_KODLARI[ayIdx]
+    return donemTakip.filter(d => d.ay === ay).reduce((s,d) => s + (Number(d.fatura_tutari)||0), 0)
+  }
+
+  async function toggleFatura(firma: any, ayIdx: number, e: any) {
+    e.stopPropagation()
+    if (kulRol !== 'muhasebe' && kulRol !== 'yonetici') return
+    const ay = buYil + '-' + AY_KODLARI[ayIdx]
+    const mevcut = getDonem(firma.id, ayIdx)
+    const yeniDurum = !(mevcut?.fatura_kesildi || false)
+    if (mevcut) {
+      await sb.from('donem_takip').update({ fatura_kesildi: yeniDurum }).eq('firma_id', firma.id).eq('ay', ay)
+    } else {
+      const kisi = firma['AY_KISI_' + ayIdx] ?? firma.calisan_sayisi ?? 0
+      const kisiBasiUcret = Number(firma.kisi_basi_ucret_yeni) || Number(firma.kisi_basi_ucret) || 0
+      await sb.from('donem_takip').insert({ firma_id: firma.id, ay, calisan_sayisi: kisi, fatura_tutari: kisi * kisiBasiUcret, fatura_kesildi: yeniDurum })
+    }
+    setDonemTakip(prev => {
+      const filtered = prev.filter(d => !(d.firma_id === firma.id && d.ay === ay))
+      return [...filtered, { ...(mevcut||{ firma_id: firma.id, ay }), fatura_kesildi: yeniDurum }]
+    })
+  }
+
 
   function bosForm() {
     return {
@@ -81,6 +116,9 @@ export default function Firmalar() {
     const { data, error } = await q
     if (error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
     setFirmalar(data || [])
+    const buYil = new Date().getFullYear()
+    const { data: dt } = await sb.from('donem_takip').select('firma_id, ay, calisan_sayisi, fatura_tutari, fatura_kesildi').gte('ay', buYil+'-01').lte('ay', buYil+'-12')
+    setDonemTakip(dt || [])
     setYukleniyor(false)
   }
 
@@ -261,14 +299,14 @@ export default function Firmalar() {
                 <tr>
                   <th>İSG Katip Ünvan</th>
                   <th>Sınıfı</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>May</th>
-                  <th style={{ color:'var(--accent)', fontSize:11 }}>Haz</th>
+                  {AY_ADLARI.slice(0,6).map((ad,i) => {
+                    const ciro = ayToplamCiro(i)
+                    return <th key={i} style={{ color:'var(--accent)', fontSize:11, textAlign:'center', minWidth:70 }}>
+                      <div>{ad}</div>
+                      {ciro > 0 && <div style={{ fontSize:9, color:'var(--green)', fontWeight:600, marginTop:1 }}>{new Intl.NumberFormat('tr-TR',{notation:'compact',maximumFractionDigits:0}).format(ciro)}₺</div>}
+                    </th>
+                  })}
                   <th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th>
-                  <th>Fatura</th>
                   <th>Klasör</th>
                   <th>SGK Sicil No</th>
                   <th style={{ color:'var(--text-dim)', fontSize:11 }}>Kişi Başı</th>
@@ -278,8 +316,15 @@ export default function Firmalar() {
                 </tr>
               ) : (
                 <tr>
-                  <th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>İGU</th><th>İH</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th>
-                  {kulRol === 'yonetici' && (<><th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th><th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th><th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th><th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th><th style={{ color:'var(--accent)', fontSize:11 }}>May</th><th style={{ color:'var(--accent)', fontSize:11 }}>Haz</th><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>)}
+                  <th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>İGU</th><th>İH</th><th>Kişi Başı</th><th>Periyot</th>
+                  {kulRol === 'yonetici' && AY_ADLARI.slice(0,6).map((ad,i) => {
+                    const ciro = ayToplamCiro(i)
+                    return <th key={i} style={{ color:'var(--accent)', fontSize:11, textAlign:'center', minWidth:70 }}>
+                      <div>{ad}</div>
+                      {ciro > 0 && <div style={{ fontSize:9, color:'var(--green)', fontWeight:600, marginTop:1 }}>{new Intl.NumberFormat('tr-TR',{notation:'compact',maximumFractionDigits:0}).format(ciro)}₺</div>}
+                    </th>
+                  })}
+                  {kulRol === 'yonetici' && <><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>}
                   <th></th>
                 </tr>
               )}
@@ -300,13 +345,22 @@ export default function Firmalar() {
                         {f.isg_katip_unvan && f.isg_katip_unvan !== f.unvan && <div style={{ fontSize:10, color:'var(--text-faint)' }}>{f.unvan}</div>}
                       </td>
                       <td><span className="badge" style={{ background:`${TEHLIKE_RENK[f.tehlike_sinifi]}22`, color:TEHLIKE_RENK[f.tehlike_sinifi], fontSize:11 }}>{f.tehlike_sinifi}</span></td>
-                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => (
-                        <td key={i} style={{ textAlign:'center', fontSize:12, color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</td>
-                      ))}
+                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => {
+                        const donem = getDonem(f.id, i)
+                        const kesildi = donem?.fatura_kesildi || false
+                        return <td key={i} style={{ textAlign:'center', fontSize:12, padding:'4px 6px' }}>
+                          <div style={{ color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</div>
+                          {v !== null && (
+                            <div onClick={(e) => toggleFatura(f, i, e)} title={kesildi ? 'Fatura kesildi' : 'Fatura kesilmedi'}
+                              style={{ marginTop:3, width:18, height:18, borderRadius:4, border:`1.5px solid ${kesildi ? '#22c55e' : 'var(--border)'}`, background: kesildi ? '#22c55e' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor: kulRol==='muhasebe'||kulRol==='yonetici' ? 'pointer' : 'default', margin:'3px auto 0' }}>
+                              {kesildi && <span style={{ color:'white', fontSize:10, fontWeight:700 }}>✓</span>}
+                            </div>
+                          )}
+                        </td>
+                      })}
                       <td style={{ textAlign:'center', fontSize:12, fontWeight:600, color: fark !== null && fark > 0 ? 'var(--green)' : fark !== null && fark < 0 ? 'var(--red)' : 'var(--text-faint)' }}>
                         {fark !== null && fark !== 0 ? (fark > 0 ? '+' : '') + fark : '—'}
                       </td>
-                      <td style={{ textAlign:'center' }}>{f.fatura ? <span style={{ color:'var(--green)', fontWeight:600 }}>EVET</span> : <span style={{ color:'var(--text-faint)', fontSize:12 }}>—</span>}</td>
                       <td style={{ fontSize:12, color:'var(--text-dim)' }}>{f.klasor||'—'}</td>
                       <td style={{ fontSize:11, fontFamily:'monospace', color:'var(--text-faint)' }}>{f.sgk_sicil||'—'}</td>
                       <td style={{ fontSize:12, color:'var(--text-dim)', textAlign:'right' }}>{f.kisi_basi_ucret ? new Intl.NumberFormat('tr-TR').format(Number(f.kisi_basi_ucret)) : '—'}</td>
@@ -334,9 +388,19 @@ export default function Firmalar() {
                     const birimFiyat = Number(f.kisi_basi_ucret_yeni) || Number(f.kisi_basi_ucret) || 0
                     const toplamTl = sonAy * birimFiyat
                     return (<>
-                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => (
-                        <td key={i} style={{ textAlign:'center', fontSize:12, color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</td>
-                      ))}
+                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => {
+                        const donem = getDonem(f.id, i)
+                        const kesildi = donem?.fatura_kesildi || false
+                        return <td key={i} style={{ textAlign:'center', fontSize:12, padding:'4px 6px' }}>
+                          <div style={{ color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</div>
+                          {v !== null && (
+                            <div onClick={(e) => toggleFatura(f, i, e)} title={kesildi ? 'Fatura kesildi' : 'Fatura kesilmedi'}
+                              style={{ marginTop:3, width:18, height:18, borderRadius:4, border:`1.5px solid ${kesildi ? '#22c55e' : 'var(--border)'}`, background: kesildi ? '#22c55e' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor: kulRol==='muhasebe'||kulRol==='yonetici' ? 'pointer' : 'default', margin:'3px auto 0' }}>
+                              {kesildi && <span style={{ color:'white', fontSize:10, fontWeight:700 }}>✓</span>}
+                            </div>
+                          )}
+                        </td>
+                      })}
                       <td style={{ textAlign:'center', fontSize:12, fontWeight:600, color: fark !== null && fark > 0 ? 'var(--green)' : fark !== null && fark < 0 ? 'var(--red)' : 'var(--text-faint)' }}>
                         {fark !== null && fark !== 0 ? (fark > 0 ? '+' : '') + fark : '—'}
                       </td>
