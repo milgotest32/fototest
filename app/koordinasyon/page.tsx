@@ -108,7 +108,7 @@ export default function Koordinasyon() {
 
   function duzenleAc(g: any) {
     setDuzenle(g)
-    setForm({ tarih: g.tarih, uzman_id: g.uzman_id || '', firma_id: g.firma_id || '',
+    setForm({ tarih: g.tarih, son_tarih: g.son_tarih || '', uzman_id: g.uzman_id || '', firma_id: g.firma_id || '',
       firma_adi: g.firma_adi || '', gorev_turu: g.gorev_turu || 'Saha ziyareti',
       konu: g.konu || '', karar: g.karar || '', yetkili_sorumlu: g.yetkili_sorumlu || '',
       aciklama: g.aciklama || '', durum: g.durum || 'Planlandı' })
