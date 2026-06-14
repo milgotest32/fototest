@@ -32,7 +32,7 @@ export default function Koordinasyon() {
   const sb = createClient()
 
   function bosForm() {
-    return { tarih: new Date().toISOString().slice(0,10), uzman_id:'', firma_id:'', firma_adi:'', gorev_turu:'Saha ziyareti', konu:'', karar:'', yetkili_sorumlu:'', aciklama:'', durum:'Planlandı' }
+    return { tarih: new Date().toISOString().slice(0,10), son_tarih:'', uzman_id:'', firma_id:'', firma_adi:'', gorev_turu:'Saha ziyareti', konu:'', karar:'', yetkili_sorumlu:'', aciklama:'', durum:'Planlandı' }
   }
 
   useEffect(() => {
@@ -82,6 +82,7 @@ export default function Koordinasyon() {
       yetkili_sorumlu: form.yetkili_sorumlu,
       aciklama: form.aciklama,
       durum: form.durum,
+      son_tarih: form.son_tarih || null,
       kategori: 'gorev'
     }
     let error
@@ -266,8 +267,13 @@ export default function Koordinasyon() {
                         </td>
                         <td style={{ padding:'10px 12px', color:'var(--text-dim)' }}>{g.karar || '—'}</td>
                         <td style={{ textAlign:'center', padding:'10px 8px' }}>
-                          <span style={{ fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:600, background:`${DURUM_RENK[g.durum] || 'var(--accent)'}22`, color: DURUM_RENK[g.durum] || 'var(--accent)' }}>
-                            {g.durum}
+                          {(() => {
+                            const gecikti = g.son_tarih && g.son_tarih < new Date().toISOString().slice(0,10) && !['Tamamlandı','İptal'].includes(g.durum)
+                            const gosterimDurum = gecikti ? 'Gecikme' : g.durum
+                            return <span style={{ fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:600, background:`${DURUM_RENK[gosterimDurum] || 'var(--accent)'}22`, color: DURUM_RENK[gosterimDurum] || 'var(--accent)' }}>
+                              {gosterimDurum}{g.son_tarih && !gecikti && !['Tamamlandı','İptal'].includes(g.durum) ? ` · ${new Date(g.son_tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'})}` : ''}
+                            </span>
+                          })()}
                           </span>
                         </td>
                         <td style={{ padding:'10px 12px' }}>
@@ -345,8 +351,13 @@ export default function Koordinasyon() {
                               <div style={{ fontWeight:700 }}>{g.yetkili_sorumlu || g.uzman || '—'}</div>
                               <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{g.gorev_turu}</div>
                             </div>
-                            <span style={{ fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:600, background:`${DURUM_RENK[g.durum] || 'var(--accent)'}22`, color: DURUM_RENK[g.durum] || 'var(--accent)' }}>
-                              {g.durum}
+                            {(() => {
+                              const gecikti = g.son_tarih && g.son_tarih < new Date().toISOString().slice(0,10) && !['Tamamlandı','İptal'].includes(g.durum)
+                              const gosterimDurum = gecikti ? 'Gecikme' : g.durum
+                              return <span style={{ fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:600, background:`${DURUM_RENK[gosterimDurum] || 'var(--accent)'}22`, color: DURUM_RENK[gosterimDurum] || 'var(--accent)' }}>
+                                {gosterimDurum}{g.son_tarih && !gecikti && !['Tamamlandı','İptal'].includes(g.durum) ? ` · ${new Date(g.son_tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'})}` : ''}
+                              </span>
+                            })()}
                             </span>
                           </div>
                           <div style={{ fontWeight:600, fontSize:13, marginBottom:4 }}>{g.konu || g.firma_adi || '—'}</div>
@@ -514,6 +525,7 @@ export default function Koordinasyon() {
                   {firmalar.map(f => <option key={f.id} value={f.id}>{f.unvan}</option>)}
                 </select>
               </div>
+              <div><label style={lbl}>Termin (Son Tarih)</label><input type="date" value={form.son_tarih} onChange={e => setForm({...form, son_tarih: e.target.value})}/></div>
               <div style={{ gridColumn:'1/3' }}><label style={lbl}>Ek Notlar</label><input value={form.aciklama} onChange={e => setForm({...form, aciklama: e.target.value})} placeholder="Ek notlar..."/></div>
             </div>
             {hata && <div style={{ background:'var(--red-soft)', color:'var(--red)', padding:'10px 14px', borderRadius:8, fontSize:13, marginTop:14 }}>{hata}</div>}
