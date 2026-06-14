@@ -277,7 +277,7 @@ export default function Firmalar() {
                 </tr>
               ) : (
                 <tr>
-                  <th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>Çalışan</th><th>İGU</th><th>İH</th><th>DSP</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th>
+                  <th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>İGU</th><th>İH</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th>
                   {kulRol === 'yonetici' && (<><th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th><th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th><th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th><th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th><th style={{ color:'var(--accent)', fontSize:11 }}>May</th><th style={{ color:'var(--accent)', fontSize:11 }}>Haz</th><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>)}
                   <th></th>
                 </tr>
@@ -322,10 +322,8 @@ export default function Firmalar() {
                   </td>
                   <td style={{ color:'var(--text-dim)' }}>{f.bolge||'—'}</td>
                   <td><span className="badge" style={{ background:`${TEHLIKE_RENK[f.tehlike_sinifi]}22`, color:TEHLIKE_RENK[f.tehlike_sinifi] }}>{f.tehlike_sinifi}</span></td>
-                  <td style={{ color:'var(--text-dim)' }}>{f.calisan_sayisi||'—'}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.gorevli_igu||'—'}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.gorevli_ih||'—'}</td>
-                  <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.gorevli_dsp||'—'}</td>
                   <td style={{ fontSize:13, color:'var(--text-dim)' }}>{tl(Number(f.kisi_basi_ucret)||0)}</td>
                   <td>{f.fatura ? <span style={{ color:'var(--green)', fontSize:12 }}>✓</span> : <span style={{ color:'var(--text-faint)', fontSize:12 }}>—</span>}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.ziyaret_periyodu||'—'}</td>
