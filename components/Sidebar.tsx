@@ -11,9 +11,9 @@ const ERISIM: any = {
   yonetici:  ['/','/ara','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler'],
   operasyon: ['/','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler'],
   hekim:     ['/','/saglik','/hekim','/koordinasyon'],
-  satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
+  satis:     ['/','/teklifler','/malzemeler','/tedarikciler'],
   muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
-  saha:      ['/','/koordinasyon','/firmalar','/ziyaretler'],
+  saha:      ['/','/koordinasyon','/ziyaretler'],
 }
 
 const GRUPLAR = [

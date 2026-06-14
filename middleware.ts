@@ -5,9 +5,9 @@ const ROL_ERISIM: Record<string, string[]> = {
   yonetici:  ['/','/ara','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler'],
   operasyon: ['/','/ara','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler'],
   hekim:     ['/','/saglik','/hekim','/koordinasyon'],
-  satis:     ['/','/firmalar','/teklifler','/malzemeler','/tedarikciler'],
+  satis:     ['/','/teklifler','/malzemeler','/tedarikciler'],
   muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
-  saha:      ['/','/koordinasyon','/firmalar','/ziyaretler'],
+  saha:      ['/','/koordinasyon','/ziyaretler'],
 }
 
 export async function middleware(req: NextRequest) {
