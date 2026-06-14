@@ -154,7 +154,7 @@ export default function Koordinasyon() {
 
   function exportCSV() {
     csvIndir(filtreliGorevler.map(g => ({
-      'Tarih': g.tarih||'', 'Konu': g.konu||'', 'Görev Türü': g.gorev_turu||'',
+      'G.Baş Trh': g.tarih||'', 'Termin': g.son_tarih||'', 'Konu': g.konu||'', 'Görev Türü': g.gorev_turu||'',
       'Karar/Açıklama': g.karar||'', 'Durum': g.durum||'',
       'Yetkili/Sorumlu': g.yetkili_sorumlu||g.uzman||'',
       'Firma': g.firma_adi||'', 'Notlar': g.aciklama||'',
@@ -249,7 +249,8 @@ export default function Koordinasyon() {
                     <th style={{ textAlign:'left', padding:'10px 12px', minWidth:180 }}>KARAR / AÇIKLAMA</th>
                     <th style={{ textAlign:'center', padding:'10px 12px', width:110 }}>DURUM</th>
                     <th style={{ textAlign:'left', padding:'10px 12px', minWidth:130 }}>YETKİLİ</th>
-                    <th style={{ textAlign:'center', padding:'10px 12px', width:100 }}>TARİH</th>
+                    <th style={{ textAlign:'center', padding:'10px 12px', width:95 }}>G.BAŞ TRH</th>
+                    <th style={{ textAlign:'center', padding:'10px 12px', width:95 }}>TERMİN</th>
                     {yazabilir && <th style={{ width:80 }}></th>}
                   </tr>
                 </thead>
@@ -280,6 +281,15 @@ export default function Koordinasyon() {
                         </td>
                         <td style={{ textAlign:'center', padding:'10px 8px', color:'var(--text-faint)', fontSize:11, whiteSpace:'nowrap' }}>
                           {g.tarih ? new Date(g.tarih + 'T00:00:00').toLocaleDateString('tr-TR') : '—'}
+                        </td>
+                        <td style={{ textAlign:'center', padding:'10px 8px', fontSize:11, whiteSpace:'nowrap' }}>
+                          {(() => {
+                            if (!g.son_tarih) return <span style={{ color:'var(--text-faint)' }}>—</span>
+                            const gecikti = g.son_tarih < new Date().toISOString().slice(0,10) && !['Tamamlandı','İptal'].includes(g.durum)
+                            return <span style={{ color: gecikti ? 'var(--red)' : 'var(--text-faint)', fontWeight: gecikti ? 600 : 400 }}>
+                              {new Date(g.son_tarih + 'T00:00:00').toLocaleDateString('tr-TR')}
+                            </span>
+                          })()}
                         </td>
                         {yazabilir && (
                           <td style={{ padding:'8px', textAlign:'center' }} onClick={e => e.stopPropagation()}>
