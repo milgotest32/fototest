@@ -161,7 +161,7 @@ export default function Saglik() {
     <div className="page-wrap">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>Sağlık Tarama</h1>
+          <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>Sağlık Raporu</h1>
           <p style={{ color: 'var(--text-dim)', fontSize: 14, marginTop: 4 }}>
             {toplamKayit.toLocaleString('tr-TR')} kayıt{aramaDebounced ? ` · "${aramaDebounced}" araması` : ''}
           </p>
@@ -171,7 +171,7 @@ export default function Saglik() {
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--green-soft)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
         <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
-        <p style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.7, margin: 0 }}>Sağlık Tarama — İşe giriş ve periyodik muayene kayıtları. Arama kutusuna yazınca sunucu tarafında filtreleme yapılır. Sayfalama ile hızlı gezin.</p>
+        <p style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.7, margin: 0 }}>Sağlık Raporu — İşe giriş ve periyodik muayene kayıtları. Arama kutusuna yazınca sunucu tarafında filtreleme yapılır. Sayfalama ile hızlı gezin.</p>
       </div>
 
       {hata && <div style={{ background: 'var(--red-soft)', color: 'var(--red)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{hata}</div>}

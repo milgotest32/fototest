@@ -141,35 +141,56 @@ export default function Teklifler() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))', gap:14 }}>
-        {yukleniyor ? <div style={{ color:'var(--text-faint)', padding:40 }}>Yükleniyor...</div>
-         : filtreli.length === 0 ? <div style={{ color:'var(--text-faint)', padding:40 }}>Teklif yok</div>
-         : filtreli.map(t=>(
-          <div key={t.id} className="card" style={{ padding:20, cursor:'pointer' }} onClick={()=>setDetayModal(t)}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
-              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-                  <span style={{ fontSize:10, background:`${TUR_RENK[t.tur]||'var(--accent)'}22`, color:TUR_RENK[t.tur]||'var(--accent)', padding:'2px 8px', borderRadius:5, fontWeight:600 }}>{t.tur||'ISG'}</span>
-                  <span className="badge" style={{ background:`${DURUM_RENK[t.surec_durumu]}22`, color:DURUM_RENK[t.surec_durumu] }}>{t.surec_durumu}</span>
-                </div>
-                <div style={{ fontWeight:600, fontSize:15, color:'var(--accent)' }}>{t.musteri_unvan}</div>
-                {t.yetkili && <div style={{ fontSize:13, color:'var(--text-dim)' }}>{t.yetkili}</div>}
-              </div>
-            </div>
-            {t.firma_detay && <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:8 }}>{t.firma_detay}{t.calisan_sayisi?` · ${t.calisan_sayisi} kişi`:''}</div>}
-            {t.teklif_icerigi && <div style={{ fontSize:13, marginBottom:8 }}>{t.teklif_icerigi}</div>}
-            {t.surec_notu && <div style={{ fontSize:13, color:'var(--text-dim)', fontStyle:'italic', marginBottom:10, paddingLeft:10, borderLeft:'2px solid var(--border)' }}>{t.surec_notu}</div>}
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:12, paddingTop:12, borderTop:'1px solid var(--border)' }} onClick={e=>e.stopPropagation()}>
-              <div style={{ fontSize:12, color:'var(--text-faint)' }}>{t.teklif_tarihi && new Date(t.teklif_tarihi+'T00:00:00').toLocaleDateString('tr-TR')} {t.iletim_turu?`· ${t.iletim_turu}`:''}</div>
-              <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-                <select value={t.surec_durumu} onChange={e=>durumGuncelle(t.id, e.target.value)} style={{ width:'auto', padding:'5px 10px', fontSize:12, background:'var(--surface-2)' }}>
-                  {DURUMLAR.map(d=><option key={d} value={d}>{d}</option>)}
-                </select>
-                <button onClick={()=>sil(t.id)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="card" style={{ overflow:'hidden' }}>
+        <div style={{ overflowX:'auto' }}>
+          <table>
+            <thead>
+              <tr>
+                <th>Tür</th>
+                <th>Müşteri</th>
+                <th>Yetkili</th>
+                <th>Telefon</th>
+                <th>Tehlike</th>
+                <th>Çalışan</th>
+                <th>Tarih</th>
+                <th>İletim</th>
+                <th>Durum</th>
+                <th>Süreç Notu</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {yukleniyor
+                ? <tr><td colSpan={11} style={{ textAlign:'center', color:'var(--text-faint)', padding:40 }}>Yükleniyor...</td></tr>
+                : filtreli.length === 0
+                ? <tr><td colSpan={11} style={{ textAlign:'center', color:'var(--text-faint)', padding:40 }}>Teklif yok</td></tr>
+                : filtreli.map(t => (
+                  <tr key={t.id} style={{ cursor:'pointer' }} onClick={() => setDetayModal(t)}>
+                    <td>
+                      <span style={{ fontSize:11, background:`${TUR_RENK[t.tur]||'var(--accent)'}22`, color:TUR_RENK[t.tur]||'var(--accent)', padding:'2px 8px', borderRadius:5, fontWeight:600 }}>{t.tur||'ISG'}</span>
+                    </td>
+                    <td style={{ fontWeight:600 }}>{t.musteri_unvan}</td>
+                    <td style={{ color:'var(--text-dim)', fontSize:13 }}>{t.yetkili||'—'}</td>
+                    <td style={{ color:'var(--text-dim)', fontSize:13 }}>{t.telefon||'—'}</td>
+                    <td style={{ fontSize:12, color:'var(--text-dim)' }}>{t.tehlike_sinifi||'—'}</td>
+                    <td style={{ textAlign:'center', color:'var(--text-dim)' }}>{t.calisan_sayisi||'—'}</td>
+                    <td style={{ fontSize:12, color:'var(--text-dim)', whiteSpace:'nowrap' }}>{t.teklif_tarihi ? new Date(t.teklif_tarihi+'T00:00:00').toLocaleDateString('tr-TR') : '—'}</td>
+                    <td style={{ fontSize:12, color:'var(--text-dim)' }}>{t.iletim_turu||'—'}</td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <select value={t.surec_durumu} onChange={e => durumGuncelle(t.id, e.target.value)}
+                        style={{ width:'auto', padding:'4px 8px', fontSize:12, color:DURUM_RENK[t.surec_durumu], background:'var(--surface-2)', border:'none', borderRadius:6 }}>
+                        {DURUMLAR.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </td>
+                    <td style={{ fontSize:12, color:'var(--text-dim)', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.surec_notu||'—'}</td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <button onClick={() => sil(t.id)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {detayModal && (

@@ -27,9 +27,9 @@ const GRUPLAR = [
     { href:'/koordinasyon', label:'Koordinasyon', icon:CalendarDays },
   ]},
   { baslik:'Sağlık', linkler:[
-    { href:'/saglik', label:'Sağlık Tarama', icon:HeartPulse },
+    { href:'/saglik', label:'Sağlık Raporu', icon:HeartPulse },
     { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
-    { href:'/taramalar', label:'Sağlık Raporu', icon:Activity },
+    { href:'/taramalar', label:'Sağlık Raporu (Operasyon)', icon:Activity },
   ]},
   { baslik:'Satış', linkler:[
     { href:'/teklifler', label:'Teklifler', icon:FileText },
