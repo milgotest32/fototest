@@ -185,7 +185,7 @@ export default function Ziyaretler() {
             style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.4, cursor:'pointer' }}/>
         )
       }
-      return <div style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.3 }}/>
+      return <div style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.5 }}/>
     }
     if (durum === 'gidildi') {
       return (
@@ -202,7 +202,7 @@ export default function Ziyaretler() {
             style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.4, cursor:'pointer' }}/>
         )
       }
-      return <div style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.2 }}/>
+      return <div style={{ width:16, height:16, border:'1px solid var(--border)', borderRadius:3, margin:'0 auto', opacity:0.45 }}/>
     }
     // gidilmedi
     return (
