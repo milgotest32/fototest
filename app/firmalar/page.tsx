@@ -282,7 +282,8 @@ export default function Firmalar() {
                     const aylar = [f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi]
                     const fark = f.aylik_fark ?? null
                     const sonAy = [f.haziran_kisi, f.mayis_kisi, f.nisan_kisi, f.mart_kisi, f.subat_kisi, f.ocak_kisi].find(v => v !== null && v !== undefined) ?? 0
-                    const toplamTl = sonAy * (Number(f.kisi_basi_ucret)||0)
+                    const birimFiyat = Number(f.kisi_basi_ucret_yeni) || Number(f.kisi_basi_ucret) || 0
+                    const toplamTl = sonAy * birimFiyat
                     return (<>
                       {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => (
                         <td key={i} style={{ textAlign:'center', fontSize:12, color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</td>
