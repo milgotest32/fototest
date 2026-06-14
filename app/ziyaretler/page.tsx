@@ -46,7 +46,7 @@ export default function Ziyaretler() {
   async function yukle() {
     setYukleniyor(true)
     let q = sb.from('firmalar')
-      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, gorevli_dsp, igu_atama_tarihi, ih_atama_tarihi, bhl_atama, aylik_ziyaretler')
+      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, gorevli_dsp, igu_atama_tarihi, ih_atama_tarihi, bhl_atama, igu_atama_durum, ih_atama_durum, bhl_atama_durum, aylik_ziyaretler')
       .eq('aktif', true)
       .not('ih_periyot', 'is', null)
       .order('unvan')
@@ -109,8 +109,10 @@ export default function Ziyaretler() {
   }
 
   function atamaDurumu(firma: any) {
-    if (!firma.gorevli_igu && !firma.gorevli_ih) return 'kirmizi'
-    if (firma.gorevli_igu && firma.gorevli_ih) return 'yesil'
+    const durumlar = [firma.igu_atama_durum, firma.ih_atama_durum, firma.bhl_atama_durum]
+    if (durumlar.every((d: string) => d === 'yok' || !d)) return 'kirmizi'
+    if (durumlar.some((d: string) => d === 'bekliyor')) return 'sari'
+    if (durumlar.every((d: string) => d === 'onayli')) return 'yesil'
     return 'sari'
   }
 
@@ -270,17 +272,20 @@ export default function Ziyaretler() {
                     <td style={{ textAlign:'center', padding:'7px 4px', color:'var(--text-dim)', fontSize:10 }}>
                       {firma.ih_periyot==='0.5'?'Her ay':firma.ih_periyot==='1.0'?'2 ayda':`${parseFloat(firma.ih_periyot)*2}ayda`}
                     </td>
-                    <td style={{ padding:'4px 8px', background: firma.gorevli_igu ? '#22c55e22' : '#ef444422' }}>
-                      <div style={{ fontSize:10, fontWeight:700, color: firma.gorevli_igu?'#22c55e':'#ef4444', textAlign:'center' }}>{firma.gorevli_igu||'YOK'}</div>
-                      {firma.igu_atama_tarihi && <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center' }}>{new Date(firma.igu_atama_tarihi).toLocaleDateString('tr-TR')}</div>}
-                    </td>
-                    <td style={{ padding:'4px 8px', background: firma.gorevli_ih ? '#22c55e22' : '#ef444422' }}>
-                      <div style={{ fontSize:10, fontWeight:700, color: firma.gorevli_ih?'#22c55e':'#ef4444', textAlign:'center' }}>{firma.gorevli_ih||'YOK'}</div>
-                      {firma.ih_atama_tarihi && <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center' }}>{new Date(firma.ih_atama_tarihi).toLocaleDateString('tr-TR')}</div>}
-                    </td>
-                    <td style={{ padding:'4px 8px', background: firma.bhl_atama ? '#22c55e22' : '#f59e0b22' }}>
-                      <div style={{ fontSize:10, fontWeight:700, color: firma.bhl_atama?'#22c55e':'#f59e0b', textAlign:'center' }}>{firma.bhl_atama||'YOK'}</div>
-                    </td>
+                    {[
+                      { isim: firma.gorevli_igu, durum: firma.igu_atama_durum, tarih: firma.igu_atama_tarihi },
+                      { isim: firma.gorevli_ih,  durum: firma.ih_atama_durum,  tarih: firma.ih_atama_tarihi },
+                      { isim: firma.bhl_atama,   durum: firma.bhl_atama_durum, tarih: null },
+                    ].map((a, i) => {
+                      const renk = a.durum === 'onayli' ? '#22c55e' : a.durum === 'bekliyor' ? '#f59e0b' : '#ef4444'
+                      const bg = a.durum === 'onayli' ? '#22c55e18' : a.durum === 'bekliyor' ? '#f59e0b18' : '#ef444418'
+                      return (
+                        <td key={i} style={{ padding:'4px 8px', background: bg }}>
+                          <div style={{ fontSize:10, fontWeight:700, color: renk, textAlign:'center' }}>{a.isim || 'YOK'}</div>
+                          {a.tarih && <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center' }}>{new Date(a.tarih).toLocaleDateString('tr-TR')}</div>}
+                        </td>
+                      )
+                    })}
                     {AYLAR.map((_,ayIdx) => {
                       const durum = ziyaretDurumu(firma, ayIdx)
                       const ayKey = `${yil}-${String(ayIdx+1).padStart(2,'0')}`

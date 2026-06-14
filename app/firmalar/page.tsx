@@ -43,8 +43,9 @@ export default function Firmalar() {
       ocak_kisi:'', subat_kisi:'', mart_kisi:'', nisan_kisi:'', mayis_kisi:'',
       haziran_kisi:'', temmuz_kisi:'', agustos_kisi:'', eylul_kisi:'', ekim_kisi:'', kasim_kisi:'', aralik_kisi:'',
       fatura: false, fatura_aciklama:'', klasor:'', cari_sozlesme: false,
-      gorevli_igu:'', igu_id:'', igu_atama_tarihi:'', gorevli_ih:'', ih_id:'', ih_atama_tarihi:'',
-      gorevli_dsp:'', dsp_id:'', bhl_atama:'', atama_aciklama:'', dr_sure:'', uzman_sure:'',
+      gorevli_igu:'', igu_id:'', igu_atama_tarihi:'', igu_atama_durum:'yok',
+      gorevli_ih:'', ih_id:'', ih_atama_tarihi:'', ih_atama_durum:'yok',
+      gorevli_dsp:'', dsp_id:'', bhl_atama:'', bhl_atama_durum:'yok', atama_aciklama:'', dr_sure:'', uzman_sure:'',
       ziyaret_periyodu:'', gorevli_ih_giden:'', ih_periyot:'',
       kisi_basi_ucret:'', kisi_basi_ucret_yeni:'', paket_2808:'', paket_3000:'', paket_3434:''
     }
@@ -182,9 +183,9 @@ export default function Firmalar() {
       kasim_kisi: f.kasim_kisi?.toString()||'', aralik_kisi: f.aralik_kisi?.toString()||'',
       fatura: f.fatura||false, fatura_aciklama: f.fatura_aciklama||'', klasor: f.klasor||'',
       cari_sozlesme: f.cari_sozlesme||false,
-      gorevli_igu: f.gorevli_igu||'', igu_id: f.igu_id||'', igu_atama_tarihi: f.igu_atama_tarihi||'',
-      gorevli_ih: f.gorevli_ih||'', ih_id: f.ih_id||'', ih_atama_tarihi: f.ih_atama_tarihi||'',
-      gorevli_dsp: f.gorevli_dsp||'', dsp_id: f.dsp_id||'', bhl_atama: f.bhl_atama||'',
+      gorevli_igu: f.gorevli_igu||'', igu_id: f.igu_id||'', igu_atama_tarihi: f.igu_atama_tarihi||'', igu_atama_durum: f.igu_atama_durum||'yok',
+      gorevli_ih: f.gorevli_ih||'', ih_id: f.ih_id||'', ih_atama_tarihi: f.ih_atama_tarihi||'', ih_atama_durum: f.ih_atama_durum||'yok',
+      gorevli_dsp: f.gorevli_dsp||'', dsp_id: f.dsp_id||'', bhl_atama: f.bhl_atama||'', bhl_atama_durum: f.bhl_atama_durum||'yok',
       atama_aciklama: f.atama_aciklama||'', dr_sure: f.dr_sure?.toString()||'',
       uzman_sure: f.uzman_sure?.toString()||'', ziyaret_periyodu: f.ziyaret_periyodu||'',
       gorevli_ih_giden: f.gorevli_ih_giden||'', ih_periyot: f.ih_periyot||'',
@@ -488,6 +489,13 @@ export default function Firmalar() {
                 </select>
               </div>
                 <div><label style={lbl}>İGU Atama Tarihi</label><input type="date" value={form.igu_atama_tarihi} onChange={e=>setForm({...form, igu_atama_tarihi:e.target.value})} /></div>
+                <div><label style={lbl}>İGU Atama Durumu</label>
+                  <select value={form.igu_atama_durum} onChange={e=>setForm({...form, igu_atama_durum:e.target.value})}>
+                    <option value="yok">🔴 Atama Yok</option>
+                    <option value="bekliyor">🟡 Onay Bekliyor</option>
+                    <option value="onayli">🟢 Atama Onaylı</option>
+                  </select>
+                </div>
                 <div><label style={lbl}>İş Hekimi (İH)</label>
                 <select value={form.ih_id} onChange={e=>{
                   const p = personeller.find(x=>x.id===e.target.value)
@@ -498,6 +506,13 @@ export default function Firmalar() {
                 </select>
               </div>
                 <div><label style={lbl}>İH Atama Tarihi</label><input type="date" value={form.ih_atama_tarihi} onChange={e=>setForm({...form, ih_atama_tarihi:e.target.value})} /></div>
+                <div><label style={lbl}>İH Atama Durumu</label>
+                  <select value={form.ih_atama_durum} onChange={e=>setForm({...form, ih_atama_durum:e.target.value})}>
+                    <option value="yok">🔴 Atama Yok</option>
+                    <option value="bekliyor">🟡 Onay Bekliyor</option>
+                    <option value="onayli">🟢 Atama Onaylı</option>
+                  </select>
+                </div>
                 <div><label style={lbl}>DSP</label>
                 <select value={form.dsp_id} onChange={e=>{
                   const p = personeller.find(x=>x.id===e.target.value)
@@ -508,6 +523,13 @@ export default function Firmalar() {
                 </select>
               </div>
                 <div><label style={lbl}>BHL Atama</label><input value={form.bhl_atama} onChange={e=>setForm({...form, bhl_atama:e.target.value})} /></div>
+                <div><label style={lbl}>BHL Atama Durumu</label>
+                  <select value={form.bhl_atama_durum} onChange={e=>setForm({...form, bhl_atama_durum:e.target.value})}>
+                    <option value="yok">🔴 Atama Yok</option>
+                    <option value="bekliyor">🟡 Onay Bekliyor</option>
+                    <option value="onayli">🟢 Atama Onaylı</option>
+                  </select>
+                </div>
                 <div><label style={lbl}>Uzman Süre (dk)</label><input type="number" value={form.uzman_sure} onChange={e=>setForm({...form, uzman_sure:e.target.value})} /></div>
                 <div><label style={lbl}>Dr Süre (dk)</label><input type="number" value={form.dr_sure} onChange={e=>setForm({...form, dr_sure:e.target.value})} /></div>
                 <div style={{ gridColumn:'1/3' }}><label style={lbl}>Atama Açıklaması</label><textarea rows={2} value={form.atama_aciklama} onChange={e=>setForm({...form, atama_aciklama:e.target.value})} /></div>
