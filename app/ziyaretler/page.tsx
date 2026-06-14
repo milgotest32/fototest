@@ -227,7 +227,7 @@ export default function Ziyaretler() {
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:70 }}>TEHLİKE</th>
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:60 }}>PERİYOT</th>
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#22c55e', background:'#22c55e11' }}>İGU ATAMA</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'var(--blue)', background:'#3b82f611' }}>DR. ATAMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'var(--blue)', background:'#3b82f611' }}>İH ATAMA</th>
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#f59e0b', background:'#f59e0b11' }}>BHL ATAMA</th>
                 {AYLAR.map((ay,i) => (
                   <th key={i} colSpan={2} style={{
