@@ -27,6 +27,7 @@ export default function Saglik() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState('')
   const [form, setForm] = useState<any>(bosForm())
+  const [sube, setSube] = useState<'merkez'|'sandikli'>('merkez')
   const [sayfa, setSayfa] = useState(0)
   const [toplamKayit, setToplamKayit] = useState(0)
   const debounceRef = useRef<any>(null)
@@ -48,7 +49,7 @@ export default function Saglik() {
   }, [arama])
 
   // Filtre değişince sayfayı sıfırla
-  useEffect(() => { setSayfa(0) }, [hekimFiltre, odemeFiltre, basTarih, bitTarih])
+  useEffect(() => { setSayfa(0) }, [hekimFiltre, odemeFiltre, basTarih, bitTarih, sube])
 
   // Sayfayı yükle
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function Saglik() {
 
     let q = sb.from('hasta_kayitlari')
       .select('id, tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, hekim_id, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no', { count: 'exact' })
+      .eq('sube', sube)
       .order('tarih', { ascending: false })
       .range(from, to)
 
@@ -99,7 +101,7 @@ export default function Saglik() {
     setKayitlar(data || [])
     setToplamKayit(count || 0)
     setYukleniyor(false)
-  }, [aramaDebounced, hekimFiltre, odemeFiltre, basTarih, bitTarih, sayfa])
+  }, [aramaDebounced, hekimFiltre, odemeFiltre, basTarih, bitTarih, sayfa, sube])
 
   async function kaydet() {
     if (!form.ad_soyad) return
@@ -108,7 +110,8 @@ export default function Saglik() {
       ...form, ucret: Number(form.ucret) || 0,
       dogum_tarihi: form.dogum_tarihi || null,
       firma_id: form.firma_id || null,
-      hekim_id: form.hekim_id || null
+      hekim_id: form.hekim_id || null,
+      sube
     })
     if (error) { setHata(error.message); return }
     setModal(false); setForm(bosForm()); setSayfa(0); yukle()
@@ -127,6 +130,7 @@ export default function Saglik() {
     // CSV için tüm filtrelenmiş veriyi çek (limit yok)
     let q = sb.from('hasta_kayitlari')
       .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
+      .eq('sube', sube)
       .order('tarih', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
     if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
@@ -156,6 +160,7 @@ export default function Saglik() {
   async function exportExcel() {
     let q = sb.from('hasta_kayitlari')
       .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
+      .eq('sube', sube)
       .order('tarih', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
     if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
@@ -199,7 +204,7 @@ export default function Saglik() {
 
   return (
     <div className="page-wrap">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
         <div>
           <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: -0.5 }}>Sağlık Raporu</h1>
           <p style={{ color: 'var(--text-dim)', fontSize: 14, marginTop: 4 }}>
@@ -207,6 +212,21 @@ export default function Saglik() {
           </p>
         </div>
         <button className="btn" onClick={() => setModal(true)}><Plus size={18} /> Yeni Kayıt</button>
+      </div>
+
+      {/* ŞUBE SEKMELERİ */}
+      <div style={{ display:'flex', gap:4, marginBottom:16, borderBottom:'1px solid var(--border)', paddingBottom:0 }}>
+        {([['merkez','🏥 Merkez'],['sandikli','🏨 Sandıklı']] as ['merkez'|'sandikli', string][]).map(([k,l]) => (
+          <button key={k} onClick={() => { setSube(k); setSayfa(0) }}
+            style={{ padding:'8px 18px', borderRadius:'8px 8px 0 0', border:'1px solid var(--border)',
+              borderBottom: sube===k ? '1px solid var(--surface)' : '1px solid var(--border)',
+              background: sube===k ? 'var(--surface)' : 'transparent',
+              color: sube===k ? 'var(--accent)' : 'var(--text-dim)',
+              cursor:'pointer', fontSize:13, fontWeight: sube===k ? 600 : 400, marginBottom:-1,
+              fontFamily:'inherit' }}>
+            {l}
+          </button>
+        ))}
       </div>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--green-soft)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
