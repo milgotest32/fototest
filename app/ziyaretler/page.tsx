@@ -46,7 +46,7 @@ export default function Ziyaretler() {
   async function yukle() {
     setYukleniyor(true)
     let q = sb.from('firmalar')
-      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, aylik_ziyaretler')
+      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, gorevli_dsp, igu_atama_tarihi, ih_atama_tarihi, bhl_atama, aylik_ziyaretler')
       .eq('aktif', true)
       .not('ih_periyot', 'is', null)
       .order('unvan')
@@ -224,8 +224,9 @@ export default function Ziyaretler() {
                 <th style={{ textAlign:'left', padding:'10px 12px', position:'sticky', left:0, background:'var(--surface-2)', zIndex:2, minWidth:220, borderRight:'1px solid var(--border)' }}>FİRMA</th>
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:70 }}>TEHLİKE</th>
                 <th style={{ textAlign:'center', padding:'10px 6px', minWidth:60 }}>PERİYOT</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:80, color:'var(--blue)' }}>İGU</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:70, color:'var(--green)' }}>İH</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#22c55e', background:'#22c55e11' }}>İGU ATAMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'var(--blue)', background:'#3b82f611' }}>DR. ATAMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#f59e0b', background:'#f59e0b11' }}>BHL ATAMA</th>
                 {AYLAR.map((ay,i) => (
                   <th key={i} colSpan={2} style={{
                     textAlign:'center', padding:'8px 2px', minWidth:72,
@@ -269,11 +270,16 @@ export default function Ziyaretler() {
                     <td style={{ textAlign:'center', padding:'7px 4px', color:'var(--text-dim)', fontSize:10 }}>
                       {firma.ih_periyot==='0.5'?'Her ay':firma.ih_periyot==='1.0'?'2 ayda':`${parseFloat(firma.ih_periyot)*2}ayda`}
                     </td>
-                    <td style={{ textAlign:'center', padding:'7px 4px' }}>
-                      <span style={{ fontSize:10, fontWeight:600, color:firma.gorevli_igu?'var(--blue)':'#ef4444' }}>{firma.gorevli_igu||'—'}</span>
+                    <td style={{ padding:'4px 8px', background: firma.gorevli_igu ? '#22c55e22' : '#ef444422' }}>
+                      <div style={{ fontSize:10, fontWeight:700, color: firma.gorevli_igu?'#22c55e':'#ef4444', textAlign:'center' }}>{firma.gorevli_igu||'YOK'}</div>
+                      {firma.igu_atama_tarihi && <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center' }}>{new Date(firma.igu_atama_tarihi).toLocaleDateString('tr-TR')}</div>}
                     </td>
-                    <td style={{ textAlign:'center', padding:'7px 4px' }}>
-                      <span style={{ fontSize:10, fontWeight:600, color:firma.gorevli_ih?'var(--green)':'#ef4444' }}>{firma.gorevli_ih||'—'}</span>
+                    <td style={{ padding:'4px 8px', background: firma.gorevli_ih ? '#22c55e22' : '#ef444422' }}>
+                      <div style={{ fontSize:10, fontWeight:700, color: firma.gorevli_ih?'#22c55e':'#ef4444', textAlign:'center' }}>{firma.gorevli_ih||'YOK'}</div>
+                      {firma.ih_atama_tarihi && <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center' }}>{new Date(firma.ih_atama_tarihi).toLocaleDateString('tr-TR')}</div>}
+                    </td>
+                    <td style={{ padding:'4px 8px', background: firma.bhl_atama ? '#22c55e22' : '#f59e0b22' }}>
+                      <div style={{ fontSize:10, fontWeight:700, color: firma.bhl_atama?'#22c55e':'#f59e0b', textAlign:'center' }}>{firma.bhl_atama||'YOK'}</div>
                     </td>
                     {AYLAR.map((_,ayIdx) => {
                       const durum = ziyaretDurumu(firma, ayIdx)
