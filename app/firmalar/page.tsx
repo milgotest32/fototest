@@ -464,7 +464,6 @@ export default function Firmalar() {
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.gorevli_igu||'—'}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.gorevli_ih||'—'}</td>
                   <td style={{ fontSize:13, color:'var(--text-dim)' }}>{tl(Number(f.kisi_basi_ucret)||0)}</td>
-                  <td>{f.fatura ? <span style={{ color:'var(--green)', fontSize:12 }}>✓</span> : <span style={{ color:'var(--text-faint)', fontSize:12 }}>—</span>}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.ziyaret_periyodu||'—'}</td>
                   {kulRol === 'yonetici' && (() => {
                     const fark = f.aylik_fark ?? null
