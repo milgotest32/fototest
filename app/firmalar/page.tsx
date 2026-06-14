@@ -429,7 +429,7 @@ export default function Firmalar() {
                   <th>SGK Sicil No</th>
                   <th style={{ color:'var(--text-dim)', fontSize:11 }}>Kişi Başı</th>
                   <th style={{ color:'var(--text-dim)', fontSize:11 }}>K.Başı 26</th>
-                  <th style={{ color:'var(--green)', fontSize:11 }}>Toplam ₺</th>
+                  <th style={{ color:'var(--green)', fontSize:11 }}>Aylık Tutar</th>
                   <th></th>
                 </tr>
               ) : (
@@ -442,7 +442,7 @@ export default function Firmalar() {
                       {ciro > 0 && <div style={{ fontSize:9, color:'var(--green)', fontWeight:600, marginTop:1 }}>{new Intl.NumberFormat('tr-TR',{notation:'compact',maximumFractionDigits:0}).format(ciro)}₺</div>}
                     </th>
                   })}
-                  {kulRol === 'yonetici' && <><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>}
+                  {kulRol === 'yonetici' && <><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>Aylık Tutar</th></>}
                   <th></th>
                 </tr>
               )}
