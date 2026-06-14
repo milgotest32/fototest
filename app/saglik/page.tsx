@@ -125,7 +125,7 @@ export default function Saglik() {
   async function exportCSV() {
     // CSV için tüm filtrelenmiş veriyi çek (limit yok)
     let q = sb.from('hasta_kayitlari')
-      .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli')
+      .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
       .order('tarih', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
     if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
@@ -137,10 +137,14 @@ export default function Saglik() {
       'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Doğum Tarihi': k.dogum_tarihi || '',
       'Telefon': k.telefon || '', 'Firma': k.firma || '',
       'Ücret': k.ucret || 0, 'Ödeme': k.odeme_sekli || '',
-      'EK2': k.tetkikler?.EK2 ? 'Evet' : '', 'AKC': k.tetkikler?.AKC ? 'Evet' : '',
-      'ODİO': k.tetkikler?.['ODİO'] ? 'Evet' : '', 'SFT': k.tetkikler?.SFT ? 'Evet' : '',
-      'EKG': k.tetkikler?.EKG ? 'Evet' : '', 'CBC': k.tetkikler?.CBC ? 'Evet' : '',
-      'AST': k.tetkikler?.AST ? 'Evet' : '', 'ALT': k.tetkikler?.ALT ? 'Evet' : '',
+      'Tetkikler': Object.entries(k.tetkikler || {}).filter(([, v]) => v).map(([t]) => t.toUpperCase()).join(', '),
+      'EK2': k.tetkikler?.ek2 ? 'Evet' : '', 'AKC': k.tetkikler?.akc ? 'Evet' : '',
+      'ODİO': k.tetkikler?.odio ? 'Evet' : '', 'SFT': k.tetkikler?.sft ? 'Evet' : '',
+      'EKG': k.tetkikler?.ekg ? 'Evet' : '', 'CBC': k.tetkikler?.cbc ? 'Evet' : '',
+      'AST': k.tetkikler?.ast ? 'Evet' : '', 'ALT': k.tetkikler?.alt ? 'Evet' : '',
+      'Üre': k.tetkikler?.ure ? 'Evet' : '', 'Kreatinin': k.tetkikler?.kreatinin ? 'Evet' : '',
+      'Glukoz': k.tetkikler?.glukoz ? 'Evet' : '', 'Burun': k.tetkikler?.burun ? 'Evet' : '',
+      'Boğaz': k.tetkikler?.bogaz ? 'Evet' : '',
       'Gaita': k.gaita ? 'Evet' : '', 'TİT': k.tit ? 'Evet' : '',
       'HBsAg': k.hbsag ? 'Evet' : '', 'Anti-HBs': k.antihbs ? 'Evet' : '',
       'Göz': k.goz ? 'Evet' : '', 'İSG Eğitim': k.isg_egitim ? 'Evet' : '',
