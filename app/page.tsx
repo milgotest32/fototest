@@ -8,8 +8,8 @@ import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip, BarChart, Bar, Ce
 
 // Rollere göre hangi kartlar görünür
 const ROL_KARTLAR: Record<string, string[]> = {
-  yonetici:  ['firma','hasta','teklif','acikBakiye','ziyaret','ciro','grafik','uyari','saglikRaporu'],
-  muhasebe:  ['acikBakiye','ziyaret','uyari','saglikRaporu'],
+  yonetici:  ['firma','hasta','teklif','ciroKart','ziyaret','ciro','grafik','uyari','saglikRaporu'],
+  muhasebe:  ['ciroKart','ziyaret','uyari','saglikRaporu'],
   operasyon: ['firma','ziyaret','gorev','saglikRaporu'],
   hekim:     ['hasta','saglikRaporu'],
   satis:     ['firma','teklif'],
@@ -146,7 +146,7 @@ export default function Dashboard() {
     { key:'firma',      label:'Aktif Firma',      val: stats.firma,              icon:Building2,    renk:'var(--blue)',   soft:'var(--blue-soft)',   href:'/firmalar' },
     { key:'hasta',      label:'Hasta Kaydı',     val: stats.hasta,              icon:HeartPulse,   renk:'var(--green)',  soft:'var(--green-soft)',  href:'/saglik' },
     { key:'teklif',     label:'Bekleyen Teklif', val: stats.teklif,             icon:FileText,     renk:'var(--amber)',  soft:'var(--amber-soft)',  href:'/teklifler' },
-    { key:'acikBakiye', label:'Açık Bakiye',     val: tl(stats.acikBakiye),     icon:Wallet,       renk:'var(--accent)', soft:'var(--accent-soft)', href:'/tahsilat' },
+    { key:'ciroKart',   label:'Bu Ay Ciro',      val: tl(stats.aylikCiro),      icon:TrendingUp,   renk:'var(--green)',  soft:'var(--green-soft)',  href:'/tahsilat' },
     { key:'ziyaret',    label:'Bu Ay Ziyaret',   val: stats.ziyaret,            icon:MapPin,       renk:'var(--blue)',   soft:'var(--blue-soft)',   href:'/ziyaretler' },
     { key:'gorev',      label:'Bu Ay Görev',     val: stats.gorev,              icon:CalendarDays, renk:'var(--accent)', soft:'var(--accent-soft)', href:'/koordinasyon' },
   ]
