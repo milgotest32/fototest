@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
+import * as XLSX from 'xlsx'
 import { Plus, Search, X, HeartPulse, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const TETKIKLER = ['EK2','AKC','ODİO','SFT','EKG','CBC','AST','ALT','ÜRE','KREATİNİN','GLUKOZ','BURUN','BOĞAZ']
@@ -152,6 +153,45 @@ export default function Saglik() {
     })), 'saglik_tarama')
   }
 
+  async function exportExcel() {
+    let q = sb.from('hasta_kayitlari')
+      .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
+      .order('tarih', { ascending: false })
+    if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
+    if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
+    if (odemeFiltre !== 'Hepsi') q = q.eq('odeme_sekli', odemeFiltre)
+    if (basTarih) q = q.gte('tarih', basTarih)
+    if (bitTarih) q = q.lte('tarih', bitTarih)
+    const { data } = await q
+    const rows = (data || []).map((k: any) => ({
+      'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Doğum Tarihi': k.dogum_tarihi || '',
+      'Telefon': k.telefon || '', 'Firma': k.firma || '',
+      'Ücret': Number(k.ucret) || 0, 'Ödeme': k.odeme_sekli || '',
+      'Tetkikler': Object.entries(k.tetkikler || {}).filter(([, v]) => v).map(([t]) => t.toUpperCase()).join(', '),
+      'EK2': k.tetkikler?.ek2 ? 'Evet' : '', 'AKC': k.tetkikler?.akc ? 'Evet' : '',
+      'ODİO': k.tetkikler?.odio ? 'Evet' : '', 'SFT': k.tetkikler?.sft ? 'Evet' : '',
+      'EKG': k.tetkikler?.ekg ? 'Evet' : '', 'CBC': k.tetkikler?.cbc ? 'Evet' : '',
+      'AST': k.tetkikler?.ast ? 'Evet' : '', 'ALT': k.tetkikler?.alt ? 'Evet' : '',
+      'Üre': k.tetkikler?.ure ? 'Evet' : '', 'Kreatinin': k.tetkikler?.kreatinin ? 'Evet' : '',
+      'Glukoz': k.tetkikler?.glukoz ? 'Evet' : '', 'Burun': k.tetkikler?.burun ? 'Evet' : '',
+      'Boğaz': k.tetkikler?.bogaz ? 'Evet' : '',
+      'Gaita': k.gaita ? 'Evet' : '', 'TİT': k.tit ? 'Evet' : '',
+      'HBsAg': k.hbsag ? 'Evet' : '', 'Anti-HBs': k.antihbs ? 'Evet' : '',
+      'Göz': k.goz ? 'Evet' : '', 'İSG Eğitim': k.isg_egitim ? 'Evet' : '',
+      'PR No': k.pr_no || '', 'Açıklama': k.aciklama || '',
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Sağlık Raporu')
+    // Kolon genişlikleri
+    ws['!cols'] = [
+      {wch:12},{wch:22},{wch:14},{wch:14},{wch:28},
+      {wch:10},{wch:10},{wch:30},{wch:6},{wch:6},
+      {wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},
+    ]
+    XLSX.writeFile(wb, `saglik_raporu_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
   const hekimler = personeller.filter((p: any) => ['hekim', 'yonetici'].includes(p.rol))
   const paraMi = ['yonetici', 'muhasebe'].includes(mevcutRol)
   const tl = (n: number) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺'
@@ -191,6 +231,9 @@ export default function Saglik() {
           {['Hepsi', 'Peşin', 'Cari', 'İBAN', 'POS'].map(o => <option key={o}>{o}</option>)}
         </select>
         <button onClick={exportCSV} style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text-dim)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>↓ CSV</button>
+        <button onClick={exportExcel} style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, color: '#22c55e', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ fontSize:15 }}>⊞</span> Excel
+        </button>
       </div>
 
       <div className="card" style={{ overflow: 'hidden' }}>
