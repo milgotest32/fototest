@@ -364,6 +364,39 @@ export default function Firmalar() {
         </div>
       </div>
 
+      {kulRol === 'yonetici' && (() => {
+        const buAyIdx = new Date().getMonth()
+        const buAyAd = AY_ADLARI[buAyIdx]
+        const buAyCiro = ayToplamCiro(buAyIdx)
+        const oncekiAyCiro = buAyIdx > 0 ? ayToplamCiro(buAyIdx - 1) : null
+        const fark = oncekiAyCiro !== null ? buAyCiro - oncekiAyCiro : null
+        return (
+          <div style={{ display:'flex', gap:16, marginBottom:20, flexWrap:'wrap' }}>
+            <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:'16px 24px', minWidth:200 }}>
+              <div style={{ fontSize:11, color:'var(--text-faint)', fontWeight:600, textTransform:'uppercase', letterSpacing:0.5, marginBottom:6 }}>{buAyAd} Toplam Ciro</div>
+              <div style={{ fontSize:28, fontWeight:700, color:'var(--green)', fontFamily:'Sora,sans-serif', letterSpacing:-0.5 }}>
+                {buAyCiro > 0 ? new Intl.NumberFormat('tr-TR').format(buAyCiro) + ' ₺' : '—'}
+              </div>
+              {fark !== null && <div style={{ fontSize:12, color: fark >= 0 ? 'var(--green)' : 'var(--red)', marginTop:4, fontWeight:500 }}>
+                {fark >= 0 ? '▲' : '▼'} {new Intl.NumberFormat('tr-TR').format(Math.abs(fark))} ₺ geçen aya göre
+              </div>}
+            </div>
+            {AY_ADLARI.slice(0, buAyIdx + 1).map((ad, i) => {
+              const ciro = ayToplamCiro(i)
+              const aktifFirma = firmalar.filter(f => f[AY_KISILER[i]] !== null && f[AY_KISILER[i]] !== undefined).length
+              return (
+                <div key={i} style={{ background: i === buAyIdx ? 'var(--accent-soft)' : 'var(--surface)', border: `1px solid ${i === buAyIdx ? 'var(--accent)' : 'var(--border)'}`, borderRadius:10, padding:'12px 18px', minWidth:110 }}>
+                  <div style={{ fontSize:10, color: i === buAyIdx ? 'var(--accent)' : 'var(--text-faint)', fontWeight:600, textTransform:'uppercase', letterSpacing:0.5, marginBottom:4 }}>{ad}</div>
+                  <div style={{ fontSize:18, fontWeight:700, color: i === buAyIdx ? 'var(--accent)' : 'var(--text)' }}>
+                    {ciro > 0 ? new Intl.NumberFormat('tr-TR',{notation:'compact',maximumFractionDigits:1}).format(ciro) + '₺' : '—'}
+                  </div>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>{aktifFirma} firma</div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
       <div style={{ display:'flex', gap:12, alignItems:'flex-start', background:'var(--blue-soft)', border:'1px solid rgba(99,102,241,0.1)', borderRadius:12, padding:'14px 16px', marginBottom:20 }}>
         <span style={{ fontSize:18, flexShrink:0 }}>💡</span>
         <p style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.7, margin:0 }}>Firmalar — OSGB'nin tüm müşteri firmalarını yönettiğiniz sayfadır. Firmaya tıklayarak detay, ✏️ ile düzenleme yapabilirsiniz. Atama sekmesinden İGU, İH ve DSP, Ücretlendirme sekmesinden kişi başı ücret girebilirsiniz.</p>
