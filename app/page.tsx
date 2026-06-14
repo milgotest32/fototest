@@ -47,7 +47,7 @@ export default function Dashboard() {
       if (izin.includes('firma')) queries.push(sb.from('firmalar').select('id', { count:'exact', head:true }))
       else queries.push(Promise.resolve({ count: 0 }))
 
-      if (izin.includes('hasta') || izin.includes('ciro')) queries.push(sb.from('hasta_kayitlari').select('ucret, tarih'))
+      if (izin.includes('hasta') || izin.includes('ciro')) queries.push(sb.from('hasta_kayitlari').select('ucret, tarih', { count: 'exact' }))
       else queries.push(Promise.resolve({ data: [] }))
 
       if (izin.includes('teklif')) queries.push(sb.from('teklifler').select('id, surec_durumu'))
@@ -72,7 +72,7 @@ export default function Dashboard() {
       const acikBakiye = (cariler.data||[]).reduce((s:number, c:any) => s + (Number(c.acik_bakiye)||0), 0)
       const vadeGecen = (cariler.data||[]).reduce((s:number, c:any) => s + (Number(c.vadesi_gecen_tutar)||0), 0)
 
-      setStats({ firma: firma.count||0, hasta: hastaList.length, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
+      setStats({ firma: firma.count||0, hasta: hastaList.count||0, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
 
       // Sağlık Raporu istatistikleri (tarama_operasyonlari)
       if (izin.includes('saglikRaporu')) {
