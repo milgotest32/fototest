@@ -832,18 +832,18 @@ export default function Firmalar() {
                   </div>
                   <div><label style={lbl}>Görevlendirilen *</label>
                     <select value={katipForm.gorevlendirilen_ad} onChange={e=>{
-                      const tur = katipForm.sozlesme_turu
                       const p = personeller.find(x=>x.ad_soyad===e.target.value)
-                      setKatipForm({...katipForm, gorevlendirilen_ad: e.target.value, gorevlendirilen_tc: p?.tc||katipForm.gorevlendirilen_tc})
+                      setKatipForm({...katipForm, gorevlendirilen_ad: e.target.value, gorevlendirilen_tc: p?.tc||p?.telefon||katipForm.gorevlendirilen_tc})
                     }}>
                       <option value="">Seçiniz...</option>
-                      {personeller.filter(p => {
-                        const tur = katipForm.sozlesme_turu
-                        if (tur==='İGU') return ['operasyon','saha','yonetici'].includes(p.rol)
-                        if (tur==='İH') return p.rol==='hekim'||p.rol==='yonetici'
-                        return true
-                      }).map(p=><option key={p.id} value={p.ad_soyad}>{p.ad_soyad}</option>)}
+                      {katipForm.gorevlendirilen_ad && !personeller.find(p=>p.ad_soyad===katipForm.gorevlendirilen_ad) && (
+                        <option value={katipForm.gorevlendirilen_ad}>{katipForm.gorevlendirilen_ad} (mevcut)</option>
+                      )}
+                      {personeller.map(p=><option key={p.id} value={p.ad_soyad}>{p.ad_soyad} ({p.rol})</option>)}
                     </select>
+                    {katipForm.gorevlendirilen_ad && !personeller.find(p=>p.ad_soyad===katipForm.gorevlendirilen_ad) && (
+                      <div style={{ fontSize:11, color:'var(--amber)', marginTop:4 }}>⚠ Listede yok — TC'yi manuel girin</div>
+                    )}
                   </div>
                   <div><label style={lbl}>TC No</label>
                     <input value={katipForm.gorevlendirilen_tc} onChange={e=>setKatipForm({...katipForm, gorevlendirilen_tc:e.target.value})} placeholder="12345..."/>
