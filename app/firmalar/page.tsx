@@ -409,13 +409,13 @@ export default function Firmalar() {
         <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="Firma, bölge veya faaliyet ara..." style={{ paddingLeft:40 }}/>
       </div>
 
-      <div className="card" style={{ overflow:'hidden' }}>
-        <div style={{ overflowX:'auto' }}>
+      <div className="card" style={{ overflow:'auto', maxHeight:'calc(100vh - 280px)', padding:0 }}>
+        <div>
           <table>
-            <thead>
+            <thead style={{ position:'sticky', top:0, zIndex:4 }}>
               {kulRol === 'muhasebe' ? (
                 <tr>
-                  <th>İSG Katip Ünvan</th>
+                  <th style={{ position:'sticky', left:0, top:0, background:'var(--surface-2)', zIndex:5, minWidth:220, textAlign:'left' }}>İSG Katip Ünvan</th>
                   <th>Sınıfı</th>
                   {AY_ADLARI.slice(0,6).map((ad,i) => {
                     const ciro = ayToplamCiro(i)
@@ -434,7 +434,7 @@ export default function Firmalar() {
                 </tr>
               ) : (
                 <tr>
-                  <th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>İGU</th><th>İH</th><th>Kişi Başı</th><th>Periyot</th>
+                  <th style={{ position:'sticky', left:0, top:0, background:'var(--surface-2)', zIndex:5, minWidth:220, textAlign:'left' }}>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>İGU</th><th>İH</th><th>Kişi Başı</th><th>Periyot</th>
                   {kulRol === 'yonetici' && AY_ADLARI.slice(0,6).map((ad,i) => {
                     const ciro = ayToplamCiro(i)
                     return <th key={i} style={{ color:'var(--accent)', fontSize:11, textAlign:'center', minWidth:70 }}>
@@ -458,7 +458,7 @@ export default function Firmalar() {
                     const birimFiyat = Number(f.kisi_basi_ucret_yeni) || Number(f.kisi_basi_ucret) || 0
                     const toplamTl = sonAy * birimFiyat
                     return (<>
-                      <td style={{ fontWeight:500 }}>
+                      <td style={{ fontWeight:500, position:'sticky', left:0, background:'var(--surface)', zIndex:1, borderRight:'1px solid var(--border)' }}>
                         <div>{f.isg_katip_unvan || f.unvan}</div>
                         {f.isg_katip_unvan && f.isg_katip_unvan !== f.unvan && <div style={{ fontSize:10, color:'var(--text-faint)' }}>{f.unvan}</div>}
                       </td>
@@ -487,7 +487,7 @@ export default function Firmalar() {
                       </td>
                     </>)
                   })() : (<>
-                  <td style={{ fontWeight:500 }}>
+                  <td style={{ fontWeight:500, position:'sticky', left:0, background:'var(--surface)', zIndex:1, borderRight:'1px solid var(--border)' }}>
                     {f.unvan}
                     {f.isg_katip_unvan && f.isg_katip_unvan !== f.unvan && <div style={{ fontSize:11, color:'var(--text-faint)' }}>{f.isg_katip_unvan}</div>}
                     {f.sgk_sicil && <div style={{ fontSize:10, color:'var(--text-faint)', fontFamily:'monospace', marginTop:1 }}>{f.sgk_sicil}</div>}
@@ -1214,7 +1214,7 @@ export default function Firmalar() {
                 </div>
                 <div style={{ maxHeight:320, overflow:'auto', border:'1px solid var(--border)', borderRadius:8 }}>
                   <table style={{ width:'100%', fontSize:12, borderCollapse:'collapse' }}>
-                    <thead>
+                    <thead style={{ position:'sticky', top:0, zIndex:4 }}>
                       <tr style={{ background:'var(--surface-2)', position:'sticky', top:0 }}>
                         <th style={{ padding:'8px 10px', textAlign:'left' }}>Firma</th>
                         <th style={{ padding:'8px 10px', textAlign:'left' }}>SGK Sicil</th>
