@@ -630,18 +630,44 @@ export default function Firmalar() {
                 </div>
                 <div><label style={lbl}>Uzman Süre (dk)</label><input type="number" value={form.uzman_sure} onChange={e=>setForm({...form, uzman_sure:e.target.value})} /></div>
                 <div><label style={lbl}>Dr Süre (dk)</label><input type="number" value={form.dr_sure} onChange={e=>setForm({...form, dr_sure:e.target.value})} /></div>
-                <div><label style={lbl}>İGU Giden (Fiili)</label>
-                <select value={form.gorevli_igu_giden} onChange={e=>setForm({...form, gorevli_igu_giden:e.target.value})}>
-                  <option value="">Seçiniz...</option>
-                  {personeller.filter(p=>['operasyon','saha','yonetici'].includes(p.rol)).map(p=><option key={p.id} value={p.ad_soyad}>{p.ad_soyad}</option>)}
-                </select>
-              </div>
-                <div><label style={lbl}>İH Giden (Fiili)</label>
-                <select value={form.gorevli_ih_giden} onChange={e=>setForm({...form, gorevli_ih_giden:e.target.value})}>
-                  <option value="">Seçiniz...</option>
-                  {personeller.filter(p=>p.rol==='hekim'||p.rol==='yonetici').map(p=><option key={p.id} value={p.ad_soyad}>{p.ad_soyad}</option>)}
-                </select>
-              </div>
+                <div style={{ gridColumn:'1/3' }}>
+                  <label style={lbl}>İGU Giden (Fiili) — çoklu seçim</label>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginTop:4 }}>
+                    {personeller.filter(p=>['operasyon','saha','yonetici'].includes(p.rol)).map(p=>{
+                      const secili = (form.gorevli_igu_giden||'').split(',').map((s:string)=>s.trim()).filter(Boolean).includes(p.ad_soyad)
+                      return <div key={p.id} onClick={()=>{
+                        const mevcut = (form.gorevli_igu_giden||'').split(',').map((s:string)=>s.trim()).filter(Boolean)
+                        const yeni = secili ? mevcut.filter((x:string)=>x!==p.ad_soyad) : [...mevcut, p.ad_soyad]
+                        setForm({...form, gorevli_igu_giden: yeni.join(', ')})
+                      }} style={{ padding:'5px 12px', borderRadius:20, fontSize:12, cursor:'pointer', userSelect:'none',
+                        background: secili ? 'var(--accent)' : 'var(--surface-2)',
+                        color: secili ? 'white' : 'var(--text-dim)',
+                        border: `1px solid ${secili ? 'var(--accent)' : 'var(--border)'}`,
+                        fontWeight: secili ? 600 : 400 }}>
+                        {p.ad_soyad}
+                      </div>
+                    })}
+                  </div>
+                </div>
+                <div style={{ gridColumn:'1/3' }}>
+                  <label style={lbl}>İH Giden (Fiili) — çoklu seçim</label>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginTop:4 }}>
+                    {personeller.filter(p=>p.rol==='hekim'||p.rol==='yonetici').map(p=>{
+                      const secili = (form.gorevli_ih_giden||'').split(',').map((s:string)=>s.trim()).filter(Boolean).includes(p.ad_soyad)
+                      return <div key={p.id} onClick={()=>{
+                        const mevcut = (form.gorevli_ih_giden||'').split(',').map((s:string)=>s.trim()).filter(Boolean)
+                        const yeni = secili ? mevcut.filter((x:string)=>x!==p.ad_soyad) : [...mevcut, p.ad_soyad]
+                        setForm({...form, gorevli_ih_giden: yeni.join(', ')})
+                      }} style={{ padding:'5px 12px', borderRadius:20, fontSize:12, cursor:'pointer', userSelect:'none',
+                        background: secili ? 'var(--accent)' : 'var(--surface-2)',
+                        color: secili ? 'white' : 'var(--text-dim)',
+                        border: `1px solid ${secili ? 'var(--accent)' : 'var(--border)'}`,
+                        fontWeight: secili ? 600 : 400 }}>
+                        {p.ad_soyad}
+                      </div>
+                    })}
+                  </div>
+                </div>
                 <div style={{ gridColumn:'1/3' }}><label style={lbl}>Atama Açıklaması</label><textarea rows={2} value={form.atama_aciklama} onChange={e=>setForm({...form, atama_aciklama:e.target.value})} /></div>
                 {duzenle && katipSozlesmeler.length > 0 && (
                   <div style={{ gridColumn:'1/3', background:'var(--surface-2)', borderRadius:10, padding:'10px 14px' }}>
