@@ -18,6 +18,7 @@ const ROL_KARTLAR: Record<string, string[]> = {
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>({ firma:0, hasta:0, teklif:0, acikBakiye:0, vadeGecen:0, aylikCiro:0, ziyaret:0, gorev:0 })
+  const [ziyaretStat, setZiyaretStat] = useState<any>({ yapilan:0, bekleyen:0 })
   const [saglikStat, setSaglikStat] = useState<any>({ bugun:0, hafta:0, ay:0, yil:0, ciroBugun:0, ciroAy:0 })
   const [bekleyenTeklif, setBekleyenTeklif] = useState<number>(0)
   const [ciroData, setCiroData] = useState<any[]>([])
@@ -81,6 +82,30 @@ export default function Dashboard() {
       }
 
       setStats({ firma: firma.count||0, hasta: hastaCount, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
+
+      // Ziyaret bekleyen hesaplama
+      if (izin.includes('ziyaret')) {
+        const simdi = new Date()
+        const buAyIdx = simdi.getMonth()
+        const buYil = simdi.getFullYear()
+        const { data: firmlarZiyaret } = await sb.from('firmalar')
+          .select('id, ih_periyot, aylik_ziyaretler')
+          .eq('aktif', true)
+          .not('ih_periyot', 'is', null)
+        const fList = (firmlarZiyaret || []).filter((f:any) => f.ih_periyot !== 'GİDİLMİYOR')
+        const ayKey = `${buYil}-${String(buAyIdx+1).padStart(2,'0')}`
+        let bekleyen = 0
+        fList.forEach((f:any) => {
+          const z = (f.aylik_ziyaretler||{})[ayKey]
+          const periyot = parseFloat(f.ih_periyot||'0')
+          let iguGerekir = periyot <= 0.5 || (periyot <= 1.0 && buAyIdx%2===0) || (periyot <= 2.0 && buAyIdx%4===0)
+          const iguGidildi = z?.igu?.gidildi || (z?.tur === 'İGU' && z?.tarih)
+          const ihGidildi = z?.ih?.gidildi || (z?.tur === 'İH' && z?.tarih)
+          if (iguGerekir && !iguGidildi) bekleyen++
+          if (iguGerekir && !ihGidildi) bekleyen++
+        })
+        setZiyaretStat({ yapilan: ziyaret.count||0, bekleyen })
+      }
 
       // Sağlık Raporu istatistikleri (tarama_operasyonlari)
       if (izin.includes('saglikRaporu')) {
@@ -147,7 +172,7 @@ export default function Dashboard() {
     { key:'hasta',      label:'Hasta Kaydı',     val: stats.hasta,              icon:HeartPulse,   renk:'var(--green)',  soft:'var(--green-soft)',  href:'/saglik' },
     { key:'teklif',     label:'Bekleyen Teklif', val: stats.teklif,             icon:FileText,     renk:'var(--amber)',  soft:'var(--amber-soft)',  href:'/teklifler' },
     { key:'ciroKart',   label:'Bu Ay Ciro',      val: tl(stats.aylikCiro),      icon:TrendingUp,   renk:'var(--green)',  soft:'var(--green-soft)',  href:'/tahsilat' },
-    { key:'ziyaret',    label:'Bu Ay Ziyaret',   val: stats.ziyaret,            icon:MapPin,       renk:'var(--blue)',   soft:'var(--blue-soft)',   href:'/ziyaretler' },
+
     { key:'gorev',      label:'Bu Ay Görev',     val: stats.gorev,              icon:CalendarDays, renk:'var(--accent)', soft:'var(--accent-soft)', href:'/koordinasyon' },
   ]
   const kartlar = TUM_KARTLAR.filter(k => izin.includes(k.key))
@@ -189,6 +214,31 @@ export default function Dashboard() {
           <span style={{ fontSize:13, color:'var(--text-dim)' }}>Bu Ay Ciro</span>
           <span style={{ fontFamily:'Sora,sans-serif', fontSize:20, fontWeight:700, color:'var(--green)' }}>{tl(stats.aylikCiro)}</span>
         </div>
+      )}
+
+      {/* ZİYARET ÖZET — 3 mini kart */}
+      {izin.includes('ziyaret') && (
+        <Link href="/ziyaretler" style={{ textDecoration:'none', color:'inherit', display:'block', marginBottom:16 }}>
+          <div className="card" style={{ padding:'14px 16px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <MapPin size={15} color="var(--blue)"/>
+              <span style={{ fontWeight:600, fontSize:14 }}>Bu Ay ISG Ziyaretleri</span>
+              <ArrowUpRight size={14} color="var(--text-faint)" style={{ marginLeft:'auto' }}/>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+              {[
+                { label:'Yapılan', val: yukleniyor ? '—' : ziyaretStat.yapilan, renk:'var(--green)' },
+                { label:'Bekleyen', val: yukleniyor ? '—' : ziyaretStat.bekleyen, renk:'var(--red)' },
+                { label:'Toplam Firma', val: yukleniyor ? '—' : stats.firma, renk:'var(--blue)' },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign:'center', padding:'8px 4px', borderRadius:8, background:'var(--surface-2)' }}>
+                  <div style={{ fontFamily:'Sora,sans-serif', fontSize:20, fontWeight:700, color:item.renk }}>{item.val}</div>
+                  <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>{item.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Link>
       )}
 
       {/* AKTİVİTE AKIŞI */}
