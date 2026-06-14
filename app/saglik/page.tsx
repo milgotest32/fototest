@@ -105,8 +105,8 @@ export default function Saglik() {
   }, [aramaDebounced, hekimFiltre, odemeFiltre, basTarih, bitTarih, sayfa, sube])
 
   async function modalAc() {
-    const { data } = await sb.from('hasta_kayitlari').select('pr_no').order('pr_no', { ascending: false }).limit(1)
-    const next = data?.[0]?.pr_no ? Number(data[0].pr_no) + 1 : 1
+    const { data } = await sb.rpc('max_pr_no')
+    const next = data ? Number(data) + 1 : 1
     setNextPrNo(next)
     setForm({ ...bosForm(), pr_no: String(next) })
     setModal(true)
