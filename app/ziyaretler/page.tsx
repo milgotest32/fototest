@@ -178,6 +178,13 @@ export default function Ziyaretler() {
     const tiklanabilir = yazabilir || (firma.gorevli_igu?.includes(mevcutPersonel?.ad_soyad) || firma.gorevli_ih?.includes(mevcutPersonel?.ad_soyad))
 
     if (durum === 'gelecek') {
+      // Yönetici gelecek aya da girebilir
+      if (rol === 'yonetici') {
+        return (
+          <div onClick={() => setModal({ firma, ayIdx, tur })}
+            style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.4, cursor:'pointer' }}/>
+        )
+      }
       return <div style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.3 }}/>
     }
     if (durum === 'gidildi') {
@@ -189,6 +196,12 @@ export default function Ziyaretler() {
       )
     }
     if (durum === 'gerekmiyor') {
+      if (rol === 'yonetici') {
+        return (
+          <div onClick={() => setModal({ firma, ayIdx, tur })}
+            style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.4, cursor:'pointer' }}/>
+        )
+      }
       return <div style={{ width:16, height:16, border:'1px dashed var(--border)', borderRadius:3, margin:'0 auto', opacity:0.2 }}/>
     }
     // gidilmedi
