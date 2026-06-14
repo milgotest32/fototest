@@ -143,7 +143,7 @@ export default function HekimEkrani() {
   function exportCSV() {
     const simdi = new Date()
     const buAy = `${simdi.getFullYear()}-${String(simdi.getMonth()+1).padStart(2,'0')}`
-    const rows = firmalar.map((f: any) => {
+    const rows = benimatanFirmalar.map((f: any) => {
       const d = ziyaretDurumlari.find((z: any) => z.firma_id === f.id && z.ay === buAy)
       return {
         'Firma': f.unvan||'', 'Tehlike': f.tehlike_sinifi||'', 'Bölge': f.bolge||'',
