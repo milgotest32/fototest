@@ -14,6 +14,7 @@ const ILETIM = ['Whatsapp','Mail','Telefon','Yüz yüze']
 
 export default function Teklifler() {
   const [teklifler, setTeklifler] = useState<any[]>([])
+  const [mevcutPersonel, setMevcutPersonel] = useState<any>(null)
   const [arama, setArama] = useState('')
   const [turFiltre, setTurFiltre] = useState('Hepsi')
   const [filtre, setFiltre] = useState('Hepsi')
@@ -184,7 +185,7 @@ export default function Teklifler() {
                     </td>
                     <td style={{ fontSize:12, color:'var(--text-dim)', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.surec_notu||'—'}</td>
                     <td onClick={e => e.stopPropagation()}>
-                      <button onClick={() => sil(t.id)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button>
+                      {mevcutPersonel?.rol === 'yonetici' && <button onClick={() => sil(t.id)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button>}
                     </td>
                   </tr>
                 ))}
