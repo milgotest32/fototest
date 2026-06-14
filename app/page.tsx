@@ -47,7 +47,7 @@ export default function Dashboard() {
       if (izin.includes('firma')) queries.push(sb.from('firmalar').select('id', { count:'exact', head:true }))
       else queries.push(Promise.resolve({ count: 0 }))
 
-      if (izin.includes('hasta') || izin.includes('ciro')) queries.push(sb.from('hasta_kayitlari').select('ucret, tarih', { count: 'exact' }))
+      if (izin.includes('hasta') || izin.includes('ciro')) queries.push(sb.from('hasta_kayitlari').select('ucret, tarih').gte('tarih', ayBas).lte('tarih', ayBit))
       else queries.push(Promise.resolve({ data: [] }))
 
       if (izin.includes('teklif')) queries.push(sb.from('teklifler').select('id, surec_durumu'))
@@ -68,11 +68,18 @@ export default function Dashboard() {
       const [firma, hasta, teklif, cariler, ziyaret, uyari, gorev] = await Promise.all(queries)
 
       const hastaList = hasta.data || []
-      const aylikCiro = hastaList.filter((h:any) => h.tarih >= ayBas && h.tarih <= ayBit).reduce((s:number, h:any) => s + (Number(h.ucret)||0), 0)
+      const aylikCiro = hastaList.reduce((s:number, h:any) => s + (Number(h.ucret)||0), 0)
       const acikBakiye = (cariler.data||[]).reduce((s:number, c:any) => s + (Number(c.acik_bakiye)||0), 0)
       const vadeGecen = (cariler.data||[]).reduce((s:number, c:any) => s + (Number(c.vadesi_gecen_tutar)||0), 0)
 
-      setStats({ firma: firma.count||0, hasta: hastaList.count||0, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
+      // Hasta toplam sayısı ayrı count
+      let hastaCount = 0
+      if (izin.includes('hasta')) {
+        const { count } = await sb.from('hasta_kayitlari').select('id', { count:'exact', head:true })
+        hastaCount = count || 0
+      }
+
+      setStats({ firma: firma.count||0, hasta: hastaCount, teklif: (teklif.data||[]).filter((t:any) => t.surec_durumu==='Beklemede').length, acikBakiye, vadeGecen, aylikCiro, ziyaret: ziyaret.count||0, gorev: gorev.count||0 })
 
       // Sağlık Raporu istatistikleri (tarama_operasyonlari)
       if (izin.includes('saglikRaporu')) {
