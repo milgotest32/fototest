@@ -262,23 +262,24 @@ export default function Ziyaretler() {
       {yukleniyor ? (
         <div style={{ textAlign:'center', padding:60, color:'var(--text-faint)' }}>Yükleniyor...</div>
       ) : (
-        <div className="card" style={{ overflow:'auto', padding:0 }}>
+        <div className="card" style={{ overflow:'auto', padding:0, maxHeight:'calc(100vh - 220px)' }}>
           <table style={{ minWidth:1400, fontSize:11 }}>
             <thead>
-              <tr style={{ background:'var(--surface-2)', borderBottom:'1px solid var(--border)' }}>
-                <th style={{ textAlign:'left', padding:'10px 12px', position:'sticky', left:0, background:'var(--surface-2)', zIndex:2, minWidth:220, borderRight:'1px solid var(--border)' }}>FİRMA</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:70 }}>TEHLİKE</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:60 }}>PERİYOT</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#22c55e', background:'#22c55e11' }}>İGU ATAMA</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'var(--blue)', background:'#3b82f611' }}>DR. ATAMA</th>
-                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#f59e0b', background:'#f59e0b11' }}>BHL ATAMA</th>
+              <tr style={{ background:'var(--surface-2)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:4 }}>
+                <th style={{ textAlign:'left', padding:'10px 12px', position:'sticky', left:0, top:0, background:'var(--surface-2)', zIndex:5, minWidth:220, borderRight:'1px solid var(--border)' }}>FİRMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:70, position:'sticky', top:0, background:'var(--surface-2)', zIndex:3 }}>TEHLİKE</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:60, position:'sticky', top:0, background:'var(--surface-2)', zIndex:3 }}>PERİYOT</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#22c55e', background:'#22c55e11', position:'sticky', top:0, zIndex:3 }}>İGU ATAMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'var(--blue)', background:'#3b82f611', position:'sticky', top:0, zIndex:3 }}>DR. ATAMA</th>
+                <th style={{ textAlign:'center', padding:'10px 6px', minWidth:90, color:'#f59e0b', background:'#f59e0b11', position:'sticky', top:0, zIndex:3 }}>BHL ATAMA</th>
                 {AYLAR.map((ay,i) => (
                   <th key={i} colSpan={2} style={{
                     textAlign:'center', padding:'6px 2px', minWidth:64,
                     color: i===buAy&&yil===buYil ? 'var(--accent)' : 'var(--text-dim)',
                     borderLeft: '1px solid var(--border)',
                     fontWeight: i===buAy&&yil===buYil ? 700 : 500,
-                    background: i===buAy&&yil===buYil ? 'rgba(99,102,241,0.06)' : 'transparent'
+                    background: i===buAy&&yil===buYil ? 'rgba(99,102,241,0.08)' : 'var(--surface-2)',
+                    position:'sticky', top:0, zIndex:3
                   }}>
                     {ay}
                     <div style={{ display:'flex', justifyContent:'center', gap:2, marginTop:2 }}>
