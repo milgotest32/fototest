@@ -243,7 +243,7 @@ export default function Firmalar() {
           <table>
             <thead>
               <tr><th>Ünvan</th><th>Bölge</th><th>Tehlike</th><th>Çalışan</th><th>İGU</th><th>İH</th><th>DSP</th><th>Kişi Başı</th><th>Fatura</th><th>Periyot</th>
-                {(kulRol === 'muhasebe' || kulRol === 'yonetici') && (<><th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th><th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th><th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th><th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th><th style={{ color:'var(--accent)', fontSize:11 }}>May</th><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>)}
+                {(kulRol === 'muhasebe' || kulRol === 'yonetici') && (<><th style={{ color:'var(--accent)', fontSize:11 }}>Oca</th><th style={{ color:'var(--accent)', fontSize:11 }}>Şub</th><th style={{ color:'var(--accent)', fontSize:11 }}>Mar</th><th style={{ color:'var(--accent)', fontSize:11 }}>Nis</th><th style={{ color:'var(--accent)', fontSize:11 }}>May</th><th style={{ color:'var(--accent)', fontSize:11 }}>Haz</th><th style={{ color:'var(--amber)', fontSize:11 }}>Fark</th><th style={{ color:'var(--green)', fontSize:11 }}>K.Başı ₺</th></>)}
               <th></th></tr>
             </thead>
             <tbody>
@@ -265,18 +265,16 @@ export default function Firmalar() {
                   <td>{f.fatura ? <span style={{ color:'var(--green)', fontSize:12 }}>✓</span> : <span style={{ color:'var(--text-faint)', fontSize:12 }}>—</span>}</td>
                   <td style={{ color:'var(--text-dim)', fontSize:13 }}>{f.ziyaret_periyodu||'—'}</td>
                   {(kulRol === 'muhasebe' || kulRol === 'yonetici') && (() => {
-                    const aylar = [f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi]
-                    const dolu = aylar.filter(Boolean)
-                    const sonAy = dolu.length > 0 ? Number(dolu[dolu.length-1]) : 0
-                    const oncekiAy = dolu.length > 1 ? Number(dolu[dolu.length-2]) : sonAy
-                    const fark = sonAy - oncekiAy
+                    const aylar = [f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi]
+                    const fark = f.aylik_fark ?? null
+                    const sonAy = [f.haziran_kisi, f.mayis_kisi, f.nisan_kisi, f.mart_kisi, f.subat_kisi, f.ocak_kisi].find(v => v !== null && v !== undefined) ?? 0
                     const toplamTl = sonAy * (Number(f.kisi_basi_ucret)||0)
                     return (<>
-                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi].map((v, i) => (
-                        <td key={i} style={{ textAlign:'center', fontSize:12, color: v ? 'var(--text)' : 'var(--text-faint)' }}>{v||'—'}</td>
+                      {[f.ocak_kisi, f.subat_kisi, f.mart_kisi, f.nisan_kisi, f.mayis_kisi, f.haziran_kisi].map((v, i) => (
+                        <td key={i} style={{ textAlign:'center', fontSize:12, color: v !== null ? 'var(--text)' : 'var(--text-faint)' }}>{v ?? '—'}</td>
                       ))}
-                      <td style={{ textAlign:'center', fontSize:12, fontWeight:600, color: fark > 0 ? 'var(--green)' : fark < 0 ? 'var(--red)' : 'var(--text-faint)' }}>
-                        {fark !== 0 ? (fark > 0 ? '+' : '') + fark : '—'}
+                      <td style={{ textAlign:'center', fontSize:12, fontWeight:600, color: fark !== null && fark > 0 ? 'var(--green)' : fark !== null && fark < 0 ? 'var(--red)' : 'var(--text-faint)' }}>
+                        {fark !== null && fark !== 0 ? (fark > 0 ? '+' : '') + fark : '—'}
                       </td>
                       <td style={{ fontSize:12, fontWeight:600, whiteSpace:'nowrap', color:'var(--green)' }}>
                         {toplamTl > 0 ? new Intl.NumberFormat('tr-TR').format(toplamTl) + ' ₺' : '—'}
