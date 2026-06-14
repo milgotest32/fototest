@@ -19,21 +19,21 @@ const ERISIM: any = {
 const TUM_LINKLER = [
   { href:'/', label:'Dashboard', icon:LayoutDashboard },
   { href:'/firmalar', label:'Firmalar', icon:Building2 },
-  { href:'/saglik', label:'Sağlık Tarama', icon:HeartPulse },
-  { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
-  { href:'/taramalar', label:'Tarama Ops.', icon:Activity },
+  { href:'/koordinasyon', label:'Görev Takibi', icon:CalendarDays },
   { href:'/teklifler', label:'Teklifler', icon:FileText },
+  { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
+  { href:'/arsiv', label:'Arşiv Yönetimi', icon:FolderArchive },
+  { href:'/saglik', label:'Sağlık Raporu', icon:HeartPulse },
+  { href:'/taramalar', label:'Sağlık Taramaları', icon:Activity },
+  { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
   { href:'/malzemeler', label:'Malzemeler', icon:Package },
   { href:'/tedarikciler', label:'Tedarikçiler', icon:Truck },
   { href:'/tahsilat', label:'Tahsilat', icon:Wallet },
-  { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
-  { href:'/koordinasyon', label:'Koordinasyon', icon:CalendarDays },
   { href:'/idari', label:'İdari İşler', icon:ClipboardList },
   { href:'/fatura', label:'Fatura Takibi', icon:FileText },
   { href:'/raporlar', label:'Raporlar', icon:BarChart2 },
   { href:'/personeller', label:'Personel & Yetkiler', icon:UserCog },
   { href:'/eksik-veriler', label:'Eksik Veriler', icon:AlertTriangle },
-  { href:'/arsiv', label:'Arşiv', icon:FolderArchive },
 ]
 
 export default function MobileTopbar() {

@@ -21,18 +21,19 @@ const GRUPLAR = [
     { href:'/', label:'Dashboard', icon:LayoutDashboard },
     { href:'/ara', label:'Global Arama', icon:SearchIcon },
   ]},
-  { baslik:'ISG & Firmalar', linkler:[
+  { baslik:'Ana Menü', linkler:[
     { href:'/firmalar', label:'Firmalar', icon:Building2 },
-    { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
     { href:'/koordinasyon', label:'Görev Takibi', icon:CalendarDays },
-  ]},
-  { baslik:'Sağlık', linkler:[
+    { href:'/teklifler', label:'Teklifler', icon:FileText },
+    { href:'/ziyaretler', label:'ISG Ziyaretleri', icon:MapPin },
+    { href:'/arsiv', label:'Arşiv Yönetimi', icon:FolderArchive },
     { href:'/saglik', label:'Sağlık Raporu', icon:HeartPulse },
-    { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
     { href:'/taramalar', label:'Sağlık Taramaları', icon:Activity },
   ]},
+  { baslik:'Sağlık', linkler:[
+    { href:'/hekim', label:'Hekim Ekranı', icon:Stethoscope },
+  ]},
   { baslik:'Satış', linkler:[
-    { href:'/teklifler', label:'Teklifler', icon:FileText },
     { href:'/malzemeler', label:'Malzemeler', icon:Package },
     { href:'/tedarikciler', label:'Tedarikçiler', icon:Truck },
   ]},
@@ -45,7 +46,6 @@ const GRUPLAR = [
     { href:'/raporlar', label:'Raporlar', icon:BarChart2 },
     { href:'/personeller', label:'Personel & Yetkiler', icon:UserCog },
     { href:'/eksik-veriler', label:'Eksik Veriler', icon:AlertTriangle },
-    { href:'/arsiv', label:'Arşiv', icon:FolderArchive },
   ]},
 ]
 
