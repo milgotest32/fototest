@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
-import { Plus, Search, X, Building2, Trash2, Pencil, Upload } from 'lucide-react'
+import { Plus, Search, X, Building2, Trash2, Pencil, Upload, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
 const TEHLIKE_RENK: any = { 'Az Tehlikeli':'var(--green)', 'Tehlikeli':'var(--amber)', 'Çok Tehlikeli':'var(--red)' }
@@ -308,6 +308,43 @@ export default function Firmalar() {
     })
   }
 
+
+  function faturaExcelIndir() {
+    const satirlar: any[] = []
+    const buYil = new Date().getFullYear()
+    AY_KODLARI.forEach((kod, ayIdx) => {
+      firmalar.forEach(f => {
+        const ay = buYil + '-' + kod
+        const kesildi = !!(f.fatura_kesildi_aylar || {})[ay]
+        if (!kesildi) return
+        const kisi = Number(f[AY_KISILER[ayIdx]]) || 0
+        const birimFiyat = Number(f.kisi_basi_ucret_yeni) || Number(f.kisi_basi_ucret) || 0
+        const tutar = kisi * birimFiyat
+        satirlar.push({
+          'Ay': AY_ADLARI[ayIdx] + ' ' + buYil,
+          'Firma Ünvanı': f.isg_katip_unvan || f.unvan,
+          'SGK Sicil No': f.sgk_sicil || '',
+          'Bölge': f.bolge || '',
+          'Çalışan Sayısı': kisi,
+          'Kişi Başı Ücret (₺)': birimFiyat,
+          'Toplam Tutar (₺)': tutar,
+          'İGU': f.gorevli_igu || '',
+          'İH': f.gorevli_ih || '',
+        })
+      })
+    })
+    if (satirlar.length === 0) { alert('Fatura kesilmiş kayıt yok'); return }
+    const ws = XLSX.utils.json_to_sheet(satirlar)
+    // Kolon genişlikleri
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 45 }, { wch: 20 }, { wch: 12 },
+      { wch: 14 }, { wch: 18 }, { wch: 16 }, { wch: 15 }, { wch: 15 },
+    ]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Fatura Listesi')
+    XLSX.writeFile(wb, `fatura_listesi_${new Date().getFullYear()}.xlsx`)
+  }
+
   function exportCSV() {
     csvIndir(filtreli.map(f => ({
       'Ünvan': f.unvan||'', 'İSG Katip Ünvan': f.isg_katip_unvan||'', 'SGK Sicil': f.sgk_sicil||'',
@@ -357,6 +394,16 @@ export default function Firmalar() {
               {f==='aktif'?'Aktif':f==='pasif'?'Pasif':'Hepsi'}
             </button>
           ))}
+          {kulRol === 'yonetici' && (
+            <button onClick={faturaExcelIndir} style={{ padding:'8px 14px', borderRadius:8, border:'1px solid var(--green)', background:'rgba(34,197,94,0.08)', cursor:'pointer', color:'var(--green)', fontSize:13, display:'flex', alignItems:'center', gap:6, fontFamily:'inherit', fontWeight:600 }}>
+              <Download size={14}/> Fatura Excel
+            </button>
+          )}
+          {(['yonetici','muhasebe'] as string[]).includes(kulRol) && (
+            <button onClick={faturaExcelIndir} style={{ padding:'8px 14px', borderRadius:8, border:'1px solid var(--green)', background:'rgba(34,197,94,0.08)', cursor:'pointer', color:'var(--green)', fontSize:13, display:'flex', alignItems:'center', gap:6, fontFamily:'inherit', fontWeight:600 }}>
+              <Download size={14}/> Fatura Excel
+            </button>
+          )}
           <button onClick={()=>{ setKatipExcelModal(true); setKatipExcelSonuc([]); setKatipExcelAy(new Date().getFullYear()+'-'+(new Date().getMonth()+1).toString().padStart(2,'0')) }} style={{ padding:'8px 14px', borderRadius:8, border:'1px solid var(--border)', background:'var(--surface)', cursor:'pointer', color:'var(--text-dim)', fontSize:13, display:'flex', alignItems:'center', gap:6, fontFamily:'inherit' }}>
             <Upload size={14}/> Katip Excel
           </button>
