@@ -25,8 +25,8 @@ export default function Idari() {
 
   function exportCSV() {
     csvIndir(filtreli.map(i => ({
-      'Konu': i.konu||'', 'Kategori': i.kategori||'', 'Durum': i.durum||'',
-      'Son Tarih': i.son_tarih||'', 'Açıklama': i.aciklama||'',
+      'Konu': i.baslik||'', 'Kategori': i.kategori||'', 'Durum': i.durum||'',
+      'Son Tarih': i.son_tarih||'', 'Açıklama': i.detay||'',
     })), 'idari_isler')
   }
   const sb = createClient()
@@ -43,7 +43,7 @@ export default function Idari() {
   async function yukle() {
     setYukleniyor(true)
     let q = sb.from('idari_isler').select('*').order('created_at', { ascending:false })
-    if (arama) q = q.ilike('konu', `%${arama}%`)
+    if (arama) q = q.ilike('baslik', `%${arama}%`)
     const { data, error } = await q
     if (error) { setHata('Veriler yüklenemedi.'); return }
     setIsler(data || [])
@@ -74,7 +74,7 @@ export default function Idari() {
     return new Date(tarih) < new Date(new Date().toDateString())
   }
 
-  let filtreli = isler.filter(i => !arama || i.konu?.toLowerCase().includes(arama.toLowerCase()) || i.aciklama?.toLowerCase().includes(arama.toLowerCase()))
+  let filtreli = isler.filter(i => !arama || i.baslik?.toLowerCase().includes(arama.toLowerCase()) || i.detay?.toLowerCase().includes(arama.toLowerCase()))
   if (katFiltre !== 'Hepsi') filtreli = filtreli.filter(i => i.kategori === katFiltre)
   if (durumFiltre === 'Aktif') filtreli = filtreli.filter(i => i.durum === 'Açık' || i.durum === 'Devam')
   else if (durumFiltre !== 'Hepsi') filtreli = filtreli.filter(i => i.durum === durumFiltre)

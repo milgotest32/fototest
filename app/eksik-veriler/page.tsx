@@ -24,8 +24,8 @@ interface EksikHasta {
 
 interface EksikKatip {
   id: string
-  sozlesme_no: string | null
-  isyeri_unvan: string | null
+  sozlesme_id: number | null
+  gorevlendirilen_ad: string | null
   sozlesme_turu: string | null
   baslangic_tarihi: string | null
 }
@@ -70,9 +70,9 @@ export default function EksikVerilerPage() {
     // Katip sözleşmeleri - firma_id boş olanlar
     const { data: katipData } = await supabase
       .from('katip_sozlesmeleri')
-      .select('id, sozlesme_no, isyeri_unvan, sozlesme_turu, baslangic_tarihi')
+      .select('id, sozlesme_id, gorevlendirilen_ad, sozlesme_turu, baslangic_tarihi')
       .is('firma_id', null)
-      .order('isyeri_unvan')
+      .order('gorevlendirilen_ad')
       .limit(200)
 
     setEksikKatip(katipData || [])
@@ -399,8 +399,8 @@ export default function EksikVerilerPage() {
               <tbody>
                 {eksikKatip.map((k, i) => (
                   <tr key={k.id} className={`border-b border-gray-50 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
-                    <td className="px-6 py-3 font-medium text-gray-900">{k.isyeri_unvan || '—'}</td>
-                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{k.sozlesme_no || '—'}</td>
+                    <td className="px-6 py-3 font-medium text-gray-900">{k.gorevlendirilen_ad || '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{k.sozlesme_id || '—'}</td>
                     <td className="px-4 py-3">
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                         {k.sozlesme_turu || '—'}

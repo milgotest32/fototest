@@ -52,7 +52,7 @@ export default function Ziyaretler() {
 
     if (aramaDebounced) q = q.ilike('unvan', `%${aramaDebounced}%`)
 
-    const rol2 = mevcutPersonel?.rol || 'operasyon'
+    const rol = mevcutPersonel?.rol || 'operasyon'
     if (rol === 'saha' && mevcutPersonel?.ad_soyad) {
       const ad = mevcutPersonel.ad_soyad
       q = q.or(`gorevli_igu.ilike.%${ad}%,gorevli_ih.ilike.%${ad}%`)

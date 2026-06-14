@@ -50,7 +50,7 @@ export default function Taramalar() {
 
   async function yukle() {
     setYukleniyor(true)
-    let q = sb.from('tarama_operasyonlari').select('*').order('tarih', { ascending: false })
+    let q = sb.from('tarama_operasyonlari').select('*').order('tarih', { ascending: false, nullsFirst: false }).order('planlanan_tarih', { ascending: false })
     if (arama) q = q.or(`firma_adi.ilike.%${arama}%,ad_soyad.ilike.%${arama}%`)
     const [tRes, fRes] = await Promise.all([
       q,
