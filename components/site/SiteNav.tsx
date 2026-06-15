@@ -78,7 +78,7 @@ export default function SiteNav() {
             {user ? (
               <Link href="/firmalar" style={{ padding: '8px 16px', borderRadius: 8, background: '#f5c200', color: '#1a1a1a', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Panel →</Link>
             ) : (
-              <Link href="/giris" style={{ padding: '8px 16px', borderRadius: 8, background: '#f5c200', color: '#1a1a1a', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Giriş</Link>
+              <Link href="/giris" className="site-giris-btn" style={{ padding: '8px 16px', borderRadius: 8, background: '#f5c200', color: '#1a1a1a', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Giriş</Link>
             )}
             <button onClick={() => setMenuAcik(!menuAcik)} className="site-burger"
               style={{ background: 'none', border: 'none', color: '#c8c8d8', cursor: 'pointer', fontSize: 22, display: 'none' }}>☰</button>
@@ -102,6 +102,7 @@ export default function SiteNav() {
       </nav>
       <style>{`
         @media(max-width:900px){ .site-nav-links{display:none!important} .site-burger{display:flex!important} }
+        @media(max-width:640px){ .site-giris-btn{display:none!important} }
       `}</style>
     </>
   )
