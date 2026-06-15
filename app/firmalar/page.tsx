@@ -359,8 +359,8 @@ export default function Firmalar() {
       'DSP': f.gorevli_dsp||'', 'BHL Atama': f.bhl_atama||'',
       'Uzman Süre (dk)': f.uzman_sure||'', 'Dr Süre (dk)': f.dr_sure||'',
       'Uzman Periyot': f.ziyaret_periyodu||'', 'İH Periyot': f.ih_periyot||'',
-      'Kişi Başı': f.kisi_basi_ucret||'', 'Kişi Başı 26': f.kisi_basi_ucret_yeni||'',
-      'Paket 2808': f.paket_2808||'', 'Paket 3000': f.paket_3000||'', 'Paket 3434': f.paket_3434||'',
+      'Kişi Başı Ücret': f.kisi_basi_ucret_yeni || f.kisi_basi_ucret || '',
+
       'Fatura': f.fatura ? 'Evet' : 'Hayır', 'Fatura Açıklama': f.fatura_aciklama||'',
       'Klasör': f.klasor||'', 'Cari Sözleşme': f.cari_sozlesme ? 'Evet' : 'Hayır',
       'Durum': f.durum||'Aktif',
@@ -529,8 +529,7 @@ export default function Firmalar() {
                       </td>
                       <td style={{ fontSize:12, color:'var(--text-dim)' }}>{f.klasor||'—'}</td>
                       <td style={{ fontSize:11, fontFamily:'monospace', color:'var(--text-faint)' }}>{f.sgk_sicil||'—'}</td>
-                      <td style={{ fontSize:12, color:'var(--text-dim)', textAlign:'right' }}>{f.kisi_basi_ucret ? new Intl.NumberFormat('tr-TR').format(Number(f.kisi_basi_ucret)) : '—'}</td>
-                      <td style={{ fontSize:12, color:'var(--text-dim)', textAlign:'right' }}>{f.kisi_basi_ucret_yeni ? new Intl.NumberFormat('tr-TR').format(Number(f.kisi_basi_ucret_yeni)) : '—'}</td>
+                      <td style={{ fontSize:12, color:'var(--text-dim)', textAlign:'right' }}>{f.kisi_basi_ucret_yeni ? new Intl.NumberFormat('tr-TR').format(Number(f.kisi_basi_ucret_yeni)) : (f.kisi_basi_ucret ? new Intl.NumberFormat('tr-TR').format(Number(f.kisi_basi_ucret)) : '—')}</td>
                       <td style={{ fontSize:12, fontWeight:700, whiteSpace:'nowrap', color:'var(--red)', textAlign:'right' }}>
                         {toplamTl > 0 ? new Intl.NumberFormat('tr-TR').format(toplamTl) + ' ₺' : '—'}
                       </td>
@@ -624,8 +623,7 @@ export default function Firmalar() {
                 ['Uzman Periyot', detay.ziyaret_periyodu||'—'],
                 ['İH Giden', detay.gorevli_ih_giden||'—'],
                 ['İH Periyot', detay.ih_periyot||'—'],
-                ['Kişi Başı', tl(Number(detay.kisi_basi_ucret)||0)],
-                ['Kişi Başı (Yeni)', tl(Number(detay.kisi_basi_ucret_yeni)||0)],
+                ['Kişi Başı Ücret', tl(Number(detay.kisi_basi_ucret_yeni) || Number(detay.kisi_basi_ucret) || 0)],
                 ['Fatura', detay.fatura ? 'Evet' : 'Hayır'],
                 ['Sözleşme', detay.cari_sozlesme ? 'Var' : 'Yok'],
                 ['Klasör', detay.klasor||'—'],
@@ -850,12 +848,11 @@ export default function Firmalar() {
 
             {sekme === 'ucret' && (
               <div className="modal-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-                <div><label style={lbl}>Kişi Başı Ücret (₺)</label><input type="number" value={form.kisi_basi_ucret} onChange={e=>setForm({...form, kisi_basi_ucret:e.target.value})} /></div>
-                <div><label style={lbl}>Kişi Başı (Yeni) (₺)</label><input type="number" value={form.kisi_basi_ucret_yeni} onChange={e=>setForm({...form, kisi_basi_ucret_yeni:e.target.value})} /></div>
+                <div><label style={lbl}>Kişi Başı Ücret (₺)</label><input type="number" value={form.kisi_basi_ucret_yeni} onChange={e=>setForm({...form, kisi_basi_ucret_yeni:e.target.value})} /></div>
                 <div><label style={lbl}>İlave Fatura Tutarı (₺)</label><input type="number" placeholder="0" value={form.ilave_tutar} onChange={e=>setForm({...form, ilave_tutar:e.target.value})} /></div>
-                <div><label style={lbl}>Paket 2808 (₺)</label><input type="number" value={form.paket_2808} onChange={e=>setForm({...form, paket_2808:e.target.value})} /></div>
-                <div><label style={lbl}>Paket 3000 (₺)</label><input type="number" value={form.paket_3000} onChange={e=>setForm({...form, paket_3000:e.target.value})} /></div>
-                <div><label style={lbl}>Paket 3434 (₺)</label><input type="number" value={form.paket_3434} onChange={e=>setForm({...form, paket_3434:e.target.value})} /></div>
+
+
+
               </div>
             )}
 
