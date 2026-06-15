@@ -10,9 +10,8 @@ const ROL_ERISIM: Record<string, string[]> = {
   saha:      ['/','/koordinasyon','/ziyaretler','/arsiv'],
 }
 
-// Public sayfalar — auth gerektirmez
+// Public sayfalar — auth gerektirmez (/ ve /giris HARİÇ — onlar ayrı ele alınır)
 const PUBLIC_PATHS = [
-  '/giris',
   '/kurumsal',
   '/ekibimiz',
   '/hizmetlerimiz',
@@ -47,28 +46,32 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
 
   const isStatic = path.startsWith('/_next') || path.startsWith('/api') || path.startsWith('/public')
-  const isPublicPage = path === '/' || PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'))
+  const isPublicPage = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'))
 
   // Static & API — geç
   if (isStatic) return res
 
-  // Public sayfalar — herkes görebilir
+  // Diğer public sayfalar (hizmetler, kurumsal vs.) — herkes görebilir
   if (isPublicPage) return res
 
-  // Korumalı sayfa — login gerekli
+  // / (ana sayfa / landing) — herkes görebilir
+  if (path === '/') return res
+
+  // /giris — login olan → ana sayfaya, login olmayan → göster
+  if (path === '/giris') {
+    if (user) return NextResponse.redirect(new URL('/', req.url))
+    return res
+  }
+
+  // Korumalı sayfalar — login gerekli
   if (!user) return NextResponse.redirect(new URL('/giris', req.url))
 
-  // Login sayfasına gelen login'li kullanıcı → ana sayfaya
-  if (user && path === '/giris') return NextResponse.redirect(new URL('/', req.url))
-
   // Rol kontrolü
-  if (user) {
-    const { data: personel } = await supabase.from('personeller').select('rol').eq('id', user.id).single()
-    const rol = personel?.rol || 'operasyon'
-    const izinli = ROL_ERISIM[rol] || ROL_ERISIM.operasyon
-    const yetkili = izinli.some(r => path === r || path.startsWith(r + '/'))
-    if (!yetkili) return NextResponse.redirect(new URL('/', req.url))
-  }
+  const { data: personel } = await supabase.from('personeller').select('rol').eq('id', user.id).single()
+  const rol = personel?.rol || 'operasyon'
+  const izinli = ROL_ERISIM[rol] || ROL_ERISIM.operasyon
+  const yetkili = izinli.some(r => path === r || path.startsWith(r + '/'))
+  if (!yetkili) return NextResponse.redirect(new URL('/', req.url))
 
   return res
 }
