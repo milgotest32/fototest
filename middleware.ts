@@ -2,30 +2,31 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const ROL_ERISIM: Record<string, string[]> = {
-  yonetici:  ['/','/ara','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site'],
-  operasyon: ['/','/ara','/firmalar','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler','/arsiv'],
-  hekim:     ['/','/saglik','/hekim','/koordinasyon','/arsiv'],
-  satis:     ['/','/teklifler','/malzemeler','/tedarikciler'],
-  muhasebe:  ['/','/tahsilat','/saglik','/fatura'],
-  saha:      ['/','/koordinasyon','/ziyaretler','/arsiv'],
+  yonetici:  ['/firmalar','/ara','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site'],
+  operasyon: ['/firmalar','/ara','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler','/arsiv'],
+  hekim:     ['/saglik','/hekim','/koordinasyon','/arsiv'],
+  satis:     ['/teklifler','/malzemeler','/tedarikciler'],
+  muhasebe:  ['/tahsilat','/saglik','/fatura'],
+  saha:      ['/koordinasyon','/ziyaretler','/arsiv'],
 }
 
-// Public sayfalar — auth gerektirmez (/ ve /giris HARİÇ — onlar ayrı ele alınır)
-const PUBLIC_PATHS = [
-  '/kurumsal',
-  '/ekibimiz',
-  '/hizmetlerimiz',
-  '/egitimler',
-  '/referanslar',
-  '/yazilarimiz',
-  '/iletisim',
-]
+const PANEL_SAYFALAR = ['/firmalar','/ara','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site']
+
+const PUBLIC_SAYFALAR = ['/kurumsal','/ekibimiz','/hizmetlerimiz','/egitimler','/referanslar','/yazilarimiz','/iletisim']
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req })
   res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
-  res.headers.set('x-middleware-cache', 'no-cache')
 
+  const path = req.nextUrl.pathname
+
+  // Static dosyalar — dokunma
+  if (path.startsWith('/_next') || path.startsWith('/api') || path === '/favicon.ico') return res
+
+  // Public sayfalar — herkes görebilir, auth kontrolü yok
+  if (PUBLIC_SAYFALAR.some(p => path === p || path.startsWith(p + '/'))) return res
+
+  // Supabase auth
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -43,38 +44,30 @@ export async function middleware(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const path = req.nextUrl.pathname
 
-  const isStatic = path.startsWith('/_next') || path.startsWith('/api') || path.startsWith('/public')
-  const isPublicPage = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'))
-
-  // Static & API — geç
-  if (isStatic) return res
-
-  // Diğer public sayfalar (hizmetler, kurumsal vs.) — herkes görebilir
-  if (isPublicPage) return res
-
-  // / — login varsa panele, yoksa landing page
+  // Ana sayfa (landing): login varsa panele gönder, yoksa landing göster
   if (path === '/') {
     if (user) return NextResponse.redirect(new URL('/firmalar', req.url))
     return res
   }
 
-  // /giris — login olan → ana sayfaya, login olmayan → göster
+  // Giriş sayfası: login varsa panele gönder, yoksa göster
   if (path === '/giris') {
-    if (user) return NextResponse.redirect(new URL('/', req.url))
+    if (user) return NextResponse.redirect(new URL('/firmalar', req.url))
     return res
   }
 
-  // Korumalı sayfalar — login gerekli
-  if (!user) return NextResponse.redirect(new URL('/giris', req.url))
-
-  // Rol kontrolü
-  const { data: personel } = await supabase.from('personeller').select('rol').eq('id', user.id).single()
-  const rol = personel?.rol || 'operasyon'
-  const izinli = ROL_ERISIM[rol] || ROL_ERISIM.operasyon
-  const yetkili = izinli.some(r => path === r || path.startsWith(r + '/'))
-  if (!yetkili) return NextResponse.redirect(new URL('/', req.url))
+  // Panel sayfaları: login zorunlu
+  const isPanelSayfasi = PANEL_SAYFALAR.some(p => path === p || path.startsWith(p + '/'))
+  if (isPanelSayfasi) {
+    if (!user) return NextResponse.redirect(new URL('/giris', req.url))
+    // Rol kontrolü
+    const { data: personel } = await supabase.from('personeller').select('rol').eq('id', user.id).single()
+    const rol = personel?.rol || 'operasyon'
+    const izinli = ROL_ERISIM[rol] || ROL_ERISIM.operasyon
+    const yetkili = izinli.some(r => path === r || path.startsWith(r + '/'))
+    if (!yetkili) return NextResponse.redirect(new URL('/firmalar', req.url))
+  }
 
   return res
 }
