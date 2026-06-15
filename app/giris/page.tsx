@@ -17,7 +17,7 @@ export default function Giris() {
     const sb = createClient()
     const { error } = await sb.auth.signInWithPassword({ email, password: sifre })
     if (error) { setHata('E-posta veya şifre hatalı.'); setYukleniyor(false); return }
-    router.push('/'); router.refresh()
+    router.push('/firmalar'); router.refresh()
   }
 
   return (
