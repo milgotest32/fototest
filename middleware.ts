@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ⚙️ BAKIM MODU — true = bakımda, false = açık
-const BAKIM_MODU = true
+const BAKIM_MODU = false
 
 const ROL_ERISIM: Record<string, string[]> = {
   yonetici:  ['/firmalar','/ara','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site'],
