@@ -60,11 +60,11 @@ export default function RamakKala() {
           </div>
         ) : (
           <div style={{ background: '#0e0e1c', border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: '36px 32px', boxShadow: '0 20px 60px rgba(0,0,0,.4)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div className="site-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>{lbl('Ad Soyad', true)}<input style={inp} placeholder="Adınız Soyadınız" value={form.ad_soyad} onChange={e => setForm({ ...form, ad_soyad: e.target.value })} /></div>
               <div>{lbl('Telefon')}<input style={inp} placeholder="05xx xxx xx xx" value={form.telefon} onChange={e => setForm({ ...form, telefon: e.target.value })} /></div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div className="site-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>{lbl('Firma Adı', true)}<input style={inp} placeholder="Çalıştığınız firma" value={form.firma_adi} onChange={e => setForm({ ...form, firma_adi: e.target.value })} /></div>
               <div>{lbl('Bölüm / Departman')}<input style={inp} placeholder="Üretim, Depo, Ofis..." value={form.bolum} onChange={e => setForm({ ...form, bolum: e.target.value })} /></div>
             </div>

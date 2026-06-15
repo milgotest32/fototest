@@ -9,7 +9,7 @@ export default function SiteFooter() {
           İşyeriniz için ücretsiz teklif alın
         </h2>
         <p style={{ fontSize: 16, color: 'rgba(0,0,0,.65)', marginBottom: 28 }}>Uzmanlarımız 24 saat içinde size dönecektir.</p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="site-footer-cta" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/iletisim" style={{ padding: '13px 32px', borderRadius: 10, background: '#0a0a0f', color: '#f5c200', fontSize: 15, fontWeight: 800, textDecoration: 'none' }}>Teklif Al →</Link>
           <a href="tel:05531696867" style={{ padding: '13px 32px', borderRadius: 10, background: 'rgba(0,0,0,.15)', color: '#0a0a0f', fontSize: 15, fontWeight: 700, textDecoration: 'none', border: '2px solid rgba(0,0,0,.2)' }}>📞 0 553 169 68 67</a>
         </div>
@@ -17,7 +17,7 @@ export default function SiteFooter() {
 
       {/* Footer body */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr 1fr 1fr', gap: 48, marginBottom: 48, borderBottom: '1px solid rgba(255,255,255,.06)', paddingBottom: 48 }}>
+        <div className="site-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr 1fr 1fr', gap: 48, marginBottom: 48, borderBottom: '1px solid rgba(255,255,255,.06)', paddingBottom: 48 }}>
           <div>
             <img src="https://aktifosgb.com.tr/wp-content/uploads/2020/02/aktifosgblogo.png" alt="Aktif OSGB" style={{ height: 50, objectFit: 'contain', marginBottom: 16, filter: 'brightness(1.1)' }} />
             <p style={{ fontSize: 13, color: '#5d5d7a', lineHeight: 1.7, maxWidth: 260, marginBottom: 20 }}>

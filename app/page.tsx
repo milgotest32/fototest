@@ -46,7 +46,7 @@ export default async function AnaSayfa() {
 
       {/* STATS BAR */}
       <div style={{ background:'linear-gradient(135deg,#f5c200 0%,#e6a800 100%)', padding:'28px 32px' }}>
-        <div style={{ maxWidth:1280, margin:'0 auto', display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
+        <div className="site-stats-grid" style={{ maxWidth:1280, margin:'0 auto', display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
           {[
             { num:'500+', lbl:'Çalışılan Firma', icon:'🏭' },
             { num:'10+', lbl:'Yıllık Deneyim', icon:'📅' },
@@ -107,7 +107,7 @@ export default async function AnaSayfa() {
 
       {/* TEHLİKE SINIFI SORGULAMA WIDGET */}
       <section style={{ padding:'64px 32px', maxWidth:1280, margin:'0 auto' }}>
-        <div style={{ background:'linear-gradient(135deg,rgba(245,194,0,.06) 0%,rgba(245,194,0,.02) 100%)', border:'1px solid rgba(245,194,0,.15)', borderRadius:24, padding:'48px 40px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'center' }}>
+        <div className="site-tehlike-grid" style={{ background:'linear-gradient(135deg,rgba(245,194,0,.06) 0%,rgba(245,194,0,.02) 100%)', border:'1px solid rgba(245,194,0,.15)', borderRadius:24, padding:'48px 40px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'center' }}>
           <div>
             <SectionLabel text="Ücretsiz Araç" />
             <h2 style={{ fontSize:'clamp(24px,3vw,38px)', fontWeight:900, color:'#fff', marginBottom:16, letterSpacing:-0.5 }}>
@@ -171,7 +171,7 @@ export default async function AnaSayfa() {
 
       {/* RAMAK KALA CTA */}
       <section style={{ padding:'64px 32px', maxWidth:1280, margin:'0 auto' }}>
-        <div style={{ background:'linear-gradient(135deg,rgba(248,113,113,.06),rgba(248,113,113,.02))', border:'1px solid rgba(248,113,113,.15)', borderRadius:24, padding:'40px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:24 }}>
+        <div className="site-ramak-cta" style={{ background:'linear-gradient(135deg,rgba(248,113,113,.06),rgba(248,113,113,.02))', border:'1px solid rgba(248,113,113,.15)', borderRadius:24, padding:'40px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:24 }}>
           <div style={{ display:'flex', alignItems:'center', gap:20 }}>
             <div style={{ fontSize:48 }}>⚠️</div>
             <div>

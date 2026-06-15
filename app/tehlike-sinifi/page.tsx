@@ -22,7 +22,7 @@ export default function TehlikeSinifi() {
         </div>
 
         {/* Bilgi kartları */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 40 }}>
+        <div className="site-tehlike-info" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 40 }}>
           {[
             { sinif: 'Az Tehlikeli', renk: '#22c55e', aciklama: 'Büro, ticaret, eğitim gibi düşük riskli sektörler', icon: '🟢' },
             { sinif: 'Tehlikeli', renk: '#fb923c', aciklama: 'İmalat, inşaat, taşımacılık gibi orta riskli sektörler', icon: '🟡' },

@@ -33,7 +33,7 @@ export default function SiteNav() {
       {/* Üst info bar */}
       <div style={{ background: '#f5c200', padding: '6px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#1a1a1a', fontWeight: 600 }}>
         <span>📞 0 553 169 68 67 &nbsp;|&nbsp; ✉️ info@aktifosgb.com.tr</span>
-        <span style={{ display: 'flex', gap: 16 }}>
+        <span className="site-infobar-right" style={{ display: 'flex', gap: 16 }}>
           <a href="https://www.facebook.com/afyonaktifOSGB/" target="_blank" rel="noopener noreferrer" style={{ color: '#1a1a1a', textDecoration: 'none', fontWeight: 700 }}>FB</a>
           <a href="https://www.instagram.com/aktifosgb/" target="_blank" rel="noopener noreferrer" style={{ color: '#1a1a1a', textDecoration: 'none', fontWeight: 700 }}>IG</a>
           <a href="https://wa.me/905531696867" target="_blank" rel="noopener noreferrer" style={{ color: '#1a1a1a', textDecoration: 'none', fontWeight: 700 }}>WA</a>

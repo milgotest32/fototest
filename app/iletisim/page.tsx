@@ -26,7 +26,7 @@ export default function Iletisim() {
     <div style={{ background:'#08080f', minHeight:'100vh', color:'#e8e8f0', fontFamily:"'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
       <div style={{ maxWidth:1200, margin:'0 auto', padding:'80px 32px' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:64, alignItems:'start' }}>
+        <div className="site-iletisim-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr', gap:64, alignItems:'start' }}>
           {/* Sol */}
           <div>
             <div style={{ fontSize:11, fontWeight:700, color:'#6366f1', textTransform:'uppercase', letterSpacing:2, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>

@@ -196,3 +196,99 @@
     }
   }
 }
+
+/* ===== SITE (PUBLIC) MOBİL RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* Stats bar - 4'lü grid → 2x2 */
+  .site-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Tehlike sınıfı widget - 2 kolon → tek */
+  .site-tehlike-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 28px 20px !important;
+  }
+
+  /* Ramak kala CTA - flex → column */
+  .site-ramak-cta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* İletişim sayfası form grid */
+  .site-iletisim-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  /* Kurumsal vizyon/misyon */
+  .site-vm-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Footer grid */
+  .site-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px !important;
+  }
+
+  /* Genel section padding azalt */
+  .site-section {
+    padding: 48px 20px !important;
+  }
+
+  /* Hero slider padding */
+  .site-hero-content {
+    padding: 24px 20px !important;
+  }
+
+  /* Slider ok butonları gizle */
+  .site-slider-arrow {
+    display: none !important;
+  }
+
+  /* Nav info bar */
+  .site-infobar-right {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Footer tamamen tek kolon */
+  .site-footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stats bar 2x2 kalır */
+  .site-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Form 2 kolonlu satırlar → tek kolon */
+  .site-form-row {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Tehlike sınıfı info kartları */
+  .site-tehlike-info {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hero slider yükseklik */
+  .site-hero-section {
+    height: clamp(420px, 90vw, 560px) !important;
+  }
+
+  /* Footer CTA butonlar */
+  .site-footer-cta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .site-footer-cta a {
+    text-align: center !important;
+  }
+}

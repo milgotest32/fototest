@@ -111,7 +111,7 @@ export default function HeroSlider() {
       </div>
 
       {/* Ok butonları */}
-      {[{ label: '‹', idx: (aktif - 1 + SLIDES.length) % SLIDES.length, side: { left: 20 } }, { label: '›', idx: (aktif + 1) % SLIDES.length, side: { right: 20 } }].map(({ label, idx, side }) => (
+      {[{ label: '‹', idx: (aktif - 1 + SLIDES.length) % SLIDES.length, side: { left: 20 }, cls: 'site-slider-arrow' }, { label: '›', idx: (aktif + 1) % SLIDES.length, side: { right: 20 }, cls: 'site-slider-arrow' }].map(({ label, idx, side }) => (
         <button key={label} onClick={() => gecis(idx)} style={{
           position: 'absolute', top: '50%', transform: 'translateY(-50%)', ...side, zIndex: 3,
           width: 48, height: 48, borderRadius: '50%',
