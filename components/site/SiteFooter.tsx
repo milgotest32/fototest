@@ -7,7 +7,7 @@ export default function SiteFooter() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: 40, paddingBottom: 40, borderBottom: '1px solid rgba(255,255,255,.05)', marginBottom: 28 }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 12 }}>
-              OSGB<span style={{ color: '#6366f1' }}>.</span>pro
+              Aktif OSGB
             </div>
             <p style={{ fontSize: 13, color: '#4a4a68', lineHeight: 1.7, maxWidth: 240 }}>
               2014'ten bu yana iş sağlığı ve güvenliğinde güvenilir çözüm ortağınız.
@@ -43,7 +43,7 @@ export default function SiteFooter() {
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <p style={{ fontSize: 12, color: '#3a3a58' }}>© 2014–2026 OSGB Pro · Tüm hakları saklıdır.</p>
+          <p style={{ fontSize: 12, color: '#3a3a58' }}>© 2014–2026 Aktif OSGB · Tüm hakları saklıdır.</p>
           <p style={{ fontSize: 12, color: '#3a3a58' }}>Pzt–Cum 08:30–18:00 · Cts 09:00–15:00</p>
         </div>
       </div>

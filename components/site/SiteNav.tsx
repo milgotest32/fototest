@@ -33,7 +33,7 @@ export default function SiteNav() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
           <span style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: -1 }}>
-            OSGB<span style={{ color: '#6366f1' }}>.</span>pro
+            Aktif OSGB
           </span>
         </Link>
 
