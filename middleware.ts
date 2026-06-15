@@ -54,8 +54,11 @@ export async function middleware(req: NextRequest) {
   // Diğer public sayfalar (hizmetler, kurumsal vs.) — herkes görebilir
   if (isPublicPage) return res
 
-  // / (ana sayfa / landing) — herkes görebilir
-  if (path === '/') return res
+  // / — login varsa panele, yoksa landing page
+  if (path === '/') {
+    if (user) return NextResponse.redirect(new URL('/firmalar', req.url))
+    return res
+  }
 
   // /giris — login olan → ana sayfaya, login olmayan → göster
   if (path === '/giris') {
