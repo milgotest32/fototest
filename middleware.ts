@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ⚙️ BAKIM MODU — true = bakımda, false = açık
+const BAKIM_MODU = true
+
 const ROL_ERISIM: Record<string, string[]> = {
   yonetici:  ['/firmalar','/ara','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site'],
   operasyon: ['/firmalar','/ara','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler','/arsiv'],
@@ -22,6 +25,14 @@ export async function middleware(req: NextRequest) {
 
   // Static dosyalar — dokunma
   if (path.startsWith('/_next') || path.startsWith('/api') || path === '/favicon.ico') return res
+
+  // BAKIM MODU — /giris ve /firmalar/* hariç herkesi bakım sayfasına yönlendir
+  if (BAKIM_MODU) {
+    if (path === '/bakim') return res
+    if (!path.startsWith('/giris') && !path.startsWith('/firmalar') && !path.startsWith('/saglik') && !path.startsWith('/koordinasyon') && !path.startsWith('/teklifler') && !path.startsWith('/tahsilat') && !path.startsWith('/ziyaretler') && !path.startsWith('/hekim') && !path.startsWith('/malzemeler') && !path.startsWith('/tedarikciler') && !path.startsWith('/taramalar') && !path.startsWith('/personeller') && !path.startsWith('/raporlar') && !path.startsWith('/fatura') && !path.startsWith('/eksik-veriler') && !path.startsWith('/arsiv') && !path.startsWith('/site') && !path.startsWith('/ara') && !path.startsWith('/idari')) {
+      return NextResponse.redirect(new URL('/bakim', req.url))
+    }
+  }
 
   // Public sayfalar — herkes görebilir, auth kontrolü yok
   if (PUBLIC_SAYFALAR.some(p => path === p || path.startsWith(p + '/'))) return res
