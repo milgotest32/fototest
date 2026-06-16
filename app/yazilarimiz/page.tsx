@@ -3,12 +3,7 @@ import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { getSeoMetadata } from '@/lib/seo'
 export const dynamic = 'force-dynamic'
-
-export async function generateMetadata() {
-  return getSeoMetadata('/yazilarimiz')
-}
 
 async function getYazilar() {
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
