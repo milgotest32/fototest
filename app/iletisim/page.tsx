@@ -1,10 +1,5 @@
 'use client'
-import { getSeoMetadata } from '@/lib/seo'
 export const dynamic = 'force-dynamic'
-
-export async function generateMetadata() {
-  return getSeoMetadata('/iletisim')
-}
 import { useState } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
