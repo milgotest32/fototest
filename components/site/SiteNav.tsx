@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 
 const LINKLER = [
@@ -17,102 +17,164 @@ const LINKLER = [
 export default function SiteNav() {
   const pathname = usePathname()
   const [user, setUser] = useState<any>(null)
-  const [menuAcik, setMenuAcik] = useState(false)
+  const [acik, setAcik] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const sb = createClient()
     sb.auth.getUser().then(({ data }) => setUser(data.user))
   }, [])
 
-  useEffect(() => { setMenuAcik(false) }, [pathname])
+  // pathname değişince kapat
+  useEffect(() => { setAcik(false) }, [pathname])
+
+  // DOM'a direkt müdahale — class değil style
+  useEffect(() => {
+    const panel = panelRef.current
+    const overlay = overlayRef.current
+    if (!panel || !overlay) return
+    if (acik) {
+      panel.style.transform = 'translateX(0)'
+      overlay.style.display = 'block'
+      document.body.style.overflow = 'hidden'
+    } else {
+      panel.style.transform = 'translateX(-100%)'
+      overlay.style.display = 'none'
+      document.body.style.overflow = ''
+    }
+  }, [acik])
+
+  function ac() { setAcik(true) }
+  function kapat() { setAcik(false) }
 
   return (
     <>
-      <style>{`
-        .snav-infobar{background:#f5c200;padding:6px 24px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#1a1a1a;font-weight:600}
-        .snav-wrap{position:sticky;top:0;z-index:100;background:#0a0a0f;border-bottom:1px solid rgba(245,194,0,.15)}
-        .snav-inner{max-width:1280px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-        .snav-links{display:flex;gap:2px;list-style:none;margin:0;padding:0}
-        .snav-link{color:#c8c8d8;text-decoration:none;font-size:13px;font-weight:600;padding:8px 12px;border-radius:8px;display:block;white-space:nowrap}
-        .snav-link.on{color:#f5c200;background:rgba(245,194,0,.08)}
-        .snav-giris{padding:8px 16px;border-radius:8px;background:#f5c200;color:#1a1a1a;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0}
-        .snav-burger{display:none;background:none;border:none;color:#c8c8d8;cursor:pointer;font-size:28px;padding:4px 8px;line-height:1;flex-shrink:0}
-        .snav-tehlike{padding:8px 12px;border-radius:8px;background:rgba(245,194,0,.1);border:1px solid rgba(245,194,0,.3);color:#f5c200;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}
-        /* Drawer */
-        .snav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998}
-        .snav-panel{position:fixed;top:0;left:0;bottom:0;width:280px;background:#0e0e1c;border-right:1px solid rgba(245,194,0,.15);z-index:9999;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s ease}
-        .snav-overlay.open{display:block}
-        .snav-panel.open{transform:translateX(0)}
-        .snav-panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
-        .snav-panel-close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#c8c8d8;cursor:pointer;width:36px;height:36px;font-size:18px;display:flex;align-items:center;justify-content:center}
-        .snav-panel-link{display:block;padding:14px 20px;color:#c8c8d8;text-decoration:none;font-size:15px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.04)}
-        .snav-panel-link.on{color:#f5c200;background:rgba(245,194,0,.06);border-left:3px solid #f5c200;padding-left:17px}
-        .snav-panel-footer{padding:20px;display:flex;flex-direction:column;gap:10px;margin-top:auto;border-top:1px solid rgba(255,255,255,.06)}
-        .snav-panel-giris{display:block;padding:13px;border-radius:10px;background:#f5c200;color:#0a0a0f;font-size:15px;font-weight:800;text-decoration:none;text-align:center}
-        .snav-panel-tehlike{display:block;padding:12px;border-radius:10px;background:rgba(245,194,0,.08);border:1px solid rgba(245,194,0,.15);color:#f5c200;font-size:14px;font-weight:700;text-decoration:none;text-align:center}
-        @media(max-width:900px){
-          .snav-links{display:none!important}
-          .snav-tehlike{display:none!important}
-          .snav-burger{display:flex!important}
-        }
-      `}</style>
-
-      {/* Info bar */}
-      <div className="snav-infobar">
+      {/* INFO BAR */}
+      <div style={{background:'#f5c200',padding:'6px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:12,color:'#1a1a1a',fontWeight:600}}>
         <span>📞 0 553 169 68 67 &nbsp;|&nbsp; ✉️ info@aktifosgb.com.tr</span>
-        <span style={{display:'flex',gap:16}}>
+        <span style={{display:'flex',gap:14}}>
           <a href="https://www.facebook.com/afyonaktifOSGB/" target="_blank" rel="noopener noreferrer" style={{color:'#1a1a1a',textDecoration:'none',fontWeight:700}}>FB</a>
           <a href="https://www.instagram.com/aktifosgb/" target="_blank" rel="noopener noreferrer" style={{color:'#1a1a1a',textDecoration:'none',fontWeight:700}}>IG</a>
           <a href="https://wa.me/905531696867" target="_blank" rel="noopener noreferrer" style={{color:'#1a1a1a',textDecoration:'none',fontWeight:700}}>WA</a>
         </span>
       </div>
 
-      {/* Nav */}
-      <div className="snav-wrap">
-        <div className="snav-inner">
-          <Link href="/" style={{flexShrink:0}}>
-            <img src="/logo.png" alt="Aktif OSGB" style={{height:40,objectFit:'contain',display:'block'}} />
+      {/* NAV BAR */}
+      <nav style={{position:'sticky',top:0,zIndex:100,background:'#0a0a0f',borderBottom:'1px solid rgba(245,194,0,.15)'}}>
+        <div style={{maxWidth:1280,margin:'0 auto',padding:'0 20px',height:64,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+          
+          {/* Logo */}
+          <Link href="/" style={{flexShrink:0,display:'flex'}}>
+            <img src="/logo.png" alt="Aktif OSGB" style={{height:40,objectFit:'contain'}} />
           </Link>
-          <ul className="snav-links">
+
+          {/* Desktop linkler */}
+          <ul style={{display:'flex',gap:2,listStyle:'none',margin:0,padding:0}} className="snav-desktop">
             {LINKLER.map(l => (
               <li key={l.href}>
-                <Link href={l.href} className={`snav-link${pathname.startsWith(l.href) ? ' on' : ''}`}>{l.label}</Link>
+                <Link href={l.href} style={{
+                  color: pathname.startsWith(l.href) ? '#f5c200' : '#c8c8d8',
+                  background: pathname.startsWith(l.href) ? 'rgba(245,194,0,.08)' : 'transparent',
+                  textDecoration:'none',fontSize:13,fontWeight:600,
+                  padding:'8px 12px',borderRadius:8,display:'block',whiteSpace:'nowrap'
+                }}>{l.label}</Link>
               </li>
             ))}
           </ul>
+
+          {/* Sağ */}
           <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-            <Link href="/tehlike-sinifi" className="snav-tehlike">Tehlike Sınıfı</Link>
-            <Link href={user ? '/firmalar' : '/giris'} className="snav-giris">{user ? 'Panel →' : 'Giriş'}</Link>
-            <button className="snav-burger" onClick={() => setMenuAcik(true)} aria-label="Menü">☰</button>
+            <Link href="/tehlike-sinifi" className="snav-tehlike" style={{
+              padding:'8px 12px',borderRadius:8,
+              background:'rgba(245,194,0,.1)',border:'1px solid rgba(245,194,0,.3)',
+              color:'#f5c200',fontSize:12,fontWeight:700,textDecoration:'none',whiteSpace:'nowrap'
+            }}>Tehlike Sınıfı</Link>
+
+            <Link href={user ? '/firmalar' : '/giris'} style={{
+              padding:'8px 16px',borderRadius:8,background:'#f5c200',
+              color:'#1a1a1a',fontSize:13,fontWeight:700,textDecoration:'none',whiteSpace:'nowrap'
+            }}>{user ? 'Panel →' : 'Giriş'}</Link>
+
+            {/* HAMBURGER — onClick garantili */}
+            <button
+              type="button"
+              onClick={ac}
+              className="snav-burger"
+              style={{display:'none',background:'none',border:'none',color:'#f5c200',cursor:'pointer',fontSize:28,padding:'6px 8px',lineHeight:1,flexShrink:0,touchAction:'manipulation'}}
+            >☰</button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Overlay — her zaman DOM'da, CSS ile göster/gizle */}
-      <div className={`snav-overlay${menuAcik ? ' open' : ''}`} onClick={() => setMenuAcik(false)} />
+      {/* OVERLAY */}
+      <div
+        ref={overlayRef}
+        onClick={kapat}
+        style={{display:'none',position:'fixed',inset:0,background:'rgba(0,0,0,.75)',zIndex:9998,touchAction:'manipulation'}}
+      />
 
-      {/* Drawer panel — her zaman DOM'da, transform ile aç/kapat */}
-      <div className={`snav-panel${menuAcik ? ' open' : ''}`}>
-        <div className="snav-panel-head">
-          <img src="/logo.png" alt="Aktif OSGB" style={{height:34,objectFit:'contain'}} />
-          <button className="snav-panel-close" onClick={() => setMenuAcik(false)}>✕</button>
+      {/* DRAWER PANEL */}
+      <div
+        ref={panelRef}
+        style={{
+          position:'fixed',top:0,left:0,bottom:0,width:300,maxWidth:'85vw',
+          background:'#0e0e1c',borderRight:'1px solid rgba(245,194,0,.15)',
+          zIndex:9999,display:'flex',flexDirection:'column',
+          transform:'translateX(-100%)',transition:'transform .25s ease',
+          willChange:'transform'
+        }}
+      >
+        {/* Panel baş */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 20px',borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+          <img src="/logo.png" alt="Aktif OSGB" style={{height:36,objectFit:'contain'}} />
+          <button
+            type="button"
+            onClick={kapat}
+            style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,color:'#fff',cursor:'pointer',width:38,height:38,fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',touchAction:'manipulation'}}
+          >✕</button>
         </div>
+
+        {/* Linkler */}
         <nav style={{flex:1,overflowY:'auto'}}>
           {LINKLER.map(l => (
-            <Link key={l.href} href={l.href} className={`snav-panel-link${pathname.startsWith(l.href) ? ' on' : ''}`} onClick={() => setMenuAcik(false)}>
-              {l.label}
-            </Link>
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={kapat}
+              style={{
+                display:'block',padding:'16px 20px',
+                color: pathname.startsWith(l.href) ? '#f5c200' : '#c8c8d8',
+                background: pathname.startsWith(l.href) ? 'rgba(245,194,0,.06)' : 'transparent',
+                borderBottom:'1px solid rgba(255,255,255,.04)',
+                textDecoration:'none',fontSize:16,fontWeight:600,
+                borderLeft: pathname.startsWith(l.href) ? '3px solid #f5c200' : '3px solid transparent',
+              }}
+            >{l.label}</Link>
           ))}
         </nav>
-        <div className="snav-panel-footer">
-          <Link href={user ? '/firmalar' : '/giris'} className="snav-panel-giris" onClick={() => setMenuAcik(false)}>
-            {user ? 'Panel →' : 'Giriş Yap'}
-          </Link>
-          <Link href="/tehlike-sinifi" className="snav-panel-tehlike" onClick={() => setMenuAcik(false)}>
-            🔍 Tehlike Sınıfı Sorgula
-          </Link>
+
+        {/* Alt butonlar */}
+        <div style={{padding:20,display:'flex',flexDirection:'column',gap:10,borderTop:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+          <Link href={user ? '/firmalar' : '/giris'} onClick={kapat} style={{
+            display:'block',padding:14,borderRadius:10,background:'#f5c200',
+            color:'#0a0a0f',fontSize:15,fontWeight:800,textDecoration:'none',textAlign:'center'
+          }}>{user ? 'Panel →' : 'Giriş Yap'}</Link>
+          <Link href="/tehlike-sinifi" onClick={kapat} style={{
+            display:'block',padding:12,borderRadius:10,
+            background:'rgba(245,194,0,.08)',border:'1px solid rgba(245,194,0,.15)',
+            color:'#f5c200',fontSize:14,fontWeight:700,textDecoration:'none',textAlign:'center'
+          }}>🔍 Tehlike Sınıfı Sorgula</Link>
         </div>
       </div>
+
+      <style>{`
+        @media(max-width:900px){
+          .snav-desktop{display:none!important}
+          .snav-burger{display:flex!important}
+          .snav-tehlike{display:none!important}
+        }
+      `}</style>
     </>
   )
 }
