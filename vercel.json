@@ -536,11 +536,6 @@
       "permanent": true
     },
     {
-      "source": "/ramak-kala",
-      "destination": "/ramak-kala",
-      "permanent": false
-    },
-    {
       "source": "/nace-basvuru-formu",
       "destination": "/tehlike-sinifi",
       "permanent": true
