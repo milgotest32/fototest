@@ -1,63 +1,79 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const USERS = [
-  { email: 'taner@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Taner',        rol: 'yonetici'  },
-  { email: 'form@aktifosgb.com.tr',   password: 'Aktifosgb123', ad_soyad: 'Form',         rol: 'operasyon' },
-  { email: 'igu@aktifosgb.com.tr',    password: 'Aktifosgb123', ad_soyad: 'Ali İhsan',    rol: 'operasyon' },
-  { email: 'igu_1@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Ercan',        rol: 'saha'      },
-  { email: 'igu_2@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Dinar',        rol: 'saha'      },
-  { email: 'igu_3@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Abdurrahman',  rol: 'saha'      },
-  { email: 'igu_4@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Muhterem',     rol: 'saha'      },
-  { email: 'igu_5@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Arif Changir', rol: 'saha'      },
-  { email: 'igu_6@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'İGU 6',        rol: 'saha'      },
-  { email: 'satis@aktifosgb.com.tr',  password: 'Aktifosgb123', ad_soyad: 'Satış Birimi', rol: 'satis'     },
-]
+function getAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  if (!key || key.length < 10) throw new Error('SUPABASE_SERVICE_ROLE_KEY tanımlı değil')
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
+}
 
-export async function GET(req: NextRequest) {
-  const secret = req.nextUrl.searchParams.get('secret')
-  if (secret !== 'osgb-admin-2026') {
-    return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
-  }
+// POST — yeni kullanıcı oluştur
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { email, password, ad_soyad, rol, secret } = body
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-  
-  // Debug: key var mı?
-  if (!key || key.length < 10) {
-    return NextResponse.json({ error: 'Service key yok', url, keyLen: key.length })
-  }
-
-  const admin = createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  })
-
-  const results = []
-  for (const u of USERS) {
-    // Önce varsa sil
-    const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 })
-    const existing = list?.users?.find((x: any) => x.email === u.email)
-    if (existing) {
-      await admin.auth.admin.deleteUser(existing.id)
+    if (secret !== (process.env.ADMIN_SECRET || 'osgb-admin-2026')) {
+      return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+    }
+    if (!email || !password || !ad_soyad || !rol) {
+      return NextResponse.json({ error: 'Tüm alanlar zorunludur' }, { status: 400 })
     }
 
+    const admin = getAdmin()
+
+    // Auth'a kayıt
     const { data, error } = await admin.auth.admin.createUser({
-      email: u.email,
-      password: u.password,
+      email,
+      password,
       email_confirm: true,
     })
-
-    if (error) {
-      results.push({ email: u.email, error: error.message })
-      continue
-    }
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
     const uid = data.user.id
-    await admin.from('personeller').upsert({
-      id: uid, ad_soyad: u.ad_soyad, rol: u.rol, aktif: true
-    })
-    results.push({ email: u.email, ok: true, id: uid })
-  }
 
-  return NextResponse.json({ results, keyLen: key.length, url })
+    // Personeller tablosuna ekle
+    const { error: pErr } = await admin.from('personeller').upsert({
+      id: uid,
+      ad_soyad,
+      rol,
+      aktif: true,
+    })
+    if (pErr) {
+      // Auth kullanıcısını geri al
+      await admin.auth.admin.deleteUser(uid)
+      return NextResponse.json({ error: pErr.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true, id: uid })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
+// DELETE — kullanıcıyı hem auth'tan hem personeller'den sil
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, secret } = body
+
+    if (secret !== (process.env.ADMIN_SECRET || 'osgb-admin-2026')) {
+      return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+    }
+    if (!id) return NextResponse.json({ error: 'ID zorunludur' }, { status: 400 })
+
+    const admin = getAdmin()
+
+    // Önce personeller tablosundan sil
+    await admin.from('personeller').delete().eq('id', id)
+
+    // Auth'tan sil
+    const { error } = await admin.auth.admin.deleteUser(id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
 }
