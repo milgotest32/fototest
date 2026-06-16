@@ -5,7 +5,7 @@ import Link from 'next/link'
 const SLIDES = [
   {
     img: 'https://aktifosgb.com.tr/wp-content/uploads/2020/01/slider2.jpg',
-    baslik: ['10 Yıldır', 'Güvenli İşyerleri', 'İçin Çalışıyoruz!'],
+    baslik: ['9 Yıldır', 'Güvenli İşyerleri', 'İçin Çalışıyoruz!'],
     aciklama: 'İşyerlerinde olası kaza ve kayıpların önüne geçmek, iş sağlığı ve güvenliğini korumak için profesyonel ekibimizle hizmet veriyoruz.',
   },
   {
@@ -89,7 +89,7 @@ export default function HeroSlider() {
 
           {/* Stat mini */}
           <div style={{ display: 'flex', gap: 32, marginTop: 44 }}>
-            {[['500+', 'Firma'], ['10+', 'Yıl'], ['1200+', 'Eğitim']].map(([num, lbl]) => (
+            {[['500+', 'Firma'], ['9+', 'Yıl'], ['1200+', 'Eğitim']].map(([num, lbl]) => (
               <div key={lbl}>
                 <div style={{ fontSize: 24, fontWeight: 900, color: '#f5c200', letterSpacing: -0.5 }}>{num}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: 1.5 }}>{lbl}</div>
