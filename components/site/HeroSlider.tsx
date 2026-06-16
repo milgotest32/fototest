@@ -4,19 +4,29 @@ import Link from 'next/link'
 
 const SLIDES = [
   {
-    img: 'https://aktifosgb.com.tr/wp-content/uploads/2020/01/slider2.jpg',
-    baslik: ['9 Yıldır', 'Güvenli İşyerleri', 'İçin Çalışıyoruz!'],
-    aciklama: 'İşyerlerinde olası kaza ve kayıpların önüne geçmek, iş sağlığı ve güvenliğini korumak için profesyonel ekibimizle hizmet veriyoruz.',
+    img: '/slider/slider1.jpg',
+    baslik: ['9 Yıldır', 'Çalışanlar Güvende,', 'İşler Yolunda!'],
+    aciklama: '2014\'ten bu yana T.C. Çalışma ve Sosyal Güvenlik Bakanlığı yetkisiyle çalışanlarınızı ve markanızı güvenle geleceğe taşıyoruz.',
   },
   {
-    img: 'https://aktifosgb.com.tr/wp-content/uploads/2020/01/slider6-1.jpg',
-    baslik: ['Yasal', 'Yükümlülüklerinizi', 'Zamanında Yerine Getirin'],
-    aciklama: 'Periyodik sağlık taramaları, işe giriş muayeneleri ve risk analizleri tek çatı altında. 6331 sayılı Kanun kapsamında tüm hizmetler.',
+    img: '/slider/slider2.jpg',
+    baslik: ['Periyodik Sağlık', 'Kontrollerini Yaptır,', 'Çalışanların Sağlıklı Olsun!'],
+    aciklama: 'Mobil sağlık tarama aracımızla işyerinize geliyoruz. Akciğer grafisi, EKG, kan tetkikleri ve tüm periyodik muayeneler tek noktada.',
   },
   {
-    img: 'https://aktifosgb.com.tr/wp-content/uploads/2023/11/aktif-osgb-9-yil-slider.jpg',
-    baslik: ['Afyon\'un', 'Güvenilir', 'OSGB\'si'],
-    aciklama: '500\'den fazla firmaya verdiğimiz kesintisiz hizmetle iş sağlığı ve güvenliği alanında sektörün lider kuruluşu.',
+    img: '/slider/slider3.jpg',
+    baslik: ['İş Güvenliği', 'Tedbirlerini Al,', 'Çocuklar Güvenle Büyüsün!'],
+    aciklama: 'Güvenli iş ortamları güvenli gelecekler inşa eder. Risk değerlendirmesi ve acil durum planlarıyla işyerinizi koruma altına alın.',
+  },
+  {
+    img: '/slider/slider4.jpg',
+    baslik: ['Çalışanlar Güvende,', 'İşler Yolunda!', ''],
+    aciklama: 'Afyon ve çevre illerinde 500\'den fazla firmaya kesintisiz iş sağlığı ve güvenliği hizmeti veriyoruz.',
+  },
+  {
+    img: '/slider/slider5.jpg',
+    baslik: ['Aktif OSGB', '9. Yılında', 'Yanınızda!'],
+    aciklama: 'ÇSGB Yetkili OSGB olarak Afyonkarahisar\'da iş sağlığı ve güvenliği alanında güvenilir çözüm ortağınız.',
   },
 ]
 
