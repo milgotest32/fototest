@@ -18,7 +18,7 @@ const ERISIM: any = {
 
 const GRUPLAR = [
   { baslik:'Genel', linkler:[
-    { href:'/', label:'Dashboard', icon:LayoutDashboard },
+    { href:'/dashboard', label:'Dashboard', icon:LayoutDashboard },
     { href:'/ara', label:'Global Arama', icon:SearchIcon },
   ]},
   { baslik:'Ana Menü', linkler:[
