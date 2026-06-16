@@ -49,7 +49,7 @@ export default async function AnaSayfa() {
         <div className="site-stats-grid" style={{ maxWidth:1280, margin:'0 auto', display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
           {[
             { num:'500+', lbl:'Çalışılan Firma', icon:'🏭' },
-            { num:'10+', lbl:'Yıllık Deneyim', icon:'📅' },
+            { num:'9+', lbl:'Yıllık Deneyim', icon:'📅' },
             { num:'1200+', lbl:'Verilen Eğitim', icon:'🎓' },
             { num:'6331', lbl:'Sayılı Kanun Kapsamı', icon:'📋' },
           ].map(({ num, lbl, icon }) => (
