@@ -589,6 +589,66 @@
       "source": "/category/is-sagligi/",
       "destination": "/yazilarimiz",
       "permanent": true
+    },
+    {
+      "source": "/cocuk-kacirma-olaylari-ve-guvenlik-tedbirleri",
+      "destination": "/yazilarimiz/cocuk-kacirma-olaylari-ve-guvenlik-tedbirleri",
+      "permanent": true
+    },
+    {
+      "source": "/cocuk-kacirma-olaylari-ve-guvenlik-tedbirleri/",
+      "destination": "/yazilarimiz/cocuk-kacirma-olaylari-ve-guvenlik-tedbirleri",
+      "permanent": true
+    },
+    {
+      "source": "/is-sagligi-ve-guvenligi-hizmetleri",
+      "destination": "/yazilarimiz/is-sagligi-ve-guvenligi-hizmetleri",
+      "permanent": true
+    },
+    {
+      "source": "/is-sagligi-ve-guvenligi-hizmetleri/",
+      "destination": "/yazilarimiz/is-sagligi-ve-guvenligi-hizmetleri",
+      "permanent": true
+    },
+    {
+      "source": "/afyonda-gezilecek-yerler-tarihin-ve-doganin-buyuleyici-rotasi",
+      "destination": "/yazilarimiz/afyonda-gezilecek-yerler-tarihin-ve-doganin-buyuleyici-rotasi",
+      "permanent": true
+    },
+    {
+      "source": "/afyonda-gezilecek-yerler-tarihin-ve-doganin-buyuleyici-rotasi/",
+      "destination": "/yazilarimiz/afyonda-gezilecek-yerler-tarihin-ve-doganin-buyuleyici-rotasi",
+      "permanent": true
+    },
+    {
+      "source": "/oldurulen-ogretmen-okullarda-ogretmenlere-siddet-ve-is-guvenligi-iliskisi",
+      "destination": "/yazilarimiz/oldurulen-ogretmen-okullarda-ogretmenlere-siddet-ve-is-guvenligi-iliskisi",
+      "permanent": true
+    },
+    {
+      "source": "/oldurulen-ogretmen-okullarda-ogretmenlere-siddet-ve-is-guvenligi-iliskisi/",
+      "destination": "/yazilarimiz/oldurulen-ogretmen-okullarda-ogretmenlere-siddet-ve-is-guvenligi-iliskisi",
+      "permanent": true
+    },
+    {
+      "source": "/ise-giris-saglik-raporu-hizmetleri",
+      "destination": "/yazilarimiz/ise-giris-saglik-raporu-hizmetleri",
+      "permanent": true
+    },
+    {
+      "source": "/ise-giris-saglik-raporu-hizmetleri/",
+      "destination": "/yazilarimiz/ise-giris-saglik-raporu-hizmetleri",
+      "permanent": true
+    },
+    {
+      "source": "/yazilarimiz/page/2",
+      "destination": "/yazilarimiz",
+      "permanent": true
+    },
+    {
+      "source": "/yazilarimiz/page/2/",
+      "destination": "/yazilarimiz",
+      "permanent": true
     }
   ]
 }
