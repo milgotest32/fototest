@@ -91,8 +91,18 @@ export default function Personeller() {
   }
 
   async function sil(id: string, ad: string) {
-    if (!confirm(`${ad} silinecek. Emin misiniz?`)) return
-    await sb.from('personeller').delete().eq('id', id)
+    if (!confirm(`${ad} hem sistemden hem girişten silinecek. Emin misiniz?`)) return
+    const res = await fetch('/api/admin/kullanici-olustur', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, secret: 'osgb-admin-2026' })
+    })
+    const json = await res.json()
+    if (!res.ok || json.error) {
+      alert('Silme hatası: ' + (json.error || 'Bilinmeyen hata'))
+      return
+    }
+    setBasari(`${ad} silindi.`)
     yukle()
   }
 
