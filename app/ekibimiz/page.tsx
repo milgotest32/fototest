@@ -1,16 +1,17 @@
 'use client'
+import { useState, useEffect } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 
 async function getEkip() {
-  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  const sb = createClient()
   const { data } = await sb.from('site_ekip').select('*').eq('aktif', true).order('sira')
   return data || []
 }
 
-export default async function Ekibimiz() {
+export default function Ekibimiz() {
   const ekip = await getEkip()
   return (
     <div style={{ background: '#f8f8f6', minHeight: '100vh', width: '100%', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
