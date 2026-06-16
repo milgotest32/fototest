@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+'use client'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import { createClient } from '@supabase/supabase-js'

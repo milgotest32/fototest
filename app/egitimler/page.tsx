@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+'use client'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import { createClient } from '@supabase/supabase-js'
@@ -17,7 +17,6 @@ async function getEgitimler() {
 
 export default async function Egitimler() {
   const egitimler = await getEgitimler()
-  useEffect(() => { document.body.style.background = '#f8f8f6'; return () => { document.body.style.background = ''; } }, [])
   return (
     <div style={{ background: '#f8f8f6', minHeight: '100vh', width: '100%', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
