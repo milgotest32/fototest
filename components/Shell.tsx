@@ -3,7 +3,7 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import MobileTopbar from './MobileTopbar'
 
-const PUBLIC_PATHS = ['/', '/giris', '/kurumsal', '/ekibimiz', '/hizmetlerimiz', '/egitimler', '/referanslar', '/yazilarimiz', '/iletisim', '/tehlike-sinifi', '/ramak-kala']
+const PUBLIC_PATHS = ['/', '/giris', '/kurumsal', '/ekibimiz', '/hizmetlerimiz', '/egitimler', '/referanslar', '/yazilarimiz', '/iletisim', '/tehlike-sinifi', '/ramak-kala', '/portal']
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
