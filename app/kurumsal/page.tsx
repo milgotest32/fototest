@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import { createClient } from '@supabase/supabase-js'
@@ -20,11 +21,11 @@ export default async function Kurumsal() {
   const a = await getAyarlar()
   const s = (k: string, fb = '') => a[k] || fb
 
-  const stil = { background: '#f8f8f6', minHeight: '100vh', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }
+  const stil = { background: '#f8f8f6', minHeight: '100vh', width: '100%', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }
   const wrap = { maxWidth: 1000, margin: '0 auto', padding: '80px 32px' }
   const label = { fontSize: 11, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase' as const, letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }
   const line = { width: 20, height: 2, background: '#6366f1', borderRadius: 2, display: 'inline-block' }
-  const h1s = { fontSize: 'clamp(32px,5vw,48px)', fontWeight: 800, letterSpacing: -1.5, color: '#fff', marginBottom: 24, lineHeight: 1.1 }
+  const h1s = { fontSize: 'clamp(32px,5vw,48px)', fontWeight: 800, letterSpacing: -1.5, color: '#111118', marginBottom: 24, lineHeight: 1.1 }
   const ps = { fontSize: 16, color: '#9b9bb8', lineHeight: 1.8, marginBottom: 16 }
   const card = { borderRadius: 20, padding: 32, marginBottom: 24 }
 
@@ -43,19 +44,19 @@ export default async function Kurumsal() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 24, marginBottom: 60 }}>
           <div style={{ ...card, background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.15)' }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 2, color: '#8080f8', marginBottom: 14 }}>Vizyonumuz</div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 14 }}>Sektörde Uzman Kuruluş</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111118', marginBottom: 14 }}>Sektörde Uzman Kuruluş</h2>
             <p style={{ fontSize: 14, color: '#7070a0', lineHeight: 1.7 }}>{s('vizyon')}</p>
           </div>
           <div style={{ ...card, background: 'rgba(52,211,153,.06)', border: '1px solid rgba(52,211,153,.12)' }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 2, color: '#34d399', marginBottom: 14 }}>Misyonumuz</div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 14 }}>Etik ve Güvenilir Hizmet</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111118', marginBottom: 14 }}>Etik ve Güvenilir Hizmet</h2>
             <p style={{ fontSize: 14, color: '#7070a0', lineHeight: 1.7 }}>{s('misyon')}</p>
           </div>
         </div>
 
         {/* Hedefler */}
         <div style={{ marginBottom: 48 }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 20, letterSpacing: -0.5 }}>Hedeflerimiz</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111118', marginBottom: 20, letterSpacing: -0.5 }}>Hedeflerimiz</h2>
           <div style={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: 16, padding: 28 }}>
             {s('hedeflerimiz').split('\n').filter(Boolean).map((line, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
@@ -68,7 +69,7 @@ export default async function Kurumsal() {
 
         {/* Değerler */}
         <div>
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 20, letterSpacing: -0.5 }}>Değerlerimiz</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111118', marginBottom: 20, letterSpacing: -0.5 }}>Değerlerimiz</h2>
           <div style={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: 16, padding: 28 }}>
             {s('degerlerimiz').split('\n').filter(Boolean).map((line, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12 }}>

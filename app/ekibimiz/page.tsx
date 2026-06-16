@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import { createClient } from '@supabase/supabase-js'
@@ -16,14 +17,15 @@ async function getEkip() {
 
 export default async function Ekibimiz() {
   const ekip = await getEkip()
+  useEffect(() => { document.body.style.background = '#f8f8f6'; return () => { document.body.style.background = ''; } }, [])
   return (
-    <div style={{ background: '#f8f8f6', minHeight: '100vh', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
+    <div style={{ background: '#f8f8f6', minHeight: '100vh', width: '100%', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 32px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 20, height: 2, background: '#6366f1', borderRadius: 2, display: 'inline-block' }} />Ekibimiz
         </div>
-        <h1 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, letterSpacing: -1.5, color: '#fff', marginBottom: 16, lineHeight: 1.1 }}>Uzman Kadromuz</h1>
+        <h1 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, letterSpacing: -1.5, color: '#111118', marginBottom: 16, lineHeight: 1.1 }}>Uzman Kadromuz</h1>
         <p style={{ fontSize: 18, color: '#6b6b88', maxWidth: 560, lineHeight: 1.7, marginBottom: 64 }}>
           Alanında sertifikalı ve deneyimli uzmanlarımızla hizmetinizdeyiz.
         </p>
@@ -41,7 +43,7 @@ export default async function Ekibimiz() {
                 </div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{u.ad_soyad}</h3>
                 <p style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, marginBottom: 8 }}>{u.unvan}</p>
-                {u.uzmanlik && <p style={{ fontSize: 12, color: '#6b6b80' }}>{u.uzmanlik}</p>}
+                {u.uzmanlik && <p style={{ fontSize: 12, color: '#444455' }}>{u.uzmanlik}</p>}
               </div>
             ))}
           </div>

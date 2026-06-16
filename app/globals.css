@@ -292,3 +292,8 @@
     text-align: center !important;
   }
 }
+
+/* Site sayfaları için açık tema override */
+.site-page {
+  background: #f8f8f6 !important;
+}

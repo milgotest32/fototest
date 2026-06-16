@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
 import { createClient } from '@supabase/supabase-js'
@@ -16,14 +17,15 @@ async function getEgitimler() {
 
 export default async function Egitimler() {
   const egitimler = await getEgitimler()
+  useEffect(() => { document.body.style.background = '#f8f8f6'; return () => { document.body.style.background = ''; } }, [])
   return (
-    <div style={{ background: '#f8f8f6', minHeight: '100vh', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
+    <div style={{ background: '#f8f8f6', minHeight: '100vh', width: '100%', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 32px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 20, height: 2, background: '#6366f1', borderRadius: 2, display: 'inline-block' }} />Eğitimler
         </div>
-        <h1 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, letterSpacing: -1.5, color: '#fff', marginBottom: 16, lineHeight: 1.1 }}>Sertifikalı Eğitim Programları</h1>
+        <h1 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, letterSpacing: -1.5, color: '#111118', marginBottom: 16, lineHeight: 1.1 }}>Sertifikalı Eğitim Programları</h1>
         <p style={{ fontSize: 18, color: '#6b6b88', maxWidth: 560, lineHeight: 1.7, marginBottom: 64 }}>
           Yasal zorunluluklar kapsamında çalışanlarınızı eğitiyor, sertifikalandırıyoruz.
         </p>
@@ -32,7 +34,7 @@ export default async function Egitimler() {
             <div key={e.id} style={{ background: '#ffffff', border: '1px solid #e8e8ed', borderRadius: 20, padding: 32 }}>
               <div style={{ fontSize: 48, fontWeight: 900, color: 'rgba(99,102,241,.15)', lineHeight: 1, marginBottom: 20 }}>{String(i+1).padStart(2,'0')}</div>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 12 }}>{e.baslik}</h2>
-              <p style={{ fontSize: 14, color: '#6b6b80', lineHeight: 1.7, marginBottom: 20 }}>{e.aciklama}</p>
+              <p style={{ fontSize: 14, color: '#444455', lineHeight: 1.7, marginBottom: 20 }}>{e.aciklama}</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {e.sure && <span style={{ fontSize: 12, color: '#7c7cf0', background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.12)', borderRadius: 100, padding: '4px 12px', fontWeight: 600 }}>⏱ {e.sure}</span>}
                 {e.sertifika && <span style={{ fontSize: 12, color: '#34d399', background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.15)', borderRadius: 100, padding: '4px 12px', fontWeight: 600 }}>✓ Sertifikalı</span>}
