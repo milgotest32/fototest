@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
-import { Globe, Settings, Layers, Users, Award, FileText, MessageSquare, ExternalLink, Plus, Trash2, Pencil, X, Check } from 'lucide-react'
+import { Globe, Settings, Layers, Users, Award, FileText, MessageSquare, ExternalLink, Plus, Trash2, Pencil, X, Check, ArrowRight, RefreshCw } from 'lucide-react'
 
 const SEKMELER = [
   { id: 'ayarlar', label: 'Genel Ayarlar', icon: Settings },
@@ -13,7 +13,11 @@ const SEKMELER = [
   { id: 'yazilar', label: 'Yazılar', icon: FileText },
   { id: 'talepler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'seo', label: 'SEO Ayarları', icon: Globe },
+  { id: 'yonlendirmeler', label: '301 Yönlendirmeler', icon: ArrowRight },
 ]
+
+// vercel.json'daki mevcut redirectler (statik liste)
+const VERCEL_REDIRECTLER = [{"source": "/kurumsal/", "destination": "/kurumsal", "permanent": true}, {"source": "/hakkimizda", "destination": "/kurumsal", "permanent": true}, {"source": "/hakkimizda/", "destination": "/kurumsal", "permanent": true}, {"source": "/hakkimizda-2", "destination": "/kurumsal", "permanent": true}, {"source": "/hakkimizda-2/", "destination": "/kurumsal", "permanent": true}, {"source": "/ekibimiz/", "destination": "/ekibimiz", "permanent": true}, {"source": "/hizmetlerimiz/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/is-sagligi-hizmetleri", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/is-sagligi-hizmetleri/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/ise-giris-raporu", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/ise-giris-raporu/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/is-guvenligi-hizmetleri", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/is-guvenligi-hizmetleri/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/risk-degerlendirme-raporu-hazirlama", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/risk-degerlendirme-raporu-hazirlama/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/acil-durum-plani-hazirlama", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/acil-durum-plani-hazirlama/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/cevreye-yonelik-hizmetler", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/cevreye-yonelik-hizmetler/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/buyuk-kaza-onleme-raporu", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/buyuk-kaza-onleme-raporu/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/tehlikeli-madde-guvenlik-danismanlik-hizmetleri", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/tehlikeli-madde-guvenlik-danismanlik-hizmetleri/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/lpg-sorumlu-mudurluk-hizmetleri", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/lpg-sorumlu-mudurluk-hizmetleri/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/olcum-hizmetleri", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/olcum-hizmetleri/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/patlamadan-korunma-dokumani-hazirlama", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/patlamadan-korunma-dokumani-hazirlama/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/mobil-saglik-tarama", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/mobil-saglik-tarama/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/isyeri-hekimligi", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/isyeri-hekimligi/", "destination": "/hizmetlerimiz", "permanent": true}, {"source": "/egitimler/", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/ilk-yardim-egitimi", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/ilk-yardim-egitimi/", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/yangin-egitimi-ve-senaryo-hizmetleri", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/yangin-egitimi-ve-senaryo-hizmetleri/", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/hijyen-egitimi", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/hijyen-egitimi/", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/mesleki-egitim-hizmeti", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/mesleki-egitim-hizmeti/", "destination": "/egitimler", "permanent": true}, {"source": "/portfolio-items/:slug*", "destination": "/egitimler", "permanent": true}, {"source": "/yangin-egitimi-ve-senaryo-uygulama-hizmetleri", "destination": "/egitimler", "permanent": true}, {"source": "/yangin-egitimi-ve-senaryo-uygulama-hizmetleri/", "destination": "/egitimler", "permanent": true}, {"source": "/hijyen-egitim-hizmetimi", "destination": "/egitimler", "permanent": true}, {"source": "/hijyen-egitim-hizmetimi/", "destination": "/egitimler", "permanent": true}, {"source": "/mesleki-egitim-hizmeti", "destination": "/egitimler", "permanent": true}, {"source": "/mesleki-egitim-hizmeti/", "destination": "/egitimler", "permanent": true}, {"source": "/ilk-yardim-egitimi", "destination": "/egitimler", "permanent": true}, {"source": "/ilk-yardim-egitimi/", "destination": "/egitimler", "permanent": true}, {"source": "/yangin-egitimi", "destination": "/egitimler", "permanent": true}, {"source": "/yangin-egitimi/", "destination": "/egitimler", "permanent": true}, {"source": "/hijyen-egitimi", "destination": "/egitimler", "permanent": true}, {"source": "/hijyen-egitimi/", "destination": "/egitimler", "permanent": true}, {"source": "/referanslar/", "destination": "/referanslar", "permanent": true}, {"source": "/yazilarimiz/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/afyonkarahisarda-cam-silerken-dusen-kadin-hayatini-kaybetti", "destination": "/yazilarimiz", "permanent": true}, {"source": "/afyonkarahisarda-cam-silerken-dusen-kadin-hayatini-kaybetti/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/kartalkaya-otel-yangini", "destination": "/yazilarimiz", "permanent": true}, {"source": "/kartalkaya-otel-yangini/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/nobel-ekonomi-odullu-daron-acemogluna-verildi", "destination": "/yazilarimiz", "permanent": true}, {"source": "/nobel-ekonomi-odullu-daron-acemogluna-verildi/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/diyarbakirda-narin-olayi-ve-cocuklarimizin-guvenligi", "destination": "/yazilarimiz", "permanent": true}, {"source": "/diyarbakirda-narin-olayi-ve-cocuklarimizin-guvenligi/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/sakarya-makarna-fabrikasi-patlamasi-is-guvenligi", "destination": "/yazilarimiz", "permanent": true}, {"source": "/sakarya-makarna-fabrikasi-patlamasi-is-guvenligi/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/asiri-sicak-hava-durumu-ve-is-sagligi", "destination": "/yazilarimiz", "permanent": true}, {"source": "/asiri-sicak-hava-durumu-ve-is-sagligi/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/klima-ve-is-sagligi-iliskisi-konfor-mu-tehlike-mi", "destination": "/yazilarimiz", "permanent": true}, {"source": "/klima-ve-is-sagligi-iliskisi-konfor-mu-tehlike-mi/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/tehlike-sinifi-sorgulama-nace-kodu-sorgulama", "destination": "/tehlike-sinifi", "permanent": true}, {"source": "/tehlike-sinifi-sorgulama-nace-kodu-sorgulama/", "destination": "/tehlike-sinifi", "permanent": true}, {"source": "/nace", "destination": "/tehlike-sinifi", "permanent": true}, {"source": "/nace/", "destination": "/tehlike-sinifi", "permanent": true}, {"source": "/tehlike-sinifi/", "destination": "/tehlike-sinifi", "permanent": true}, {"source": "/ramak-kala/", "destination": "/ramak-kala", "permanent": true}, {"source": "/iletisim/", "destination": "/iletisim", "permanent": true}, {"source": "/category/genel", "destination": "/yazilarimiz", "permanent": true}, {"source": "/category/genel/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/category/:slug*", "destination": "/yazilarimiz", "permanent": true}, {"source": "/tag/:slug*", "destination": "/yazilarimiz", "permanent": true}, {"source": "/author/scaloft", "destination": "/kurumsal", "permanent": true}, {"source": "/author/scaloft/", "destination": "/kurumsal", "permanent": true}, {"source": "/author/taner", "destination": "/kurumsal", "permanent": true}, {"source": "/author/taner/", "destination": "/kurumsal", "permanent": true}, {"source": "/author/:slug*", "destination": "/kurumsal", "permanent": true}, {"source": "/page/:num", "destination": "/", "permanent": true}, {"source": "/page/:num/", "destination": "/", "permanent": true}, {"source": "/yazilarimiz/page/:num", "destination": "/yazilarimiz", "permanent": true}, {"source": "/yazilarimiz/page/:num/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/wp-admin", "destination": "/giris", "permanent": true}, {"source": "/wp-admin/", "destination": "/giris", "permanent": true}, {"source": "/wp-login.php", "destination": "/giris", "permanent": true}, {"source": "/wp-content/:path*", "destination": "/", "permanent": false}, {"source": "/wp-includes/:path*", "destination": "/", "permanent": false}, {"source": "/wp-json/:path*", "destination": "/", "permanent": false}, {"source": "/feed", "destination": "/yazilarimiz", "permanent": true}, {"source": "/feed/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/comments/feed", "destination": "/yazilarimiz", "permanent": true}, {"source": "/comments/feed/", "destination": "/yazilarimiz", "permanent": true}, {"source": "/xmlrpc.php", "destination": "/", "permanent": true}, {"source": "/sitemap_index.xml", "destination": "/sitemap.xml", "permanent": true}, {"source": "/post-sitemap.xml", "destination": "/sitemap.xml", "permanent": true}, {"source": "/page-sitemap.xml", "destination": "/sitemap.xml", "permanent": true}]
 
 export default function SiteYonetim() {
   const [sekme, setSekme] = useState('ayarlar')
@@ -30,9 +34,21 @@ export default function SiteYonetim() {
   const [kaydediliyor, setKaydediliyor] = useState(false)
   const [modal, setModal] = useState<any>(null)
   const [form, setForm] = useState<any>({})
+
+  // Yönlendirme state
+  const [yonlendirmeler, setYonlendirmeler] = useState<any[]>([])
+  const [yonArama, setYonArama] = useState('')
+  const [yonForm, setYonForm] = useState({ source: '', destination: '', permanent: true })
+  const [yonKaydediliyor, setYonKaydediliyor] = useState(false)
+  const [yonBasari, setYonBasari] = useState('')
+  const [yonHata, setYonHata] = useState('')
+
   const sb = createClient()
 
   useEffect(() => { yukle() }, [sekme])
+  useEffect(() => {
+    if (sekme === 'yonlendirmeler') setYonlendirmeler(VERCEL_REDIRECTLER)
+  }, [sekme])
 
   async function yukle() {
     setYukleniyor(true)
@@ -96,13 +112,68 @@ export default function SiteYonetim() {
     yukle()
   }
 
+  // Yönlendirme: GitHub API üzerinden vercel.json güncelle
+  async function yonlendirmeKaydet(yeniListe: any[]) {
+    setYonKaydediliyor(true)
+    setYonBasari(''); setYonHata('')
+    try {
+      // vercel.json içeriğini al
+      const getRes = await fetch('https://api.github.com/repos/milgotest32/fototest/contents/vercel.json', {
+        headers: { 'Authorization': `token ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+      })
+      const getJson = await getRes.json()
+      const mevcut = JSON.parse(atob(getJson.content.replace(/\n/g,'')))
+      mevcut.redirects = yeniListe
+
+      const putRes = await fetch('https://api.github.com/repos/milgotest32/fototest/contents/vercel.json', {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `redirect: vercel.json guncellendi (${yeniListe.length} kural)`,
+          content: btoa(unescape(encodeURIComponent(JSON.stringify(mevcut, null, 2)))),
+          sha: getJson.sha,
+          branch: 'main'
+        })
+      })
+      if (putRes.ok) {
+        setYonlendirmeler(yeniListe)
+        setYonBasari('✓ Kaydedildi! Deploy ~1 dakika içinde yayınlanır.')
+      } else {
+        const err = await putRes.json()
+        setYonHata('Hata: ' + (err.message || 'Bilinmeyen hata'))
+      }
+    } catch (e: any) {
+      setYonHata('Hata: ' + e.message)
+    }
+    setYonKaydediliyor(false)
+  }
+
+  function yonEkle() {
+    if (!yonForm.source || !yonForm.destination) return
+    const s = yonForm.source.startsWith('/') ? yonForm.source : '/' + yonForm.source
+    const d = yonForm.destination.startsWith('/') || yonForm.destination.startsWith('http') ? yonForm.destination : '/' + yonForm.destination
+    const yeniListe = [...yonlendirmeler, { source: s, destination: d, permanent: yonForm.permanent }]
+    setYonForm({ source: '', destination: '', permanent: true })
+    yonlendirmeKaydet(yeniListe)
+  }
+
+  function yonSil(idx: number) {
+    if (!confirm('Bu yönlendirmeyi silmek istediğinize emin misiniz?')) return
+    const yeniListe = yonlendirmeler.filter((_, i) => i !== idx)
+    yonlendirmeKaydet(yeniListe)
+  }
+
+  const filtreliYon = yonlendirmeler.filter(r =>
+    r.source.toLowerCase().includes(yonArama.toLowerCase()) ||
+    r.destination.toLowerCase().includes(yonArama.toLowerCase())
+  )
+
   const card: any = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }
   const inp: any = { width:'100%', marginBottom:14 }
   const lbl = (t: string) => <label style={{ display:'block', fontSize:12, fontWeight:600, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>{t}</label>
 
   return (
     <div className="page-wrap fade-in">
-      {/* Başlık */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24 }}>
         <div>
           <h1 className="page-title" style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -115,7 +186,6 @@ export default function SiteYonetim() {
         </a>
       </div>
 
-      {/* Sekmeler */}
       <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:24, background:'var(--surface)', padding:6, borderRadius:12, border:'1px solid var(--border)' }}>
         {SEKMELER.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setSekme(id)} style={{
@@ -135,12 +205,10 @@ export default function SiteYonetim() {
         ))}
       </div>
 
-      {yukleniyor ? (
+      {sekme !== 'yonlendirmeler' && yukleniyor ? (
         <div style={{ textAlign:'center', padding:60, color:'var(--text-faint)' }}>Yükleniyor...</div>
       ) : (
-
         <>
-        {/* AYARLAR */}
         {sekme === 'ayarlar' && (
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
             <div className="card" style={{ padding:24 }}>
@@ -183,7 +251,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* HİZMETLER */}
         {sekme === 'hizmetler' && (
           <div>
             <button className="btn" style={{ marginBottom:20 }} onClick={() => { setForm({ ikon:'🛡️', sira: hizmetler.length+1, aktif:true }); setModal('hizmet') }}>
@@ -209,7 +276,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* EĞİTİMLER */}
         {sekme === 'egitimler' && (
           <div>
             <button className="btn" style={{ marginBottom:20 }} onClick={() => { setForm({ sertifika:true, sira: egitimler.length+1, aktif:true }); setModal('egitim') }}>
@@ -232,7 +298,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* EKİP */}
         {sekme === 'ekip' && (
           <div>
             <button className="btn" style={{ marginBottom:20 }} onClick={() => { setForm({ aktif:true, sira: ekip.length+1 }); setModal('ekip') }}>
@@ -256,7 +321,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* REFERANSLAR */}
         {sekme === 'referanslar' && (
           <div>
             <button className="btn" style={{ marginBottom:20 }} onClick={() => { setForm({ aktif:true, sira: referanslar.length+1 }); setModal('referans') }}>
@@ -277,7 +341,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* YAZILAR */}
         {sekme === 'yazilar' && (
           <div>
             <button className="btn" style={{ marginBottom:20 }} onClick={() => { setForm({ yayinda:false, yazar:'Admin' }); setModal('yazi') }}>
@@ -300,7 +363,6 @@ export default function SiteYonetim() {
           </div>
         )}
 
-        {/* TALEPLER */}
         {sekme === 'talepler' && (
           <div className="card">
             <table>
@@ -329,10 +391,9 @@ export default function SiteYonetim() {
             </table>
           </div>
         )}
-        {/* SEO */}
+
         {sekme === 'seo' && (
           <div style={{ display:'grid', gridTemplateColumns: seciliSeo ? '280px 1fr' : '1fr', gap:20 }}>
-            {/* Sayfa listesi */}
             <div className="card" style={{ padding:0, height:'fit-content' }}>
               {seoData.map(s => (
                 <div key={s.id} onClick={() => setSeciliSeo(s)} style={{
@@ -345,20 +406,10 @@ export default function SiteYonetim() {
                 </div>
               ))}
             </div>
-
-            {/* SEO düzenleme */}
             {seciliSeo && (
               <div className="card" style={{ padding:24 }}>
                 <h3 style={{ fontWeight:700, color:'var(--text)', marginBottom:20 }}>SEO: {seciliSeo.sayfa}</h3>
-                {[
-                  ['title', 'Sayfa Başlığı (Title)'],
-                  ['description', 'Meta Description'],
-                  ['keywords', 'Keywords'],
-                  ['og_title', 'OG Title (Sosyal Medya)'],
-                  ['og_description', 'OG Description'],
-                  ['og_image', 'OG Image URL'],
-                  ['canonical', 'Canonical URL'],
-                ].map(([k, l]) => (
+                {[['title','Sayfa Başlığı (Title)'],['description','Meta Description'],['keywords','Keywords'],['og_title','OG Title (Sosyal Medya)'],['og_description','OG Description'],['og_image','OG Image URL'],['canonical','Canonical URL']].map(([k,l]) => (
                   <div key={k} style={{ marginBottom:14 }}>
                     <label style={{ display:'block', fontSize:12, fontWeight:600, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>{l}</label>
                     {k === 'description' || k === 'og_description' ? (
@@ -366,8 +417,8 @@ export default function SiteYonetim() {
                     ) : (
                       <input value={seciliSeo[k]||''} onChange={e => setSeciliSeo({...seciliSeo,[k]:e.target.value})} />
                     )}
-                    {k === 'title' && <div style={{ fontSize:11, color: (seciliSeo[k]||'').length > 60 ? 'var(--red)' : 'var(--text-faint)', marginTop:4 }}>{(seciliSeo[k]||'').length}/60 karakter {(seciliSeo[k]||'').length > 60 ? '⚠️ Çok uzun!' : '✓'}</div>}
-                    {k === 'description' && <div style={{ fontSize:11, color: (seciliSeo[k]||'').length > 160 ? 'var(--red)' : 'var(--text-faint)', marginTop:4 }}>{(seciliSeo[k]||'').length}/160 karakter {(seciliSeo[k]||'').length > 160 ? '⚠️ Çok uzun!' : '✓'}</div>}
+                    {k === 'title' && <div style={{ fontSize:11, color: (seciliSeo[k]||'').length > 60 ? 'var(--red)' : 'var(--text-faint)', marginTop:4 }}>{(seciliSeo[k]||'').length}/60 karakter</div>}
+                    {k === 'description' && <div style={{ fontSize:11, color: (seciliSeo[k]||'').length > 160 ? 'var(--red)' : 'var(--text-faint)', marginTop:4 }}>{(seciliSeo[k]||'').length}/160 karakter</div>}
                   </div>
                 ))}
                 <div style={{ marginBottom:14 }}>
@@ -385,6 +436,109 @@ export default function SiteYonetim() {
                 }}><Check size={16} /> SEO Kaydet</button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 301 YÖNLENDİRMELER */}
+        {sekme === 'yonlendirmeler' && (
+          <div>
+            {/* Yeni ekle formu */}
+            <div className="card" style={{ padding:20, marginBottom:20 }}>
+              <h3 style={{ fontSize:15, fontWeight:700, color:'var(--text)', marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
+                <Plus size={16} color="var(--accent)" /> Yeni Yönlendirme Ekle
+              </h3>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto auto', gap:12, alignItems:'end' }}>
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:600, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>Kaynak URL</label>
+                  <input
+                    value={yonForm.source}
+                    onChange={e => setYonForm({...yonForm, source: e.target.value})}
+                    placeholder="/eski-sayfa"
+                    onKeyDown={e => e.key === 'Enter' && yonEkle()}
+                  />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:600, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>Hedef URL</label>
+                  <input
+                    value={yonForm.destination}
+                    onChange={e => setYonForm({...yonForm, destination: e.target.value})}
+                    placeholder="/yeni-sayfa"
+                    onKeyDown={e => e.key === 'Enter' && yonEkle()}
+                  />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:600, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>Tür</label>
+                  <select value={yonForm.permanent ? '301' : '302'} onChange={e => setYonForm({...yonForm, permanent: e.target.value === '301'})}
+                    style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 12px', color:'var(--text)', fontSize:13, fontFamily:'inherit' }}>
+                    <option value="301">301 Kalıcı</option>
+                    <option value="302">302 Geçici</option>
+                  </select>
+                </div>
+                <button className="btn" onClick={yonEkle} disabled={yonKaydediliyor || !yonForm.source || !yonForm.destination}>
+                  {yonKaydediliyor ? <RefreshCw size={14} /> : <Plus size={14} />} Ekle
+                </button>
+              </div>
+              {yonBasari && <div style={{ marginTop:12, padding:'8px 14px', background:'rgba(52,211,153,.1)', border:'1px solid rgba(52,211,153,.2)', borderRadius:8, fontSize:13, color:'var(--green)' }}>{yonBasari}</div>}
+              {yonHata && <div style={{ marginTop:12, padding:'8px 14px', background:'rgba(239,68,68,.1)', border:'1px solid rgba(239,68,68,.2)', borderRadius:8, fontSize:13, color:'var(--red)' }}>{yonHata}</div>}
+            </div>
+
+            {/* Arama + tablo */}
+            <div className="card" style={{ padding:0, overflow:'hidden' }}>
+              <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <ArrowRight size={16} color="var(--accent)" />
+                  <span style={{ fontWeight:700, fontSize:15, color:'var(--text)' }}>Mevcut Yönlendirmeler</span>
+                  <span style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:100, padding:'2px 10px', fontSize:12, color:'var(--text-faint)' }}>{yonlendirmeler.length} kural</span>
+                </div>
+                <input
+                  value={yonArama}
+                  onChange={e => setYonArama(e.target.value)}
+                  placeholder="URL ara..."
+                  style={{ width:220 }}
+                />
+              </div>
+              <div style={{ overflowX:'auto' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style={{ width:40 }}>#</th>
+                      <th>Kaynak URL</th>
+                      <th style={{ width:40, textAlign:'center' }}></th>
+                      <th>Hedef URL</th>
+                      <th style={{ width:80 }}>Tür</th>
+                      <th style={{ width:60 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtreliYon.map((r, i) => {
+                      const gercekIdx = yonlendirmeler.indexOf(r)
+                      return (
+                        <tr key={i}>
+                          <td style={{ color:'var(--text-faint)', fontSize:12 }}>{gercekIdx + 1}</td>
+                          <td style={{ fontFamily:'monospace', fontSize:12, color:'var(--blue)' }}>{r.source}</td>
+                          <td style={{ textAlign:'center', color:'var(--text-faint)' }}>→</td>
+                          <td style={{ fontFamily:'monospace', fontSize:12, color:'var(--green)' }}>{r.destination}</td>
+                          <td>
+                            <span style={{
+                              display:'inline-block', padding:'2px 8px', borderRadius:100, fontSize:11, fontWeight:700,
+                              background: r.permanent ? 'rgba(99,102,241,.15)' : 'rgba(251,191,36,.15)',
+                              color: r.permanent ? 'var(--accent)' : 'var(--amber)'
+                            }}>
+                              {r.permanent ? '301' : '302'}
+                            </span>
+                          </td>
+                          <td>
+                            <button className="btn btn-ghost" style={{ padding:'4px 8px', color:'var(--red)' }} onClick={() => yonSil(gercekIdx)}>
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
         </>
@@ -414,19 +568,17 @@ export default function SiteYonetim() {
                 </div>
               </div>
             )}
-
             {modal === 'egitim' && (
               <div className="modal-grid">
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Başlık')}<input style={inp} value={form.baslik||''} onChange={e=>setForm({...form,baslik:e.target.value})} /></div>
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Açıklama')}<textarea value={form.aciklama||''} onChange={e=>setForm({...form,aciklama:e.target.value})} /></div>
-                <div>{lbl('Süre (örn: 8 Saat)')}<input style={inp} value={form.sure||''} onChange={e=>setForm({...form,sure:e.target.value})} /></div>
+                <div>{lbl('Süre')}<input style={inp} value={form.sure||''} onChange={e=>setForm({...form,sure:e.target.value})} /></div>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:20 }}>
                   <input type="checkbox" checked={!!form.sertifika} onChange={e=>setForm({...form,sertifika:e.target.checked})} />
                   <label style={{ color:'var(--text-dim)', fontSize:13 }}>Sertifikalı</label>
                 </div>
               </div>
             )}
-
             {modal === 'ekip' && (
               <div className="modal-grid">
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Ad Soyad')}<input style={inp} value={form.ad_soyad||''} onChange={e=>setForm({...form,ad_soyad:e.target.value})} /></div>
@@ -434,14 +586,12 @@ export default function SiteYonetim() {
                 <div>{lbl('Uzmanlık')}<input style={inp} value={form.uzmanlik||''} onChange={e=>setForm({...form,uzmanlik:e.target.value})} /></div>
               </div>
             )}
-
             {modal === 'referans' && (
               <div className="modal-grid">
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Firma Adı')}<input style={inp} value={form.firma_adi||''} onChange={e=>setForm({...form,firma_adi:e.target.value})} /></div>
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Sektör')}<input style={inp} value={form.sektor||''} onChange={e=>setForm({...form,sektor:e.target.value})} /></div>
               </div>
             )}
-
             {modal === 'yazi' && (
               <div className="modal-grid">
                 <div style={{ gridColumn:'1/-1' }}>{lbl('Başlık')}<input style={inp} value={form.baslik||''} onChange={e=>setForm({...form,baslik:e.target.value})} /></div>
