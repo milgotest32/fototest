@@ -17,7 +17,7 @@ const ERISIM: any = {
 }
 
 const TUM_LINKLER = [
-  { href:'/', label:'Dashboard', icon:LayoutDashboard },
+  { href:'/dashboard', label:'Dashboard', icon:LayoutDashboard },
   { href:'/ara', label:'Global Arama', icon:SearchIcon },
   { href:'/firmalar', label:'Firmalar', icon:Building2 },
   { href:'/koordinasyon', label:'Görev Takibi', icon:CalendarDays },
