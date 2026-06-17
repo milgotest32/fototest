@@ -9,11 +9,11 @@ const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim'
 
 const ERISIM: any = {
   yonetici:  ['/dashboard','/ara','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site','/site/ramak-kala'],
-  operasyon: ['/dashboard','/firmalar','/ara','/koordinasyon','/idari','/ziyaretler','/taramalar','/eksik-veriler','/arsiv'],
+  operasyon: ['/dashboard','/firmalar','/ara','/saglik','/koordinasyon','/ziyaretler','/taramalar','/arsiv'],
   hekim:     ['/dashboard','/saglik','/hekim','/koordinasyon','/arsiv'],
-  satis:     ['/dashboard','/teklifler','/malzemeler','/tedarikciler'],
-  muhasebe:  ['/dashboard','/tahsilat','/saglik','/fatura'],
-  saha:      ['/dashboard','/koordinasyon','/ziyaretler','/arsiv'],
+  satis:     ['/dashboard','/firmalar','/koordinasyon','/ziyaretler','/teklifler','/tahsilat'],
+  muhasebe:  ['/dashboard','/firmalar','/koordinasyon','/saglik','/ziyaretler','/teklifler','/tahsilat'],
+  saha:      ['/dashboard','/koordinasyon','/saglik','/ziyaretler','/arsiv'],
 }
 
 const TUM_LINKLER = [
