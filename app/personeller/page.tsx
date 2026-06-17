@@ -17,6 +17,9 @@ export default function Personeller() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState('')
   const [basari, setBasari] = useState('')
+  const [sifreModal, setSifreModal] = useState<any>(null)
+  const [yeniSifre, setYeniSifre] = useState('')
+  const [sifreYukleniyor, setSifreYukleniyor] = useState(false)
   const [form, setForm] = useState<any>(bosForm())
 
   function bosForm() {
@@ -104,6 +107,25 @@ export default function Personeller() {
     }
     setBasari(`${ad} silindi.`)
     yukle()
+  }
+
+  async function sifreSifirla() {
+    if (!yeniSifre || yeniSifre.length < 6) { alert('Şifre en az 6 karakter olmalı'); return }
+    setSifreYukleniyor(true)
+    const res = await fetch('/api/admin/kullanici-olustur', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: sifreModal.id, password: yeniSifre, secret: 'osgb-admin-2026' })
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) {
+      alert('Hata: ' + (data.error || 'Bilinmeyen hata'))
+    } else {
+      setBasari(`${sifreModal.ad_soyad} şifresi güncellendi`)
+      setSifreModal(null)
+      setYeniSifre('')
+    }
+    setSifreYukleniyor(false)
   }
 
   function duzenleAc(p: any) {
@@ -221,6 +243,7 @@ export default function Personeller() {
                       <td>
                         <div style={{ display:'flex', gap:6 }}>
                           <button onClick={() => duzenleAc(p)} style={{ background:'none', border:'none', color:'var(--text-dim)', cursor:'pointer', padding:4 }}><Pencil size={14}/></button>
+                          <button onClick={() => { setSifreModal(p); setYeniSifre('') }} title="Şifre Sıfırla" style={{ background:'none', border:'none', color:'var(--text-dim)', cursor:'pointer', padding:4 }}><KeyRound size={14}/></button>
                           <button onClick={() => sil(p.id, p.ad_soyad)} style={{ background:'none', border:'none', color:'var(--text-faint)', cursor:'pointer', padding:4 }}><Trash2 size={14}/></button>
                         </div>
                       </td>
@@ -234,6 +257,40 @@ export default function Personeller() {
       </div>
 
       {/* MODAL */}
+      {/* Şifre Sıfırlama Modal */}
+      {sifreModal && (
+        <div className="modal-overlay" onClick={() => setSifreModal(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18 }}>
+              <h2 style={{ fontFamily:'Sora,sans-serif', fontSize:17, fontWeight:700 }}>Şifre Sıfırla</h2>
+              <button onClick={() => setSifreModal(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-dim)' }}>✕</button>
+            </div>
+            <div style={{ background:'var(--surface-2)', borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:14, color:'var(--text-dim)' }}>
+              <strong style={{ color:'var(--text)' }}>{sifreModal.ad_soyad}</strong> kullanıcısının şifresi değiştirilecek.
+            </div>
+            <div style={{ marginBottom:16 }}>
+              <label style={{ fontSize:12, color:'var(--text-dim)', fontWeight:600, marginBottom:6, display:'block', textTransform:'uppercase' }}>Yeni Şifre</label>
+              <input
+                type="password"
+                value={yeniSifre}
+                onChange={e => setYeniSifre(e.target.value)}
+                placeholder="En az 6 karakter"
+                autoFocus
+                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--text)', fontSize:14, fontFamily:'inherit', boxSizing:'border-box' as const }}
+              />
+            </div>
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={sifreSifirla} disabled={sifreYukleniyor || yeniSifre.length < 6}
+                style={{ flex:1, padding:12, borderRadius:9, background: yeniSifre.length >= 6 ? 'var(--accent)' : 'var(--border)', color: yeniSifre.length >= 6 ? '#000' : 'var(--text-faint)', border:'none', cursor: yeniSifre.length >= 6 ? 'pointer' : 'not-allowed', fontSize:14, fontWeight:700, fontFamily:'inherit' }}>
+                {sifreYukleniyor ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+              </button>
+              <button onClick={() => setSifreModal(null)}
+                style={{ padding:'12px 20px', borderRadius:9, border:'1px solid var(--border)', background:'transparent', color:'var(--text-dim)', cursor:'pointer', fontFamily:'inherit' }}>İptal</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {modal && (
         <div className="modal-overlay" onClick={() => { setModal(false); setDuzenle(null) }}>
           <div className="modal-content" style={{ maxWidth:440 }} onClick={e => e.stopPropagation()}>
