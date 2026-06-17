@@ -163,7 +163,7 @@ export default function Ziyaretler() {
   const buAy = simdi.getMonth()
   const buYil = simdi.getFullYear()
   const rol = mevcutPersonel?.rol || 'operasyon'
-  const yazabilir = !['saha'].includes(rol)
+  const yazabilir = !['saha', 'muhasebe', 'satis'].includes(rol)
 
   const istatistik = (() => {
     let buAyZiyaretSayisi = 0
