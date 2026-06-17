@@ -61,6 +61,7 @@ export default function Personeller() {
       if (error) { setHata('Güncelleme hatası: ' + error.message); return }
       setBasari('Güncellendi.')
       setDuzenle(null)
+      setModal(false)
     } else {
       // Yeni kullanıcı — API route üzerinden oluştur
       const res = await fetch('/api/admin/kullanici-olustur', {
