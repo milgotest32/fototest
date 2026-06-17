@@ -109,7 +109,7 @@ export default function SiteYonetim() {
   const [tehlikeModal, setTehlikeModal] = useState<any>(null)
   const [tehlikeForm, setTehlikeForm] = useState({ kod: '', tanim: '', sinif: 'Tehlikeli' })
   const [excelYukleniyor, setExcelYukleniyor] = useState(false)
-  const excelRef = typeof window !== 'undefined' ? require('react').createRef<HTMLInputElement>() : null
+
 
   useEffect(() => { yukle() }, [sekme])
 
