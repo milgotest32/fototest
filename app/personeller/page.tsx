@@ -369,18 +369,18 @@ export default function Personeller() {
                               onClick={() => yetkiToggle(key, alan)}
                               title={alan === 'dosya_yukle' ? 'Dosya Yükle' : alan === 'sil' ? 'Sil' : alan}
                               style={{
-                                width:26, height:26, borderRadius:6, border:'none', cursor: bagimliBozuk ? 'not-allowed' : 'pointer',
-                                background: deger ? ALAN_RENK[alan] : 'var(--surface)',
-                                color: deger ? (alan==='sil'?'#fff':'#000') : 'var(--text-faint)',
+                                width:26, height:26, borderRadius:6, border: deger ? '2px solid transparent' : '2px solid rgba(255,255,255,0.25)', cursor: bagimliBozuk ? 'not-allowed' : 'pointer',
+                                background: deger ? ALAN_RENK[alan] : 'rgba(255,255,255,0.06)',
+                                color: deger ? '#fff' : 'var(--text-faint)',
                                 fontSize:14, display:'flex', alignItems:'center', justifyContent:'center',
-                                outline: '1px solid var(--border)',
-                                opacity: bagimliBozuk ? 0.3 : 1
+                                opacity: bagimliBozuk ? 0.25 : 1,
+                                boxShadow: deger ? `0 0 0 1px ${ALAN_RENK[alan]}` : 'none'
                               }}
                             >
                               {deger ? '✓' : ''}
                             </button>
                           ) : (
-                            <div style={{ width:26, height:26, borderRadius:6, background:'var(--surface)', opacity:0.2, outline:'1px solid var(--border)' }}/>
+                            <div style={{ width:26, height:26, borderRadius:6, background:'rgba(255,255,255,0.04)', border:'2px solid rgba(255,255,255,0.1)', opacity:0.35 }}/>
                           )}
                         </div>
                       )
