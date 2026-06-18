@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { csvIndir } from '@/lib/csvExport'
 import * as XLSX from 'xlsx'
 import { Plus, Search, X, HeartPulse, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useIzin } from '@/lib/useIzin'
 
 const TETKIKLER = ['EK2','AKC','ODİO','SFT','EKG','CBC','AST','ALT','ÜRE','KREATİNİN','GLUKOZ','BURUN','BOĞAZ']
 const ODEME = ['Cari','İBAN','Peşin','POS']
@@ -12,6 +13,7 @@ const ODEME_RENK: any = { Cari:'var(--amber)', İBAN:'var(--blue)', Peşin:'var(
 const SAYFA_BOYUTU = 50
 
 export default function Saglik() {
+  const izin = useIzin('saglik')
   const [kayitlar, setKayitlar] = useState<any[]>([])
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [personeller, setPersoneller] = useState<any[]>([])
@@ -221,7 +223,7 @@ export default function Saglik() {
             {toplamKayit.toLocaleString('tr-TR')} kayıt{aramaDebounced ? ` · "${aramaDebounced}" araması` : ''}
           </p>
         </div>
-        <button className="btn" onClick={modalAc}><Plus size={18} /> Yeni Kayıt</button>
+        {izin.duzenle && <button className="btn" onClick={modalAc}><Plus size={18} /> Yeni Kayıt</button>}
       </div>
 
       {/* ŞUBE SEKMELERİ */}
@@ -295,7 +297,7 @@ export default function Saglik() {
                           </div>
                         </td>
                         <td onClick={e => e.stopPropagation()}>
-                          <button onClick={() => sil(k.id)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: 'pointer', padding: 4 }}><Trash2 size={15} /></button>
+                          {izin.duzenle && <button onClick={() => sil(k.id)} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', cursor: 'pointer', padding: 4 }}><Trash2 size={15} /></button>}
                         </td>
                       </tr>
                     )
