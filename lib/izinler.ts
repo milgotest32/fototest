@@ -7,12 +7,26 @@ export type IzinKey =
   | 'hekim' | 'malzemeler' | 'tedarikciler' | 'raporlar'
   | 'fatura' | 'idari' | 'personeller' | 'site'
 
+// Temel izin — çoğu modül için
 export interface ModulIzin {
   goruntur: boolean
   duzenle: boolean
+  // Arşiv gibi modüllere özel alanlar (opsiyonel)
+  dosya_yukle?: boolean
+  sil?: boolean
 }
 
 export type IzinMap = Partial<Record<IzinKey, ModulIzin>>
+
+// Arşiv default izinleri rol bazlı
+const ARSIV_ROL_DEFAULTS: Record<string, ModulIzin> = {
+  yonetici:  { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: true },
+  operasyon: { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: false },
+  hekim:     { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
+  satis:     { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
+  muhasebe:  { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
+  saha:      { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: false },
+}
 
 const ROL_DEFAULTS: Record<string, IzinMap> = {
   yonetici: {
@@ -22,7 +36,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     ziyaretler:  { goruntur: true,  duzenle: true },
     teklifler:   { goruntur: true,  duzenle: true },
     tahsilat:    { goruntur: true,  duzenle: true },
-    arsiv:       { goruntur: true,  duzenle: true },
+    arsiv:       { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: true },
     taramalar:   { goruntur: true,  duzenle: true },
     hekim:       { goruntur: true,  duzenle: true },
     malzemeler:  { goruntur: true,  duzenle: true },
@@ -38,7 +52,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     koordinasyon:{ goruntur: true,  duzenle: true },
     saglik:      { goruntur: true,  duzenle: true },
     ziyaretler:  { goruntur: true,  duzenle: true },
-    arsiv:       { goruntur: true,  duzenle: true },
+    arsiv:       { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: false },
     taramalar:   { goruntur: true,  duzenle: true },
     teklifler:   { goruntur: false, duzenle: false },
     tahsilat:    { goruntur: false, duzenle: false },
@@ -58,7 +72,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     ziyaretler:  { goruntur: false, duzenle: false },
     teklifler:   { goruntur: false, duzenle: false },
     tahsilat:    { goruntur: false, duzenle: false },
-    arsiv:       { goruntur: false, duzenle: false },
+    arsiv:       { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
     taramalar:   { goruntur: false, duzenle: false },
     hekim:       { goruntur: true,  duzenle: true },
     malzemeler:  { goruntur: false, duzenle: false },
@@ -76,7 +90,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     ziyaretler:  { goruntur: true,  duzenle: true },
     teklifler:   { goruntur: true,  duzenle: true },
     tahsilat:    { goruntur: true,  duzenle: false },
-    arsiv:       { goruntur: false, duzenle: false },
+    arsiv:       { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
     taramalar:   { goruntur: true,  duzenle: true },
     hekim:       { goruntur: false, duzenle: false },
     malzemeler:  { goruntur: false, duzenle: false },
@@ -94,7 +108,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     ziyaretler:  { goruntur: true,  duzenle: false },
     teklifler:   { goruntur: true,  duzenle: false },
     tahsilat:    { goruntur: true,  duzenle: true },
-    arsiv:       { goruntur: false, duzenle: false },
+    arsiv:       { goruntur: false, duzenle: false, dosya_yukle: false, sil: false },
     taramalar:   { goruntur: true,  duzenle: false },
     hekim:       { goruntur: false, duzenle: false },
     malzemeler:  { goruntur: false, duzenle: false },
@@ -112,7 +126,7 @@ const ROL_DEFAULTS: Record<string, IzinMap> = {
     ziyaretler:  { goruntur: true,  duzenle: true },
     teklifler:   { goruntur: false, duzenle: false },
     tahsilat:    { goruntur: false, duzenle: false },
-    arsiv:       { goruntur: true,  duzenle: false },
+    arsiv:       { goruntur: true,  duzenle: true,  dosya_yukle: true,  sil: false },
     taramalar:   { goruntur: false, duzenle: false },
     hekim:       { goruntur: false, duzenle: false },
     malzemeler:  { goruntur: false, duzenle: false },
@@ -139,6 +153,22 @@ export function getIzin(
 
 export function getRolDefaults(rol: string): IzinMap {
   return ROL_DEFAULTS[rol] || ROL_DEFAULTS.operasyon
+}
+
+// Modüle özel izin alanlarını döner (personel yetki modalı için)
+export function getModulIzinAlanlari(modul: IzinKey): { key: keyof ModulIzin; label: string }[] {
+  const temel: { key: keyof ModulIzin; label: string }[] = [
+    { key: 'goruntur', label: 'Göster' },
+    { key: 'duzenle',  label: 'Düzenle' },
+  ]
+  if (modul === 'arsiv') {
+    return [
+      ...temel,
+      { key: 'dosya_yukle', label: 'Dosya Yükle' },
+      { key: 'sil',         label: 'Sil' },
+    ]
+  }
+  return temel
 }
 
 export const MODUL_LISTESI: { key: IzinKey; label: string }[] = [
