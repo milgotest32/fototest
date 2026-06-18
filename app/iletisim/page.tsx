@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 import SiteNav from '@/components/site/SiteNav'
 import SiteFooter from '@/components/site/SiteFooter'
+import SiteFloating from '@/components/site/SiteFloating'
 import { createClient } from '@/lib/supabase'
 
 export default function Iletisim() {
@@ -99,6 +100,7 @@ export default function Iletisim() {
           </div>
         </div>
       </div>
+      <SiteFloating />
       <SiteFooter />
     </div>
   )
