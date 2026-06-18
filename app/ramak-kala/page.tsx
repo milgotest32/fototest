@@ -20,7 +20,7 @@ export default function RamakKala() {
     setGonderildi(true); setYukleniyor(false)
   }
 
-  const inp: any = { width: '100%', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)', borderRadius: 10, padding: '12px 16px', color: '#e0e0f0', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
+  const inp: any = { width: '100%', background: '#f8f9fb', border: '1px solid rgba(255,255,255,.09)', borderRadius: 10, padding: '12px 16px', color: '#e0e0f0', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
   const lbl = (t: string, zorunlu = false) => (
     <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#8b8ba8', textTransform: 'uppercase' as const, letterSpacing: .5, marginBottom: 7 }}>
       {t}{zorunlu && <span style={{ color: '#f5c200', marginLeft: 4 }}>*</span>}
@@ -28,7 +28,7 @@ export default function RamakKala() {
   )
 
   return (
-    <div style={{ background: 'linear-gradient(135deg,#0a0a0f 0%,#0e0e18 100%)', minHeight: '100vh', color: '#e8e8f0', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
+    <div style={{ background: 'linear-gradient(135deg,#f8f9fb 0%,#0e0e18 100%)', minHeight: '100vh', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '60px 32px 80px' }}>
 
@@ -37,7 +37,7 @@ export default function RamakKala() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(248,113,113,.1)', border: '1px solid rgba(248,113,113,.25)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#f87171', marginBottom: 20 }}>
             ⚠️ İş Güvenliği Bildirimi
           </div>
-          <h1 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 900, color: '#fff', marginBottom: 16, letterSpacing: -1 }}>Ramak Kala Bildirim Formu</h1>
+          <h1 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 900, color: '#1a1a2e', marginBottom: 16, letterSpacing: -1 }}>Ramak Kala Bildirim Formu</h1>
           <p style={{ fontSize: 15, color: '#6b6b88', maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
             İşyerinde yaşanan ramak kala olaylarını (kaza olmadan atlatılan tehlikeli durumları) bildirerek iş güvenliğine katkı sağlayın.
           </p>
@@ -53,13 +53,13 @@ export default function RamakKala() {
 
         {/* Form */}
         {gonderildi ? (
-          <div style={{ background: '#0e0e1c', border: '1px solid rgba(34,197,94,.2)', borderRadius: 20, padding: '64px 32px', textAlign: 'center' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(34,197,94,.2)', borderRadius: 20, padding: '64px 32px', textAlign: 'center' }}>
             <div style={{ fontSize: 56, marginBottom: 20 }}>✅</div>
             <h2 style={{ fontSize: 24, fontWeight: 900, color: '#22c55e', marginBottom: 12 }}>Bildiriminiz Alındı!</h2>
             <p style={{ fontSize: 15, color: '#6b6b88' }}>İş güvenliği uzmanımız en kısa sürede inceleyecek ve dönüş yapacaktır.</p>
           </div>
         ) : (
-          <div style={{ background: '#0e0e1c', border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: '36px 32px', boxShadow: '0 20px 60px rgba(0,0,0,.4)' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: '36px 32px', boxShadow: '0 20px 60px rgba(0,0,0,.4)' }}>
             <div className="site-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>{lbl('Ad Soyad', true)}<input style={inp} placeholder="Adınız Soyadınız" value={form.ad_soyad} onChange={e => setForm({ ...form, ad_soyad: e.target.value })} /></div>
               <div>{lbl('Telefon')}<input style={inp} placeholder="05xx xxx xx xx" value={form.telefon} onChange={e => setForm({ ...form, telefon: e.target.value })} /></div>
@@ -83,7 +83,7 @@ export default function RamakKala() {
             <button onClick={gonder} disabled={yukleniyor} style={{
               width: '100%', padding: 15, borderRadius: 10,
               background: yukleniyor ? 'rgba(245,194,0,.5)' : 'linear-gradient(135deg,#f5c200,#e6a800)',
-              color: '#0a0a0f', fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              color: '#f8f9fb', fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               boxShadow: '0 4px 20px rgba(245,194,0,.25)',
             }}>
               {yukleniyor ? 'Gönderiliyor...' : '📨 Bildirimi Gönder'}
