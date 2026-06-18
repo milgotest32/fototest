@@ -488,7 +488,7 @@ export default function Personeller() {
                         color: form.rol===r ? ROL_RENK[r] : 'var(--text-dim)' }}>
                       <div style={{ fontWeight:600 }}>{ROL_AD[r]}</div>
                       <div style={{ fontSize:11, marginTop:2, opacity:0.7 }}>{
-                        ({ yonetici:'Tüm yetkiler', operasyon:'ISG operasyon', hekim:'Sağlık işlemleri', satis:'Satış & Teklif', muhasebe:'Tahsilat', saha:'Saha ziyaretleri' } as any)[r]
+                        ({ yonetici:'Tüm yetkiler', operasyon:'İş Güvenliği Uzmanı', hekim:'Sağlık işlemleri', satis:'Sağlıkçı', muhasebe:'Muhasebe & Satış', saha:'ISG Koordinatör' } as any)[r]
                       }</div>
                     </button>
                   ))}
