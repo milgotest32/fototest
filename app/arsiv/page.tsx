@@ -3,12 +3,14 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Search, Plus, Trash2, Download, X, FolderArchive, Upload, FileText, Eye, Activity } from 'lucide-react'
+import { useIzin } from '@/lib/useIzin'
 import * as XLSX from 'xlsx'
 
 type Sekme = 'evrak' | 'aktivite'
 
 export default function Arsiv() {
   const [personel, setPersonel] = useState<any>(null)
+  const izin = useIzin('arsiv')
   const [sekme, setSekme] = useState<Sekme>('evrak')
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [evraklar, setEvraklar] = useState<any[]>([])
@@ -106,7 +108,7 @@ export default function Arsiv() {
       setDetayModal({ firma, evrak, kayit: mevcut })
       return
     }
-    if (!['yonetici','operasyon','saha','hekim'].includes(rol)) return
+    if (!izin.duzenle) return
     // Direkt kaydetme yerine modal aç
     const firma = firmalar.find(f => f.id === firmaId)
     const evrak = evraklar.find(e => e.id === evrakId)
@@ -143,6 +145,7 @@ export default function Arsiv() {
   }
 
   async function tikSil(firmaId: string, evrakId: string, kayitId: string, dosyaUrl?: string) {
+    if (!izin.sil) { alert('Silme yetkiniz yok.'); return }
     if (!confirm('Bu evrak kaydını silmek istiyor musunuz?')) return
     if (dosyaUrl) {
       const path = dosyaUrl.split('/evrak-dosyalar/')[1]
@@ -159,6 +162,7 @@ export default function Arsiv() {
 
   async function dosyaYukle(file: File) {
     if (!detayModal) return
+    if (!izin.dosya_yukle) { alert('Dosya yükleme yetkiniz yok.'); return }
     setDosyaYukleniyor(true)
     const { firma, evrak, kayit } = detayModal
     const ext = file.name.split('.').pop()
@@ -176,6 +180,7 @@ export default function Arsiv() {
 
   async function dosyaSil() {
     if (!detayModal?.kayit?.dosya_url) return
+    if (!izin.sil) { alert('Silme yetkiniz yok.'); return }
     if (!confirm('Dosyayı silmek istiyor musunuz?')) return
     const { firma, evrak, kayit } = detayModal
     const path = kayit.dosya_url.split('/evrak-dosyalar/')[1]
@@ -246,7 +251,7 @@ export default function Arsiv() {
 
   const gorununFirmalar = firmalar.filter(f => !arama || f.unvan.toLowerCase().includes(arama.toLowerCase()))
   const rol = personel?.rol || 'operasyon'
-  const yazabilir = ['yonetici','operasyon','saha','hekim'].includes(rol)
+  const yazabilir = izin.duzenle
   const gunlukAktivite = gunlukGrupla(aktiviteler)
 
   return (
@@ -258,7 +263,7 @@ export default function Arsiv() {
           <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:26, fontWeight:700, letterSpacing:-0.5 }}>Arşiv</h1>
         </div>
         <div style={{ display:'flex', gap:8 }}>
-          {sekme === 'evrak' && rol === 'yonetici' && (
+          {sekme === 'evrak' && izin.sil && (
             <button onClick={() => setEvrakModal(true)}
               style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:9, border:'1px solid var(--border)', background:'var(--surface)', color:'var(--text)', cursor:'pointer', fontSize:13 }}>
               <Plus size={14}/> Evrak Yönet
@@ -509,7 +514,7 @@ export default function Arsiv() {
                     style={{ color:'var(--accent)', fontSize:12, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
                     <Eye size={14}/> Aç
                   </a>
-                  {rol === 'yonetici' && (
+                  {izin.sil && (
                     <button onClick={dosyaSil} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--red)', padding:2, display:'flex' }}>
                       <Trash2 size={14}/>
                     </button>
@@ -517,17 +522,17 @@ export default function Arsiv() {
                 </div>
               ) : (
                 <div>
-                  <input ref={dosyaRef} type="file" style={{ display:'none' }} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={e => { if (e.target.files?.[0]) dosyaYukle(e.target.files[0]) }}/>
-                  <button onClick={() => dosyaRef.current?.click()} disabled={dosyaYukleniyor}
+                  {izin.dosya_yukle && <input ref={dosyaRef} type="file" style={{ display:'none' }} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={e => { if (e.target.files?.[0]) dosyaYukle(e.target.files[0]) }}/>}
+                  {izin.dosya_yukle && <button onClick={() => dosyaRef.current?.click()} disabled={dosyaYukleniyor}
                     style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', borderRadius:8, border:'2px dashed var(--border)', background:'transparent', color:'var(--text-dim)', cursor:'pointer', fontSize:13, justifyContent:'center' }}>
                     <Upload size={15}/>
                     {dosyaYukleniyor ? 'Yükleniyor...' : 'Dosya Yükle (PDF, JPG, PNG, DOC)'}
-                  </button>
+                  </button>}
                 </div>
               )}
             </div>
-            {rol === 'yonetici' && (
+            {izin.sil && (
               <button onClick={() => tikSil(detayModal.firma.id, detayModal.evrak.id, detayModal.kayit.id, detayModal.kayit.dosya_url)}
                 style={{ width:'100%', padding:'10px', borderRadius:9, border:'1px solid var(--red)', background:'var(--red-soft)', color:'var(--red)', cursor:'pointer', fontSize:13, fontFamily:'inherit', fontWeight:600 }}>
                 🗑️ Evrak Kaydını Sil
