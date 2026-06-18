@@ -14,7 +14,7 @@ const _metadata = {
 
 export default function TehlikeSinifi() {
   return (
-    <div style={{ background: 'linear-gradient(135deg,#0a0a0f 0%,#0e0e18 100%)', minHeight: '100vh', color: '#e8e8f0', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
+    <div style={{ background: 'linear-gradient(135deg,#f8f9fb 0%,#0e0e18 100%)', minHeight: '100vh', color: '#1a1a2e', fontFamily: "'Inter',-apple-system,system-ui,sans-serif" }}>
       <SiteNav />
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '60px 20px 80px' }}>
         {/* Başlık */}
@@ -22,7 +22,7 @@ export default function TehlikeSinifi() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(245,194,0,.1)', border: '1px solid rgba(245,194,0,.25)', borderRadius: 100, padding: '6px 18px', fontSize: 12, fontWeight: 700, color: '#f5c200', marginBottom: 20 }}>
             🔍 Ücretsiz Sorgulama Aracı
           </div>
-          <h1 style={{ fontSize: 'clamp(26px,5vw,46px)', fontWeight: 900, color: '#fff', marginBottom: 16, letterSpacing: -1, lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: 'clamp(26px,5vw,46px)', fontWeight: 900, color: '#1a1a2e', marginBottom: 16, letterSpacing: -1, lineHeight: 1.1 }}>
             Tehlike Sınıfı & NACE Kodu Sorgulama
           </h1>
           <p style={{ fontSize: 15, color: '#6b6b88', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>
@@ -49,12 +49,12 @@ export default function TehlikeSinifi() {
         <NaceSorgulama />
 
         {/* Alt CTA */}
-        <div style={{ marginTop: 40, background: 'linear-gradient(135deg,rgba(245,194,0,.08),rgba(245,194,0,.03))', border: '1px solid rgba(245,194,0,.15)', borderRadius: 16, padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ marginTop: 40, background: 'linear-gradient(135deg,rgba(245,194,0,.1),rgba(245,194,0,.03))', border: '1px solid rgba(245,194,0,.15)', borderRadius: 16, padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>Tehlike sınıfınıza uygun fiyat teklifi alın</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 }}>Tehlike sınıfınıza uygun fiyat teklifi alın</div>
             <div style={{ fontSize: 13, color: '#6b6b88' }}>Uzmanlarımız en uygun paketi sizin için hazırlasın.</div>
           </div>
-          <a href="/iletisim" style={{ padding: '11px 24px', borderRadius: 10, background: 'linear-gradient(135deg,#f5c200,#e6a800)', color: '#0a0a0f', fontSize: 14, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}>Teklif Al →</a>
+          <a href="/iletisim" style={{ padding: '11px 24px', borderRadius: 10, background: 'linear-gradient(135deg,#f5c200,#e6a800)', color: '#f8f9fb', fontSize: 14, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}>Teklif Al →</a>
         </div>
       </div>
       <SiteFooter />
