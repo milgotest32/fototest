@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { UserCog, Menu, X, LogOut, LayoutDashboard, Building2, HeartPulse, FileText, Wallet, ClipboardList, CalendarDays, MapPin, Stethoscope, Package, Truck, Activity, BarChart2, AlertTriangle, FolderArchive, SearchIcon } from 'lucide-react'
 
-const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim', satis:'Satış', muhasebe:'Muhasebe', saha:'Saha Uzmanı' }
+const ROL_AD: any = { yonetici:'Yönetici', operasyon:'İş Güvenliği Uzmanı', hekim:'Hekim', satis:'Sağlıkçı', muhasebe:'Muhasebe & Satış', saha:'ISG Koordinatör' }
 
 const ERISIM: any = {
   yonetici:  ['/dashboard','/ara','/firmalar','/saglik','/teklifler','/tahsilat','/koordinasyon','/idari','/ziyaretler','/hekim','/malzemeler','/tedarikciler','/taramalar','/personeller','/raporlar','/fatura','/eksik-veriler','/arsiv','/site','/site/ramak-kala'],
