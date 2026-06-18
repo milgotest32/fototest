@@ -7,7 +7,7 @@ import { Plus, X, Users, Trash2, Pencil, Shield, KeyRound } from 'lucide-react'
 import { MODUL_LISTESI, getRolDefaults, getModulIzinAlanlari, type IzinMap, type ModulIzin } from '@/lib/izinler'
 
 const ROLLER = ['yonetici','operasyon','hekim','satis','muhasebe','saha']
-const ROL_AD: any = { yonetici:'Yönetici', operasyon:'Operasyon', hekim:'Hekim', satis:'Satış', muhasebe:'Muhasebe', saha:'Saha Uzmanı' }
+const ROL_AD: any = { yonetici:'Yönetici', operasyon:'İş Güvenliği Uzmanı', hekim:'Hekim', satis:'Sağlıkçı', muhasebe:'Muhasebe & Satış', saha:'ISG Koordinatör' }
 const ROL_RENK: any = { yonetici:'var(--accent)', operasyon:'var(--blue)', hekim:'var(--green)', satis:'var(--amber)', muhasebe:'var(--red)', saha:'var(--text-dim)' }
 
 export default function Personeller() {
