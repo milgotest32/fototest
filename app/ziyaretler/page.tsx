@@ -11,7 +11,6 @@ const AYLAR_FULL = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','
 
 export default function Ziyaretler() {
   const izin = useIzin('ziyaretler')
-  const izin = useIzin('ziyaretler')
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [mevcutPersonel, setMevcutPersonel] = useState<any>(null)
   const [arama, setArama] = useState('')
