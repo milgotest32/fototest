@@ -5,12 +5,12 @@ import { createClient } from '@/lib/supabase'
 import { Search, X, ChevronLeft, ChevronRight, MapPin, Download } from 'lucide-react'
 import { useIzin } from '@/lib/useIzin'
 import { csvIndir } from '@/lib/csvExport'
-import { useIzin } from '@/lib/useIzin'
 
 const AYLAR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
 const AYLAR_FULL = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
 
 export default function Ziyaretler() {
+  const izin = useIzin('ziyaretler')
   const izin = useIzin('ziyaretler')
   const [firmalar, setFirmalar] = useState<any[]>([])
   const [mevcutPersonel, setMevcutPersonel] = useState<any>(null)
