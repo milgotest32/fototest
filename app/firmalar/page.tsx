@@ -30,6 +30,7 @@ export default function Firmalar() {
   const [form, setForm] = useState<any>(bosForm())
   const izin = useIzin('firmalar')
   const [kulRol, setKulRol] = useState<string>('operasyon')
+  const [kulAd, setKulAd] = useState<string>('')
   const [pasifModal, setPasifModal] = useState<any>(null) // { firma }
   const [katipExcelModal, setKatipExcelModal] = useState(false)
   const [katipExcelSonuc, setKatipExcelSonuc] = useState<any[]>([])
@@ -101,8 +102,9 @@ export default function Firmalar() {
       .then(({ data }) => setPersoneller(data || []))
     sb.auth.getUser().then(async ({ data }) => {
       if (data.user) {
-        const { data: p } = await sb.from('personeller').select('rol').eq('id', data.user.id).single()
+        const { data: p } = await sb.from('personeller').select('rol, ad_soyad').eq('id', data.user.id).single()
         setKulRol(p?.rol || 'operasyon')
+        setKulAd(p?.ad_soyad || '')
       }
     })
     yukle()
@@ -124,7 +126,19 @@ export default function Firmalar() {
     else if (aktifFiltre === 'pasif') q = q.eq('aktif', false)
     const { data, error } = await q
     if (error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
-    setFirmalar(data || [])
+    // Saha rolü sadece kendi adının geçtiği firmaları görür
+    const tumFirmalar = data || []
+    if (['saha', 'hekim'].includes(kulRol) && kulAd) {
+      const ad = kulAd.trim().toUpperCase()
+      setFirmalar(tumFirmalar.filter((f: any) =>
+        (f.gorevli_igu || '').toUpperCase().includes(ad) ||
+        (f.gorevli_ih || '').toUpperCase().includes(ad) ||
+        (f.gorevli_dsp || '').toUpperCase().includes(ad) ||
+        (f.bhl_atama || '').toUpperCase().includes(ad)
+      ))
+    } else {
+      setFirmalar(tumFirmalar)
+    }
     setYukleniyor(false)
   }
 
