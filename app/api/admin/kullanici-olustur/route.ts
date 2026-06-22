@@ -79,6 +79,34 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
+// PUT — email güncelle
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, email, secret } = body
+
+    if (secret !== (process.env.ADMIN_SECRET || 'osgb-admin-2026')) {
+      return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+    }
+    if (!id || !email) {
+      return NextResponse.json({ error: 'ID ve email zorunludur' }, { status: 400 })
+    }
+
+    const admin = getAdmin()
+
+    // Auth'ta email güncelle
+    const { error: authErr } = await admin.auth.admin.updateUserById(id, { email })
+    if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 })
+
+    // Personeller tablosunda da güncelle
+    await admin.from('personeller').update({ email }).eq('id', id)
+
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}
+
 // PATCH — şifre güncelle
 export async function PATCH(req: NextRequest) {
   try {
