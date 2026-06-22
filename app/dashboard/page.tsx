@@ -46,9 +46,23 @@ export default function Dashboard() {
       const ayBas = buAy + '-01'
       const ayBit = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).toISOString().slice(0,10)
 
+      // Saha/hekim rolünde kullanıcı adını al
+      let kulAd = ''
+      if (['saha', 'hekim'].includes(kulRol) && user) {
+        const { data: pp } = await sb.from('personeller').select('ad_soyad').eq('id', user.id).single()
+        kulAd = pp?.ad_soyad || ''
+      }
+
       const queries: any[] = []
-      if (izin.includes('firma')) queries.push(sb.from('firmalar').select('id', { count:'exact', head:true }).eq('aktif', true))
-      else queries.push(Promise.resolve({ count: 0 }))
+      if (izin.includes('firma')) {
+        if (['saha', 'hekim'].includes(kulRol) && kulAd) {
+          const ad = kulAd.trim()
+          queries.push(sb.from('firmalar').select('id', { count:'exact', head:true }).eq('aktif', true)
+            .or(`gorevli_igu.ilike.%${ad}%,gorevli_ih.ilike.%${ad}%,gorevli_dsp.ilike.%${ad}%,bhl_atama.ilike.%${ad}%`))
+        } else {
+          queries.push(sb.from('firmalar').select('id', { count:'exact', head:true }).eq('aktif', true))
+        }
+      } else queries.push(Promise.resolve({ count: 0 }))
 
       if (izin.includes('hasta') || izin.includes('ciro')) queries.push(sb.from('hasta_kayitlari').select('ucret, tarih').gte('tarih', ayBas).lte('tarih', ayBit))
       else queries.push(Promise.resolve({ data: [] }))
@@ -59,8 +73,15 @@ export default function Dashboard() {
       if (izin.includes('acikBakiye') || izin.includes('uyari')) queries.push(sb.from('cariler').select('unvan, acik_bakiye, vadesi_gecen_tutar, gecen_gun_sayisi'))
       else queries.push(Promise.resolve({ data: [] }))
 
-      if (izin.includes('ziyaret')) queries.push(sb.from('ziyaretler').select('id', { count:'exact', head:true }).gte('tarih', ayBas).lte('tarih', ayBit))
-      else queries.push(Promise.resolve({ count: 0 }))
+      if (izin.includes('ziyaret')) {
+        if (['saha', 'hekim'].includes(kulRol) && kulAd) {
+          queries.push(sb.from('ziyaretler').select('id', { count:'exact', head:true })
+            .gte('tarih', ayBas).lte('tarih', ayBit)
+            .ilike('ziyaret_eden', `%${kulAd.trim()}%`))
+        } else {
+          queries.push(sb.from('ziyaretler').select('id', { count:'exact', head:true }).gte('tarih', ayBas).lte('tarih', ayBit))
+        }
+      } else queries.push(Promise.resolve({ count: 0 }))
 
       if (izin.includes('uyari')) queries.push(sb.from('borcuyarilari').select('*').eq('goruldu', false).order('gecen_gun_sayisi', { ascending:false }).limit(10))
       else queries.push(Promise.resolve({ data: [] }))
@@ -90,10 +111,15 @@ export default function Dashboard() {
         const simdi = new Date()
         const buAyIdx = simdi.getMonth()
         const buYil = simdi.getFullYear()
-        const { data: firmlarZiyaret } = await sb.from('firmalar')
-          .select('id, ih_periyot, aylik_ziyaretler')
+        let fZiyaretQ = sb.from('firmalar')
+          .select('id, ih_periyot, aylik_ziyaretler, gorevli_igu, gorevli_ih, gorevli_dsp, bhl_atama')
           .eq('aktif', true)
           .not('ih_periyot', 'is', null)
+        if (['saha', 'hekim'].includes(kulRol) && kulAd) {
+          const ad = kulAd.trim()
+          fZiyaretQ = fZiyaretQ.or(`gorevli_igu.ilike.%${ad}%,gorevli_ih.ilike.%${ad}%,gorevli_dsp.ilike.%${ad}%,bhl_atama.ilike.%${ad}%`)
+        }
+        const { data: firmlarZiyaret } = await fZiyaretQ
         const fList = (firmlarZiyaret || []).filter((f:any) => f.ih_periyot !== 'GİDİLMİYOR')
         const ayKey = `${buYil}-${String(buAyIdx+1).padStart(2,'0')}`
         let bekleyen = 0
