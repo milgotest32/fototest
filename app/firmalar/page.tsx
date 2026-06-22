@@ -103,22 +103,29 @@ export default function Firmalar() {
     sb.auth.getUser().then(async ({ data }) => {
       if (data.user) {
         const { data: p } = await sb.from('personeller').select('rol, ad_soyad').eq('id', data.user.id).single()
-        setKulRol(p?.rol || 'operasyon')
-        setKulAd(p?.ad_soyad || '')
+        const rol = p?.rol || 'operasyon'
+        const ad = p?.ad_soyad || ''
+        setKulRol(rol)
+        setKulAd(ad)
+        yukle(rol, ad)
       } else {
         setKulRol('operasyon')
         setKulAd('')
+        yukle('operasyon', '')
       }
     })
   }, [])
 
   useEffect(() => {
+    if (!kulRol) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => yukle(), 400)
+    debounceRef.current = setTimeout(() => yukle(kulRol, kulAd), 400)
     return () => clearTimeout(debounceRef.current)
   }, [arama, tehlikeFiltre, bolgeFiltre, aktifFiltre, kulRol, kulAd])
 
-  async function yukle() {
+  async function yukle(rol?: string, ad?: string) {
+    const aktifRol = rol ?? kulRol
+    const aktifAd = ad ?? kulAd
     setYukleniyor(true)
     let q = sb.from('firmalar').select('*').order('unvan')
     if (arama) q = q.ilike('unvan', `%${arama}%`)
@@ -128,15 +135,14 @@ export default function Firmalar() {
     else if (aktifFiltre === 'pasif') q = q.eq('aktif', false)
     const { data, error } = await q
     if (error) { setHata('Yüklenemedi'); setYukleniyor(false); return }
-    // Saha rolü sadece kendi adının geçtiği firmaları görür
     const tumFirmalar = data || []
-    if (['saha', 'hekim'].includes(kulRol) && kulAd) {
-      const ad = kulAd.trim().toUpperCase()
+    if (['saha', 'hekim'].includes(aktifRol) && aktifAd) {
+      const adUpper = aktifAd.trim().toUpperCase()
       setFirmalar(tumFirmalar.filter((f: any) =>
-        (f.gorevli_igu || '').toUpperCase().includes(ad) ||
-        (f.gorevli_ih || '').toUpperCase().includes(ad) ||
-        (f.gorevli_dsp || '').toUpperCase().includes(ad) ||
-        (f.bhl_atama || '').toUpperCase().includes(ad)
+        (f.gorevli_igu || '').toUpperCase().includes(adUpper) ||
+        (f.gorevli_ih || '').toUpperCase().includes(adUpper) ||
+        (f.gorevli_dsp || '').toUpperCase().includes(adUpper) ||
+        (f.bhl_atama || '').toUpperCase().includes(adUpper)
       ))
     } else {
       setFirmalar(tumFirmalar)
