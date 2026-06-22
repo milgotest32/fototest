@@ -105,16 +105,18 @@ export default function Firmalar() {
         const { data: p } = await sb.from('personeller').select('rol, ad_soyad').eq('id', data.user.id).single()
         setKulRol(p?.rol || 'operasyon')
         setKulAd(p?.ad_soyad || '')
+      } else {
+        setKulRol('operasyon')
+        setKulAd('')
       }
     })
-    yukle()
   }, [])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => yukle(), 400)
     return () => clearTimeout(debounceRef.current)
-  }, [arama, tehlikeFiltre, bolgeFiltre, aktifFiltre])
+  }, [arama, tehlikeFiltre, bolgeFiltre, aktifFiltre, kulRol, kulAd])
 
   async function yukle() {
     setYukleniyor(true)
