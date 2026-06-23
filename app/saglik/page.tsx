@@ -243,7 +243,7 @@ export default function Saglik() {
   }
 
   const hekimler = personeller.filter((p: any) => ['hekim', 'yonetici'].includes(p.rol))
-  const paraMi = ['yonetici', 'muhasebe'].includes(mevcutRol)
+  const paraMi = ['yonetici', 'muhasebe', 'satis'].includes(mevcutRol)
   const tl = (n: number) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺'
   const toplamSayfa = Math.ceil(toplamKayit / SAYFA_BOYUTU)
 
