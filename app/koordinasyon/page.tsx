@@ -51,7 +51,7 @@ export default function Koordinasyon() {
     const aktifPersonel = p ?? mevcutPersonel
     setYukleniyor(true)
     const rol = aktifPersonel?.rol || 'operasyon'
-    let q = sb.from('gorevler').select('*, personeller(ad_soyad), firmalar(unvan)').order('tarih', { ascending: false })
+    let q = sb.from('gorevler').select('*, personeller(ad_soyad)').order('tarih', { ascending: false })
     if (rol !== 'yonetici' && rol !== 'operasyon' && aktifPersonel?.id) {
       q = q.or(`uzman_id.eq.${aktifPersonel.id},olusturan_id.eq.${aktifPersonel.id}`)
     }
