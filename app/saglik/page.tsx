@@ -93,7 +93,7 @@ export default function Saglik() {
     let q = sb.from('hasta_kayitlari')
       .select('id, tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, hekim_id, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no', { count: 'exact' })
       .eq('sube', sube)
-      .order('tarih', { ascending: false })
+      .order('pr_no', { ascending: false })
       .range(from, to)
 
     // Server-side filtreler
@@ -176,7 +176,7 @@ export default function Saglik() {
     let q = sb.from('hasta_kayitlari')
       .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
       .eq('sube', sube)
-      .order('tarih', { ascending: false })
+      .order('pr_no', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
     if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
     if (odemeFiltre !== 'Hepsi') q = q.eq('odeme_sekli', odemeFiltre)
@@ -206,7 +206,7 @@ export default function Saglik() {
     let q = sb.from('hasta_kayitlari')
       .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
       .eq('sube', sube)
-      .order('tarih', { ascending: false })
+      .order('pr_no', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
     if (hekimFiltre !== 'Hepsi') q = q.eq('hekim_id', hekimFiltre)
     if (odemeFiltre !== 'Hepsi') q = q.eq('odeme_sekli', odemeFiltre)
