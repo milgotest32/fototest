@@ -50,7 +50,9 @@ export default function Koordinasyon() {
     setYukleniyor(true)
     const rol = mevcutPersonel?.rol || 'operasyon'
     let q = sb.from('gorevler').select('*, personeller(ad_soyad), firmalar(unvan)').order('tarih', { ascending: false })
-    if (rol !== 'yonetici' && mevcutPersonel?.id) q = q.eq('uzman_id', mevcutPersonel.id)
+    if (rol !== 'yonetici' && mevcutPersonel?.id) {
+      q = q.or(`uzman_id.eq.${mevcutPersonel.id},olusturan_id.eq.${mevcutPersonel.id}`)
+    }
     if (durumFiltre !== 'Hepsi') q = q.eq('durum', durumFiltre)
 
     const [gRes, pRes, fRes, zRes] = await Promise.all([
@@ -83,7 +85,8 @@ export default function Koordinasyon() {
       aciklama: form.aciklama,
       durum: form.durum,
       son_tarih: form.son_tarih || null,
-      kategori: 'gorev'
+      kategori: 'gorev',
+      olusturan_id: duzenle ? duzenle.olusturan_id : (mevcutPersonel?.id || null)
     }
     let error
     if (duzenle) {
@@ -151,6 +154,11 @@ export default function Koordinasyon() {
 
   const rol = mevcutPersonel?.rol || 'operasyon'
   const yazabilir = true
+  const gorevDuzenlenebilir = (g: any) => {
+    if (rol === 'yonetici') return true
+    // atayan veya atanan ise düzenleyebilir
+    return g.olusturan_id === mevcutPersonel?.id || g.uzman_id === mevcutPersonel?.id
+  }
 
   function exportCSV() {
     csvIndir(filtreliGorevler.map(g => ({
@@ -258,8 +266,8 @@ export default function Koordinasyon() {
                   {filtreliGorevler.length === 0
                     ? <tr><td colSpan={7} style={{ textAlign:'center', padding:40, color:'var(--text-faint)' }}>Görev bulunamadı</td></tr>
                     : filtreliGorevler.map((g, i) => (
-                      <tr key={g.id} style={{ borderBottom:'1px solid var(--border)', cursor: yazabilir ? 'pointer' : 'default' }}
-                        onClick={() => yazabilir && duzenleAc(g)}>
+                      <tr key={g.id} style={{ borderBottom:'1px solid var(--border)', cursor: gorevDuzenlenebilir(g) ? 'pointer' : 'default' }}
+                        onClick={() => gorevDuzenlenebilir(g) && duzenleAc(g)}>
                         <td style={{ textAlign:'center', padding:'10px 12px', color:'var(--text-faint)', fontWeight:600 }}>{i + 1}</td>
                         <td style={{ padding:'10px 12px' }}>
                           <div style={{ fontWeight:600, marginBottom:2 }}>{g.konu || g.firma_adi || '—'}</div>
@@ -291,7 +299,7 @@ export default function Koordinasyon() {
                             </span>
                           })()}
                         </td>
-                        {yazabilir && (
+                        {gorevDuzenlenebilir(g) && (
                           <td style={{ padding:'8px', textAlign:'center' }} onClick={e => e.stopPropagation()}>
                             <div style={{ display:'flex', gap:4, justifyContent:'center' }}>
                               {g.durum !== 'Tamamlandı' && (
@@ -354,7 +362,7 @@ export default function Koordinasyon() {
                   ? <div className="card" style={{ padding:40, textAlign:'center', color:'var(--text-faint)' }}>Bu tarihte görev yok</div>
                   : <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:12 }}>
                       {tGorevler.map(g => (
-                        <div key={g.id} className="card" style={{ padding:18, cursor: yazabilir ? 'pointer' : 'default' }} onClick={() => yazabilir && duzenleAc(g)}>
+                        <div key={g.id} className="card" style={{ padding:18, cursor: gorevDuzenlenebilir(g) ? 'pointer' : 'default' }} onClick={() => gorevDuzenlenebilir(g) && duzenleAc(g)}>
                           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
                             <div>
                               <div style={{ fontWeight:700 }}>{g.yetkili_sorumlu || g.uzman || '—'}</div>
@@ -370,7 +378,7 @@ export default function Koordinasyon() {
                           </div>
                           <div style={{ fontWeight:600, fontSize:13, marginBottom:4 }}>{g.konu || g.firma_adi || '—'}</div>
                           {g.karar && <div style={{ fontSize:12, color:'var(--text-dim)' }}>{g.karar}</div>}
-                          {yazabilir && (
+                          {gorevDuzenlenebilir(g) && (
                             <div style={{ display:'flex', gap:8, marginTop:12 }} onClick={e => e.stopPropagation()}>
                               {g.durum !== 'Tamamlandı' && (
                                 <button onClick={() => durumGuncelle(g.id, 'Tamamlandı')}
