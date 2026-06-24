@@ -8,8 +8,8 @@ import { Plus, Search, X, HeartPulse, Trash2, ChevronLeft, ChevronRight, Pencil 
 import { useIzin } from '@/lib/useIzin'
 
 const TETKIKLER = ['EK2','AKC','ODİO','SFT','EKG','CBC','AST','ALT','ÜRE','KREATİNİN','GLUKOZ','BURUN','BOĞAZ']
-const ODEME = ['Cari','İBAN','Peşin','POS']
-const ODEME_RENK: any = { Cari:'var(--amber)', İBAN:'var(--blue)', Peşin:'var(--green)', POS:'var(--accent)' }
+const ODEME = ['Nakit','Vakıf POS','Cebim POS','İBAN','Cari']
+const ODEME_RENK: any = { Nakit:'var(--green)', 'Vakıf POS':'var(--blue)', 'Cebim POS':'var(--accent)', İBAN:'var(--amber)', Cari:'var(--red)' }
 const SAYFA_BOYUTU = 50
 
 export default function Saglik() {
@@ -38,7 +38,7 @@ export default function Saglik() {
   const debounceRef = useRef<any>(null)
 
   function bosForm() {
-    return { tarih: new Date().toISOString().slice(0, 10), ad_soyad: '', dogum_tarihi: '', telefon: '', firma: '', firma_id: '', hekim_id: '', ucret: '', odeme_sekli: 'Peşin', tetkikler: {}, pr_no: '' }
+    return { tarih: new Date().toISOString().slice(0, 10), ad_soyad: '', cinsiyet: '', telefon: '', firma: '', firma_id: '', hekim_id: '', ucret: '', odeme_sekli: 'Nakit', tetkikler: {}, pr_no: '', aciklama: '' }
   }
 
   const sb = createClient()
@@ -91,7 +91,7 @@ export default function Saglik() {
     const to = from + SAYFA_BOYUTU - 1
 
     let q = sb.from('hasta_kayitlari')
-      .select('id, tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, hekim_id, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no', { count: 'exact' })
+      .select('id, tarih, ad_soyad, cinsiyet, telefon, firma, ucret, odeme_sekli, tetkikler, hekim_id, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no', { count: 'exact' })
       .eq('sube', sube)
       .order('pr_no', { ascending: false })
       .range(from, to)
@@ -126,7 +126,8 @@ export default function Saglik() {
     setHata('')
     const payload = {
       ...form, ucret: Number(form.ucret) || 0,
-      dogum_tarihi: form.dogum_tarihi || null,
+      cinsiyet: form.cinsiyet || null,
+      dogum_tarihi: null,
       firma_id: form.firma_id || null,
       hekim_id: form.hekim_id || null,
       pr_no: form.pr_no ? Number(form.pr_no) : null,
@@ -150,15 +151,16 @@ export default function Saglik() {
     setForm({
       tarih: k.tarih || new Date().toISOString().slice(0,10),
       ad_soyad: k.ad_soyad || '',
-      dogum_tarihi: k.dogum_tarihi || '',
+      cinsiyet: k.cinsiyet || '',
       telefon: k.telefon || '',
       firma: k.firma || '',
       firma_id: k.firma_id || '',
       hekim_id: k.hekim_id || '',
       ucret: k.ucret?.toString() || '',
-      odeme_sekli: k.odeme_sekli || 'Peşin',
+      odeme_sekli: k.odeme_sekli || 'Nakit',
       tetkikler: k.tetkikler || {},
       pr_no: k.pr_no?.toString() || '',
+      aciklama: k.aciklama || '',
     })
   }
 
@@ -174,7 +176,7 @@ export default function Saglik() {
   async function exportCSV() {
     // CSV için tüm filtrelenmiş veriyi çek (limit yok)
     let q = sb.from('hasta_kayitlari')
-      .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
+      .select('tarih, ad_soyad, cinsiyet, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
       .eq('sube', sube)
       .order('pr_no', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
@@ -184,7 +186,7 @@ export default function Saglik() {
     if (bitTarih) q = q.lte('tarih', bitTarih)
     const { data } = await q
     csvIndir((data || []).map((k: any) => ({
-      'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Doğum Tarihi': k.dogum_tarihi || '',
+      'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Cinsiyet': k.cinsiyet || '',
       'Telefon': k.telefon || '', 'Firma': k.firma || '',
       'Ücret': k.ucret || 0, 'Ödeme': k.odeme_sekli || '',
       'Tetkikler': Object.entries(k.tetkikler || {}).filter(([, v]) => v).map(([t]) => t.toUpperCase()).join(', '),
@@ -204,7 +206,7 @@ export default function Saglik() {
 
   async function exportExcel() {
     let q = sb.from('hasta_kayitlari')
-      .select('tarih, ad_soyad, dogum_tarihi, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
+      .select('tarih, ad_soyad, cinsiyet, telefon, firma, ucret, odeme_sekli, tetkikler, gaita, tit, hbsag, antihbs, hcv, hiv, kan_grubu, goz, isg_egitim, aciklama, pr_no')
       .eq('sube', sube)
       .order('pr_no', { ascending: false })
     if (aramaDebounced) q = q.or(`ad_soyad.ilike.%${aramaDebounced}%,firma.ilike.%${aramaDebounced}%`)
@@ -214,7 +216,7 @@ export default function Saglik() {
     if (bitTarih) q = q.lte('tarih', bitTarih)
     const { data } = await q
     const rows = (data || []).map((k: any) => ({
-      'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Doğum Tarihi': k.dogum_tarihi || '',
+      'Tarih': k.tarih || '', 'Ad Soyad': k.ad_soyad || '', 'Cinsiyet': k.cinsiyet || '',
       'Telefon': k.telefon || '', 'Firma': k.firma || '',
       'Ücret': Number(k.ucret) || 0, 'Ödeme': k.odeme_sekli || '',
       'Tetkikler': Object.entries(k.tetkikler || {}).filter(([, v]) => v).map(([t]) => t.toUpperCase()).join(', '),
@@ -385,7 +387,7 @@ export default function Saglik() {
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[['Ad Soyad', detay.ad_soyad], ['Doğum Tarihi', detay.dogum_tarihi ? new Date(detay.dogum_tarihi + 'T00:00:00').toLocaleDateString('tr-TR') : '—'],
+              {[['Ad Soyad', detay.ad_soyad], ['Cinsiyet', detay.cinsiyet || '—'],
                 ['Telefon', detay.telefon || '—'], ['Firma', detay.firma || '—'],
                 ['Tarih', new Date(detay.tarih + 'T00:00:00').toLocaleDateString('tr-TR')],
                 ...(paraMi ? [['Ücret', tl(Number(detay.ucret) || 0)], ['Ödeme', detay.odeme_sekli]] : [])
@@ -411,7 +413,18 @@ export default function Saglik() {
               <div><label style={lbl}>Tarih</label><input type="date" value={form.tarih} onChange={e => setForm({ ...form, tarih: e.target.value })} /></div>
               <div><label style={lbl}>Ad Soyad *</label><input value={form.ad_soyad} onChange={e => setForm({ ...form, ad_soyad: e.target.value })} placeholder="Hasta adı" /></div>
               <div><label style={lbl}>Protokol No</label><input type="number" placeholder="PR No" value={form.pr_no} onChange={e => setForm({ ...form, pr_no: e.target.value })} /></div>
-              <div><label style={lbl}>Doğum Tarihi</label><input type="date" value={form.dogum_tarihi} onChange={e => setForm({ ...form, dogum_tarihi: e.target.value })} /></div>
+              <div>
+                <label style={lbl}>Cinsiyet</label>
+                <div style={{ display:'flex', gap:8 }}>
+                  {['Erkek','Kadın'].map(c => (
+                    <button key={c} type="button" onClick={() => setForm({ ...form, cinsiyet: c })}
+                      style={{ flex:1, padding:'9px', borderRadius:8, fontSize:13, cursor:'pointer', fontFamily:'inherit',
+                        background: form.cinsiyet === c ? 'var(--accent-soft,#7c6af722)' : 'var(--surface-2)',
+                        border: `1px solid ${form.cinsiyet === c ? 'var(--accent)' : 'var(--border)'}`,
+                        color: form.cinsiyet === c ? 'var(--accent)' : 'var(--text-dim)' }}>{c}</button>
+                  ))}
+                </div>
+              </div>
               <div><label style={lbl}>Telefon</label><input value={form.telefon} onChange={e => setForm({ ...form, telefon: e.target.value })} placeholder="05..." /></div>
               <div style={{ gridColumn: '1/3' }}>
                 <label style={lbl}>Firma</label>
@@ -450,7 +463,12 @@ export default function Saglik() {
                   style={{ padding: '7px 13px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', background: aktif ? 'var(--green-soft)' : 'var(--surface-2)', border: `1px solid ${aktif ? 'var(--green)' : 'var(--border)'}`, color: aktif ? 'var(--green)' : 'var(--text-dim)' }}>{t}</button>
               })}
             </div>
-            {hata && <div style={{ background: 'var(--red-soft)', color: 'var(--red)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{hata}</div>}
+            <div style={{ marginBottom: 16 }}>
+              <label style={lbl}>Açıklama</label>
+              <textarea value={form.aciklama} onChange={e => setForm({ ...form, aciklama: e.target.value })}
+                placeholder="Notlar, açıklama..." rows={2}
+                style={{ width:'100%', borderRadius:8, border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--text)', padding:'9px 12px', fontSize:13, fontFamily:'inherit', resize:'vertical', boxSizing:'border-box' }} />
+            </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn-ghost btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { setModal(false); setDuzenle(null) }}>İptal</button>
               <button className="btn" style={{ flex: 1, justifyContent: 'center' }} onClick={kaydet}>{duzenle ? 'Güncelle' : 'Kaydet'}</button>
