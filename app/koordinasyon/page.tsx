@@ -150,7 +150,7 @@ export default function Koordinasyon() {
   }
 
   const rol = mevcutPersonel?.rol || 'operasyon'
-  const yazabilir = rol !== 'saha'
+  const yazabilir = true
 
   function exportCSV() {
     csvIndir(filtreliGorevler.map(g => ({
