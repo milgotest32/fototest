@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
-import { Plus, X, Check, Trash2, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, Search, Grid3X3, Download } from 'lucide-react'
+import { Plus, X, Check, Trash2, ChevronLeft, ChevronRight, ClipboardList, CalendarDays, Search, Grid3X3, Download, Archive, ArchiveRestore } from 'lucide-react'
 import { csvIndir } from '@/lib/csvExport'
 
 const DURUM_RENK: any = { 'Planlandı':'var(--blue)', 'Tamamlandı':'var(--green)', 'Bekliyor':'var(--amber)', 'İptal':'var(--red)', 'Gecikme':'#f97316' }
@@ -25,6 +25,8 @@ export default function Koordinasyon() {
   const [hata, setHata] = useState('')
   const [arama, setArama] = useState('')
   const [durumFiltre, setDurumFiltre] = useState('Hepsi')
+  // arsivGoster: false = aktif görevler, true = arşiv
+  const [arsivGoster, setArsivGoster] = useState(false)
   const [seciliTarih, setSeciliTarih] = useState(new Date().toISOString().slice(0,10))
   const [haftalikMi, setHaftalikMi] = useState(false)
   const [gridYil, setGridYil] = useState(new Date().getFullYear())
@@ -45,13 +47,21 @@ export default function Koordinasyon() {
     })
   }, [])
 
-  useEffect(() => { if (mevcutPersonel !== null) yukle(mevcutPersonel) }, [mevcutPersonel, durumFiltre])
+  useEffect(() => { if (mevcutPersonel !== null) yukle(mevcutPersonel) }, [mevcutPersonel, durumFiltre, arsivGoster])
 
   async function yukle(p?: any) {
     const aktifPersonel = p ?? mevcutPersonel
     setYukleniyor(true)
     const rol = aktifPersonel?.rol || 'operasyon'
     let q = sb.from('gorevler').select('*').order('tarih', { ascending: false })
+
+    // Arşiv filtresi
+    if (arsivGoster) {
+      q = q.eq('arsiv', true)
+    } else {
+      q = q.or('arsiv.eq.false,arsiv.is.null')
+    }
+
     if (rol !== 'yonetici' && rol !== 'operasyon' && aktifPersonel?.id) {
       q = q.or(`uzman_id.eq.${aktifPersonel.id},olusturan_id.eq.${aktifPersonel.id}`)
     }
@@ -106,8 +116,20 @@ export default function Koordinasyon() {
     await sb.from('gorevler').update({ durum }).eq('id', id); yukle()
   }
 
-  async function sil(id: string) {
-    if (!confirm('Görevi silmek istiyor musunuz?')) return
+  // Arşivle (silme değil)
+  async function arsivle(id: string) {
+    if (!confirm('Bu görevi arşive taşımak istiyor musunuz?')) return
+    await sb.from('gorevler').update({ arsiv: true }).eq('id', id); yukle()
+  }
+
+  // Arşivden geri al
+  async function arsivdenCikar(id: string) {
+    await sb.from('gorevler').update({ arsiv: false }).eq('id', id); yukle()
+  }
+
+  // Kalıcı sil (sadece arşivdeyken)
+  async function kaliciSil(id: string) {
+    if (!confirm('Bu görevi kalıcı olarak silmek istiyor musunuz? Bu işlem geri alınamaz.')) return
     await sb.from('gorevler').delete().eq('id', id); yukle()
   }
 
@@ -135,7 +157,6 @@ export default function Koordinasyon() {
       (g.uzman||'').toLowerCase().includes(s) || (g.aciklama||'').toLowerCase().includes(s)
   })
 
-  // GRID: firma başına IGU/IH aylık ziyaret durumu — ziyaretler tablosundan
   function gridHesapla() {
     return firmalar.map(f => {
       const iguAylar: Record<number, boolean> = {}
@@ -145,10 +166,10 @@ export default function Koordinasyon() {
         const tarihYil = new Date(z.tarih).getFullYear()
         if (tarihYil !== gridYil) return
         if (z.firma_id !== f.id) return
-        const ay = new Date(z.tarih).getMonth() // 0-11
+        const ay = new Date(z.tarih).getMonth()
         if (z.tur === 'İGU') iguAylar[ay] = true
         if (z.tur === 'İH') ihAylar[ay] = true
-        if (z.tur === 'DSP') iguAylar[ay] = true // DSP'yi IGU satırında göster
+        if (z.tur === 'DSP') iguAylar[ay] = true
       })
       return { ...f, iguAylar, ihAylar }
     })
@@ -158,7 +179,6 @@ export default function Koordinasyon() {
   const yazabilir = true
   const gorevDuzenlenebilir = (g: any) => {
     if (rol === 'yonetici') return true
-    // atayan veya atanan ise düzenleyebilir
     return g.olusturan_id === mevcutPersonel?.id || g.uzman_id === mevcutPersonel?.id
   }
 
@@ -168,8 +188,10 @@ export default function Koordinasyon() {
       'Karar/Açıklama': g.karar||'', 'Durum': g.durum||'',
       'Yetkili/Sorumlu': g.yetkili_sorumlu||g.uzman||'',
       'Firma': g.firma_adi||'', 'Notlar': g.aciklama||'',
+      'Arşiv': g.arsiv ? 'Evet' : 'Hayır',
     })), 'koordinasyon')
   }
+
   const istatistik = {
     toplam: gorevler.length,
     bekliyor: gorevler.filter(g => g.durum === 'Bekliyor').length,
@@ -179,17 +201,23 @@ export default function Koordinasyon() {
 
   const gridData = sekme === 'grid' ? gridHesapla() : []
 
+  // Durum filtre butonları — arşivdeyken durum filtresi de çalışır
+  const durumFiltreButonlari = ['Hepsi', ...DURUMLAR]
+
   return (
     <div className="page-wrap">
       {/* BAŞLIK */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:24 }}>
         <div>
-          <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:26, fontWeight:700, letterSpacing:-0.5 }}>Görev Takibi</h1>
+          <h1 style={{ fontFamily:'Sora,sans-serif', fontSize:26, fontWeight:700, letterSpacing:-0.5 }}>
+            Görev Takibi
+            {arsivGoster && <span style={{ marginLeft:10, fontSize:14, fontWeight:400, color:'var(--text-faint)', background:'var(--surface-2)', border:'1px solid var(--border)', padding:'3px 10px', borderRadius:20 }}>📦 Arşiv</span>}
+          </h1>
           <p style={{ color:'var(--text-dim)', fontSize:13, marginTop:2 }}>
-            {rol === 'saha' ? `${mevcutPersonel?.ad_soyad} — sadece kendi görevlerin` : 'Tüm görev ve kararlar'}
+            {rol === 'saha' ? `${mevcutPersonel?.ad_soyad} — sadece kendi görevlerin` : arsivGoster ? 'Arşivlenmiş görevler' : 'Tüm görev ve kararlar'}
           </p>
         </div>
-        <div style={{ display:'flex', gap:8 }}>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
           <div style={{ display:'flex', background:'var(--surface-2)', borderRadius:10, padding:3, border:'1px solid var(--border)' }}>
             {([['liste','Liste',ClipboardList],['takvim','Takvim',CalendarDays],['grid','Ziyaret Grid',Grid3X3]] as any[]).map(([k,l,Icon]) => (
               <button key={k} onClick={() => setSekme(k)}
@@ -201,7 +229,7 @@ export default function Koordinasyon() {
               </button>
             ))}
           </div>
-          {yazabilir && (
+          {yazabilir && !arsivGoster && (
             <button className="btn" onClick={() => { setDuzenle(null); setForm(bosForm()); setModal(true) }}>
               <Plus size={16}/> Görev Ekle
             </button>
@@ -213,29 +241,34 @@ export default function Koordinasyon() {
       </div>
 
       {/* ÖZET KARTLAR */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
-        {[
-          { label:'Toplam', val: istatistik.toplam, renk:'var(--accent)' },
-          { label:'Planlandı', val: istatistik.planlandi, renk:'var(--blue)' },
-          { label:'Bekliyor', val: istatistik.bekliyor, renk:'var(--amber)' },
-          { label:'Tamamlandı', val: istatistik.tamamlandi, renk:'var(--green)' },
-        ].map((k, i) => (
-          <div key={i} className="card" style={{ padding:'12px 16px' }}>
-            <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:4 }}>{k.label}</div>
-            <div style={{ fontFamily:'Sora,sans-serif', fontSize:26, fontWeight:700, color: k.renk }}>{k.val}</div>
-          </div>
-        ))}
-      </div>
+      {!arsivGoster && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
+          {[
+            { label:'Toplam', val: istatistik.toplam, renk:'var(--accent)' },
+            { label:'Planlandı', val: istatistik.planlandi, renk:'var(--blue)' },
+            { label:'Bekliyor', val: istatistik.bekliyor, renk:'var(--amber)' },
+            { label:'Tamamlandı', val: istatistik.tamamlandi, renk:'var(--green)' },
+          ].map((k, i) => (
+            <div key={i} className="card" style={{ padding:'12px 16px' }}>
+              <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:4 }}>{k.label}</div>
+              <div style={{ fontFamily:'Sora,sans-serif', fontSize:26, fontWeight:700, color: k.renk }}>{k.val}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ===== LİSTE ===== */}
       {sekme === 'liste' && (
         <>
+          {/* FİLTRE BARI */}
           <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap', alignItems:'center' }}>
             <div style={{ position:'relative' }}>
               <Search size={14} style={{ position:'absolute', left:10, top:11, color:'var(--text-faint)' }}/>
               <input value={arama} onChange={e => setArama(e.target.value)} placeholder="Ara..." style={{ paddingLeft:30, width:180 }}/>
             </div>
-            {['Hepsi',...DURUMLAR].map(d => (
+
+            {/* Durum filtreleri */}
+            {durumFiltreButonlari.map(d => (
               <button key={d} onClick={() => setDurumFiltre(d)}
                 style={{ padding:'8px 14px', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'inherit',
                   background: durumFiltre === d ? `${DURUM_RENK[d] || 'var(--accent)'}22` : 'var(--surface-2)',
@@ -245,6 +278,17 @@ export default function Koordinasyon() {
                 {d}
               </button>
             ))}
+
+            {/* Arşiv toggle */}
+            <button onClick={() => { setArsivGoster(a => !a); setDurumFiltre('Hepsi') }}
+              style={{ marginLeft:'auto', padding:'8px 14px', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:6,
+                background: arsivGoster ? 'rgba(251,146,60,0.15)' : 'var(--surface-2)',
+                border: `1px solid ${arsivGoster ? '#f97316' : 'var(--border)'}`,
+                color: arsivGoster ? '#f97316' : 'var(--text-dim)',
+                fontWeight: arsivGoster ? 600 : 400 }}>
+              <Archive size={13}/>
+              {arsivGoster ? 'Aktif Görevler' : 'Arşiv'}
+            </button>
           </div>
 
           {yukleniyor ? (
@@ -261,15 +305,18 @@ export default function Koordinasyon() {
                     <th style={{ textAlign:'left', padding:'10px 12px', minWidth:130 }}>YETKİLİ</th>
                     <th style={{ textAlign:'center', padding:'10px 12px', width:95 }}>G.BAŞ TRH</th>
                     <th style={{ textAlign:'center', padding:'10px 12px', width:95 }}>TERMİN</th>
-                    {yazabilir && <th style={{ width:80 }}></th>}
+                    <th style={{ width:100 }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtreliGorevler.length === 0
-                    ? <tr><td colSpan={7} style={{ textAlign:'center', padding:40, color:'var(--text-faint)' }}>Görev bulunamadı</td></tr>
+                    ? <tr><td colSpan={8} style={{ textAlign:'center', padding:40, color:'var(--text-faint)' }}>
+                        {arsivGoster ? '📦 Arşivde görev yok' : 'Görev bulunamadı'}
+                      </td></tr>
                     : filtreliGorevler.map((g, i) => (
-                      <tr key={g.id} style={{ borderBottom:'1px solid var(--border)', cursor: gorevDuzenlenebilir(g) ? 'pointer' : 'default' }}
-                        onClick={() => gorevDuzenlenebilir(g) && duzenleAc(g)}>
+                      <tr key={g.id} style={{ borderBottom:'1px solid var(--border)', cursor: (!arsivGoster && gorevDuzenlenebilir(g)) ? 'pointer' : 'default',
+                        opacity: arsivGoster ? 0.8 : 1 }}
+                        onClick={() => !arsivGoster && gorevDuzenlenebilir(g) && duzenleAc(g)}>
                         <td style={{ textAlign:'center', padding:'10px 12px', color:'var(--text-faint)', fontWeight:600 }}>{i + 1}</td>
                         <td style={{ padding:'10px 12px' }}>
                           <div style={{ fontWeight:600, marginBottom:2 }}>{g.konu || g.firma_adi || '—'}</div>
@@ -301,22 +348,38 @@ export default function Koordinasyon() {
                             </span>
                           })()}
                         </td>
-                        {gorevDuzenlenebilir(g) && (
-                          <td style={{ padding:'8px', textAlign:'center' }} onClick={e => e.stopPropagation()}>
-                            <div style={{ display:'flex', gap:4, justifyContent:'center' }}>
-                              {g.durum !== 'Tamamlandı' && (
-                                <button onClick={() => durumGuncelle(g.id, 'Tamamlandı')}
-                                  style={{ padding:'5px 8px', borderRadius:6, background:'var(--green-soft)', border:'1px solid var(--green)', color:'var(--green)', cursor:'pointer' }}>
-                                  <Check size={12}/>
+                        <td style={{ padding:'8px', textAlign:'center' }} onClick={e => e.stopPropagation()}>
+                          <div style={{ display:'flex', gap:4, justifyContent:'center' }}>
+                            {!arsivGoster && gorevDuzenlenebilir(g) && (
+                              <>
+                                {g.durum !== 'Tamamlandı' && (
+                                  <button onClick={() => durumGuncelle(g.id, 'Tamamlandı')} title="Tamamlandı olarak işaretle"
+                                    style={{ padding:'5px 8px', borderRadius:6, background:'var(--green-soft)', border:'1px solid var(--green)', color:'var(--green)', cursor:'pointer' }}>
+                                    <Check size={12}/>
+                                  </button>
+                                )}
+                                <button onClick={() => arsivle(g.id)} title="Arşive taşı"
+                                  style={{ padding:'5px 8px', borderRadius:6, background:'rgba(251,146,60,0.1)', border:'1px solid #f97316', color:'#f97316', cursor:'pointer' }}>
+                                  <Archive size={12}/>
                                 </button>
-                              )}
-                              <button onClick={() => sil(g.id)}
-                                style={{ padding:'5px 8px', borderRadius:6, background:'var(--red-soft)', border:'1px solid var(--red)', color:'var(--red)', cursor:'pointer' }}>
-                                <Trash2 size={12}/>
-                              </button>
-                            </div>
-                          </td>
-                        )}
+                              </>
+                            )}
+                            {arsivGoster && (
+                              <>
+                                <button onClick={() => arsivdenCikar(g.id)} title="Geri al"
+                                  style={{ padding:'5px 8px', borderRadius:6, background:'var(--green-soft)', border:'1px solid var(--green)', color:'var(--green)', cursor:'pointer' }}>
+                                  <ArchiveRestore size={12}/>
+                                </button>
+                                {rol === 'yonetici' && (
+                                  <button onClick={() => kaliciSil(g.id)} title="Kalıcı sil"
+                                    style={{ padding:'5px 8px', borderRadius:6, background:'var(--red-soft)', border:'1px solid var(--red)', color:'var(--red)', cursor:'pointer' }}>
+                                    <Trash2 size={12}/>
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     ))}
                 </tbody>
@@ -374,7 +437,7 @@ export default function Koordinasyon() {
                               const gecikti = g.son_tarih && g.son_tarih < new Date().toISOString().slice(0,10) && !['Tamamlandı','İptal'].includes(g.durum)
                               const gosterimDurum = gecikti ? 'Gecikme' : g.durum
                               return <span style={{ fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:600, background:`${DURUM_RENK[gosterimDurum] || 'var(--accent)'}22`, color: DURUM_RENK[gosterimDurum] || 'var(--accent)' }}>
-                                {gosterimDurum}{g.son_tarih && !gecikti && !['Tamamlandı','İptal'].includes(g.durum) ? ` · ${new Date(g.son_tarih+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'})}` : ''}
+                                {gosterimDurum}
                               </span>
                             })()}
                           </div>
@@ -388,9 +451,9 @@ export default function Koordinasyon() {
                                   <Check size={12}/> Tamamlandı
                                 </button>
                               )}
-                              <button onClick={() => sil(g.id)}
-                                style={{ padding:'7px 10px', borderRadius:8, background:'transparent', border:'none', color:'var(--text-faint)', cursor:'pointer' }}>
-                                <Trash2 size={13}/>
+                              <button onClick={() => arsivle(g.id)} title="Arşive taşı"
+                                style={{ padding:'7px 10px', borderRadius:8, background:'transparent', border:'none', color:'#f97316', cursor:'pointer' }}>
+                                <Archive size={13}/>
                               </button>
                             </div>
                           )}
@@ -407,7 +470,6 @@ export default function Koordinasyon() {
       {/* ===== ZİYARET GRİD ===== */}
       {sekme === 'grid' && (
         <>
-          {/* Yıl seçici */}
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
             <button onClick={() => setGridYil(y => y - 1)}
               style={{ padding:'6px 12px', borderRadius:8, border:'1px solid var(--border)', background:'var(--surface)', cursor:'pointer', color:'var(--text)' }}>
@@ -418,7 +480,6 @@ export default function Koordinasyon() {
               style={{ padding:'6px 12px', borderRadius:8, border:'1px solid var(--border)', background:'var(--surface)', cursor:'pointer', color:'var(--text)' }}>
               <ChevronRight size={15}/>
             </button>
-            {/* Renk açıklama */}
             <div style={{ display:'flex', gap:14, marginLeft:16, fontSize:12, color:'var(--text-dim)' }}>
               <span style={{ display:'flex', alignItems:'center', gap:5 }}>
                 <span style={{ width:14, height:14, borderRadius:3, background:'#22c55e', display:'inline-block' }}/>Ziyaret Tamamlandı
@@ -429,7 +490,6 @@ export default function Koordinasyon() {
             </div>
           </div>
 
-          {/* Legand: IGU / IH */}
           <div style={{ display:'flex', gap:10, marginBottom:16, fontSize:12 }}>
             <span style={{ padding:'4px 12px', borderRadius:20, background:'rgba(99,102,241,0.15)', color:'var(--accent)', fontWeight:600 }}>İGU — İSG Uzmanı</span>
             <span style={{ padding:'4px 12px', borderRadius:20, background:'rgba(34,197,94,0.15)', color:'var(--green)', fontWeight:600 }}>İH — İş Hekimi</span>
@@ -457,7 +517,6 @@ export default function Koordinasyon() {
                     ? <tr><td colSpan={14} style={{ textAlign:'center', padding:40, color:'var(--text-faint)' }}>Firma bulunamadı</td></tr>
                     : gridData.map((f, fi) => (
                       <>
-                        {/* IGU satırı */}
                         <tr key={`${f.id}-igu`} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)', background: fi % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                           <td style={{ padding:'8px 14px', fontWeight:500, borderRight:'1px solid var(--border)', verticalAlign:'middle' }} rowSpan={2}>
                             <div style={{ fontSize:12 }}>{f.unvan}</div>
@@ -477,7 +536,6 @@ export default function Koordinasyon() {
                             </td>
                           ))}
                         </tr>
-                        {/* IH satırı */}
                         <tr key={`${f.id}-ih`} style={{ borderBottom:'2px solid var(--border)', background: fi % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                           <td style={{ textAlign:'center', padding:'6px', borderRight:'1px solid var(--border)' }}>
                             <span style={{ fontSize:10, padding:'2px 6px', borderRadius:4, background:'rgba(34,197,94,0.15)', color:'var(--green)', fontWeight:600 }}>İH</span>
