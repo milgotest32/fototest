@@ -45,9 +45,9 @@ export default function Ziyaretler() {
   async function yukle() {
     setYukleniyor(true)
     // Saha/hekim rolünde sadece kendine atanmış firmalar gösterilir
-    const kisiselFirmaFiltresi = ['saha', 'hekim'].includes(mevcutPersonel?.rol || '') && izin?.goruntur
+    const kisiselFirmaFiltresi = ['saha', 'hekim', 'operasyon'].includes(mevcutPersonel?.rol || '') && izin?.goruntur
     let q = sb.from('firmalar')
-      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, gorevli_dsp, igu_atama_tarihi, ih_atama_tarihi, bhl_atama, igu_atama_durum, ih_atama_durum, bhl_atama_durum, aylik_ziyaretler')
+      .select('id, unvan, sgk_sicil, tehlike_sinifi, ih_periyot, gorevli_igu, gorevli_ih, gorevli_dsp, igu_atama_tarihi, ih_atama_tarihi, bhl_atama, igu_atama_durum, ih_atama_durum, bhl_atama_durum, aylik_ziyaretler, igu_id, ih_id')
       .eq('aktif', true)
       .not('ih_periyot', 'is', null)
       .order('unvan')
@@ -56,9 +56,10 @@ export default function Ziyaretler() {
     if (aramaDebounced) q = q.ilike('unvan', `%${aramaDebounced}%`)
 
     const rol = mevcutPersonel?.rol || 'operasyon'
-    if (rol === 'saha' && mevcutPersonel?.ad_soyad) {
-      const ad = mevcutPersonel.ad_soyad
-      q = q.or(`gorevli_igu.ilike.%${ad}%,gorevli_ih.ilike.%${ad}%`)
+    // saha veya operasyon rolünde: ID bazlı filtre (ad eşleşmesi yerine)
+    if (['saha', 'operasyon'].includes(rol) && mevcutPersonel?.id) {
+      const uid = mevcutPersonel.id
+      q = q.or(`igu_id.eq.${uid},ih_id.eq.${uid}`)
     }
 
     const [fData, pData] = await Promise.all([
@@ -66,14 +67,11 @@ export default function Ziyaretler() {
       sb.from('personeller').select('id, ad_soyad, rol').eq('aktif', true).order('ad_soyad')
     ])
     const tumFirmalar = (fData.data || []).filter((f: any) => f.ih_periyot !== 'GİDİLMİYOR')
-    // Saha ve hekim rolleri sadece kendi adlarının geçtiği firmaları görür
-    if (kisiselFirmaFiltresi && mevcutPersonel?.ad_soyad) {
-      const ad = mevcutPersonel.ad_soyad.trim().toUpperCase()
+    // saha ve operasyon rolleri sadece kendi ID'siyle atanmış firmaları görür
+    if (kisiselFirmaFiltresi && mevcutPersonel?.id) {
+      const uid = mevcutPersonel.id
       setFirmalar(tumFirmalar.filter((f: any) =>
-        (f.gorevli_igu || '').toUpperCase().includes(ad) ||
-        (f.gorevli_ih || '').toUpperCase().includes(ad) ||
-        (f.gorevli_dsp || '').toUpperCase().includes(ad) ||
-        (f.bhl_atama || '').toUpperCase().includes(ad)
+        f.igu_id === uid || f.ih_id === uid
       ))
     } else {
       setFirmalar(tumFirmalar)
@@ -243,7 +241,7 @@ export default function Ziyaretler() {
         <div>
           <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>Ziyaret Takibi</h1>
           <p style={{ color: 'var(--text-dim)', fontSize: 13, marginTop: 2 }}>
-            {rol === 'saha' ? `${mevcutPersonel?.ad_soyad} — sadece atandığın firmalar görünüyor` : 'Tüm firmalar'}
+            {['saha','operasyon'].includes(rol) ? `${mevcutPersonel?.ad_soyad} — sadece atandığın firmalar görünüyor` : 'Tüm firmalar'}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -493,3 +491,4 @@ export default function Ziyaretler() {
     </div>
   )
 }
+
