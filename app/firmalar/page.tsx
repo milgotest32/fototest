@@ -401,7 +401,7 @@ export default function Firmalar() {
 
   // ===== TOPLU EXCEL EXPORT (tüm alanlar) =====
   function topluExcelIndir() {
-    const veri = filtreli.map(f => ({
+    const veri = firmalar.map(f => ({
       'FİRMA ÜNVANI': f.unvan || '',
       'İSG KATİP ÜNVAN': f.isg_katip_unvan || '',
       'SINIFI': f.tehlike_sinifi || '',
