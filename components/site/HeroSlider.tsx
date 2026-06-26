@@ -25,7 +25,7 @@ const SLIDES = [
   },
   {
     img: '/slider/slider5.jpg',
-    baslik: ['2014'ten Bu Yana', 'ISG Çözüm Ortağınız', ''],
+    baslik: ["2014'ten Bu Yana", 'ISG Çözüm Ortağınız', ''],
     aciklama: '2014 yılından bu yana ÇSGB yetkili OSGB olarak Afyonkarahisar ve çevre illerde güvenilir iş sağlığı ve güvenliği hizmeti sunuyoruz.',
   },
 ]
@@ -134,3 +134,4 @@ export default function HeroSlider() {
     </section>
   )
 }
+
