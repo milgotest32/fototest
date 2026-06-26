@@ -490,14 +490,20 @@ export default function Firmalar() {
     for (const row of rows) {
       const unvan = (row['FİRMA ÜNVANI'] || '').toString().trim()
       if (!unvan || unvan.startsWith('Bu sütun')) continue
-      // DB'de bul
-      const eslesen = firmalar.find(f =>
-        f.unvan?.toLowerCase().trim() === unvan.toLowerCase()
-      )
+      const sgk = (row['SGK SİCİL NO'] || '').toString().trim()
+
+      // 1. Önce SGK sicil ile eşleştir
+      let eslesen = sgk ? firmalar.find(f => f.sgk_sicil?.toString().trim() === sgk) : null
+      // 2. SGK yoksa veya bulunamadıysa unvan ile dene
+      if (!eslesen) eslesen = firmalar.find(f => f.unvan?.toLowerCase().trim() === unvan.toLowerCase())
+
+      const islem = eslesen ? 'guncelle' : 'ekle'
       sonuclar.push({
         unvan,
+        sgk,
         db_id: eslesen?.id || null,
         eslesti: !!eslesen,
+        islem,
         row,
       })
     }
@@ -507,11 +513,10 @@ export default function Firmalar() {
 
   async function topluImportKaydet() {
     const sb2 = createClient()
-    const eslesenler = topluImportSonuc.filter(r => r.eslesti)
-    let basari = 0, hata = 0
-    for (const r of eslesenler) {
+    let basari = 0, eklendi = 0, hata = 0
+
+    for (const r of topluImportSonuc) {
       const row = r.row
-      const payload: any = {}
       const str = (k: string) => { const v = row[k]?.toString().trim(); return v || null }
       const num = (k: string) => { const v = parseFloat(row[k]?.toString().replace(',','.')); return isNaN(v) ? null : v }
       const bool = (k: string) => row[k]?.toString().toUpperCase() === 'EVET'
@@ -520,42 +525,62 @@ export default function Firmalar() {
         const m = v.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/)
         return m ? `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : null
       }
-      if (str('İSG KATİP ÜNVAN')) payload.isg_katip_unvan = str('İSG KATİP ÜNVAN')
-      if (str('SINIFI')) payload.tehlike_sinifi = str('SINIFI')
-      if (str('SGK SİCİL NO')) payload.sgk_sicil = str('SGK SİCİL NO')
-      if (row['PLAN SAYI'] !== '') payload.plan_sayi = num('PLAN SAYI')
-      if (row['HAZİRAN SAYI'] !== '') payload.calisan_sayisi = num('HAZİRAN SAYI')
-      if (row['FATURA'] !== '') payload.fatura = bool('FATURA')
-      if (str('FATURA AÇIKLAMA')) payload.fatura_aciklama = str('FATURA AÇIKLAMA')
-      if (str('KLASÖR')) payload.klasor = str('KLASÖR')
-      if (row['KİŞİ BAŞI'] !== '') payload.kisi_basi_ucret = num('KİŞİ BAŞI')
-      if (row['KİŞİ BAŞI YENİ'] !== '') payload.kisi_basi_ucret_yeni = num('KİŞİ BAŞI YENİ')
-      if (row['CARİ SÖZLEŞME'] !== '') payload.cari_sozlesme = bool('CARİ SÖZLEŞME')
-      if (str('İGU ATAMA')) payload.gorevli_igu = str('İGU ATAMA')
-      if (tarih('IGU ATAMA TARİHİ')) payload.igu_atama_tarihi = tarih('IGU ATAMA TARİHİ')
-      if (str('DR.ATAMA')) payload.gorevli_ih = str('DR.ATAMA')
-      if (tarih('DR.ATAMA TARİHİ')) payload.ih_atama_tarihi = tarih('DR.ATAMA TARİHİ')
-      if (str('BHL ATAMA')) payload.bhl_atama = str('BHL ATAMA')
-      if (str('DSP ATAMA')) payload.gorevli_dsp = str('DSP ATAMA')
-      if (str('ATAMA AÇIKLAMA')) payload.atama_aciklama = str('ATAMA AÇIKLAMA')
-      if (row['Dr Süre'] !== '') payload.dr_sure = num('Dr Süre')
-      if (row['Uzman Süre'] !== '') payload.uzman_sure = num('Uzman Süre')
-      if (str('BÖLGE')) payload.bolge = str('BÖLGE')
-      if (str('UZMAN GİDEN')) payload.gorevli_igu_giden = str('UZMAN GİDEN')
-      if (str('UZMAN PERİYOD')) payload.ziyaret_periyodu = str('UZMAN PERİYOD')
-      if (str('DR GİDEN')) payload.gorevli_ih_giden = str('DR GİDEN')
-      if (str('DR PERİYOT')) payload.ih_periyot = str('DR PERİYOT')
-      if (str('YETKİLİ')) payload.yetkili = str('YETKİLİ')
-      if (str('TELEFON')) payload.telefon = str('TELEFON')
-      if (str('TELEFON2')) payload.telefon2 = str('TELEFON2')
-      if (str('EMAIL')) payload.email = str('EMAIL')
-      if (str('ADRES')) payload.adres = str('ADRES')
-      if (row['AKTİF'] !== '') payload.aktif = bool('AKTİF')
 
-      const { error } = await sb2.from('firmalar').update(payload).eq('id', r.db_id)
-      if (error) hata++; else basari++
+      // Ortak payload builder
+      const buildPayload = (forInsert: boolean) => {
+        const p: any = {}
+        if (forInsert) p.unvan = r.unvan  // insert'te unvan zorunlu
+        if (str('İSG KATİP ÜNVAN') !== null) p.isg_katip_unvan = str('İSG KATİP ÜNVAN')
+        if (str('SINIFI') !== null) p.tehlike_sinifi = str('SINIFI')
+        if (str('SGK SİCİL NO') !== null) p.sgk_sicil = str('SGK SİCİL NO')
+        if (row['PLAN SAYI'] !== '') p.plan_sayi = num('PLAN SAYI')
+        if (row['HAZİRAN SAYI'] !== '') p.calisan_sayisi = num('HAZİRAN SAYI')
+        if (row['FATURA'] !== '') p.fatura = bool('FATURA')
+        if (str('FATURA AÇIKLAMA') !== null) p.fatura_aciklama = str('FATURA AÇIKLAMA')
+        if (str('KLASÖR') !== null) p.klasor = str('KLASÖR')
+        if (row['KİŞİ BAŞI'] !== '') p.kisi_basi_ucret = num('KİŞİ BAŞI')
+        if (row['KİŞİ BAŞI YENİ'] !== '') p.kisi_basi_ucret_yeni = num('KİŞİ BAŞI YENİ')
+        if (row['CARİ SÖZLEŞME'] !== '') p.cari_sozlesme = bool('CARİ SÖZLEŞME')
+        if (str('İGU ATAMA') !== null) p.gorevli_igu = str('İGU ATAMA')
+        if (tarih('IGU ATAMA TARİHİ')) p.igu_atama_tarihi = tarih('IGU ATAMA TARİHİ')
+        if (str('DR.ATAMA') !== null) p.gorevli_ih = str('DR.ATAMA')
+        if (tarih('DR.ATAMA TARİHİ')) p.ih_atama_tarihi = tarih('DR.ATAMA TARİHİ')
+        if (str('BHL ATAMA') !== null) p.bhl_atama = str('BHL ATAMA')
+        if (str('DSP ATAMA') !== null) p.gorevli_dsp = str('DSP ATAMA')
+        if (str('ATAMA AÇIKLAMA') !== null) p.atama_aciklama = str('ATAMA AÇIKLAMA')
+        if (row['Dr Süre'] !== '') p.dr_sure = num('Dr Süre')
+        if (row['Uzman Süre'] !== '') p.uzman_sure = num('Uzman Süre')
+        if (str('BÖLGE') !== null) p.bolge = str('BÖLGE')
+        if (str('UZMAN GİDEN') !== null) p.gorevli_igu_giden = str('UZMAN GİDEN')
+        if (str('UZMAN PERİYOD') !== null) p.ziyaret_periyodu = str('UZMAN PERİYOD')
+        if (str('DR GİDEN') !== null) p.gorevli_ih_giden = str('DR GİDEN')
+        if (str('DR PERİYOT') !== null) p.ih_periyot = str('DR PERİYOT')
+        if (str('YETKİLİ') !== null) p.yetkili = str('YETKİLİ')
+        if (str('TELEFON') !== null) p.telefon = str('TELEFON')
+        if (str('TELEFON2') !== null) p.telefon2 = str('TELEFON2')
+        if (str('EMAIL') !== null) p.email = str('EMAIL')
+        if (str('ADRES') !== null) p.adres = str('ADRES')
+        if (row['AKTİF'] !== '') p.aktif = bool('AKTİF')
+        else if (forInsert) p.aktif = true
+        return p
+      }
+
+      if (r.islem === 'guncelle') {
+        const { error } = await sb2.from('firmalar').update(buildPayload(false)).eq('id', r.db_id)
+        if (error) hata++; else basari++
+      } else {
+        // Yeni firma ekle
+        const { error } = await sb2.from('firmalar').insert(buildPayload(true))
+        if (error) hata++; else eklendi++
+      }
     }
-    alert(`✅ ${basari} firma güncellendi${hata > 0 ? `, ⚠️ ${hata} hata` : ''}`)
+
+    const msg = [
+      basari > 0 ? `✅ ${basari} firma güncellendi` : '',
+      eklendi > 0 ? `➕ ${eklendi} yeni firma eklendi` : '',
+      hata > 0 ? `⚠️ ${hata} hata` : '',
+    ].filter(Boolean).join('  |  ')
+    alert(msg || 'İşlem tamamlandı')
     setTopluImportModal(false)
     setTopluImportSonuc([])
     yukle()
@@ -1488,10 +1513,10 @@ export default function Firmalar() {
             ) : (
               <>
                 <div style={{ marginBottom:12, fontSize:13 }}>
-                  <span style={{ color:'var(--green)', fontWeight:600 }}>✅ {topluImportSonuc.filter(r=>r.eslesti).length} firma eşleşti</span>
-                  {topluImportSonuc.filter(r=>!r.eslesti).length > 0 && (
-                    <span style={{ color:'var(--red)', fontWeight:600, marginLeft:16 }}>
-                      ⚠️ {topluImportSonuc.filter(r=>!r.eslesti).length} firma DB'de bulunamadı
+                  <span style={{ color:'var(--blue)', fontWeight:600 }}>✏️ {topluImportSonuc.filter(r=>r.islem==='guncelle').length} firma güncellenecek</span>
+                  {topluImportSonuc.filter(r=>r.islem==='ekle').length > 0 && (
+                    <span style={{ color:'var(--green)', fontWeight:600, marginLeft:16 }}>
+                      ➕ {topluImportSonuc.filter(r=>r.islem==='ekle').length} yeni firma eklenecek
                     </span>
                   )}
                 </div>
@@ -1500,17 +1525,19 @@ export default function Firmalar() {
                     <thead style={{ background:'var(--surface-2)', position:'sticky', top:0 }}>
                       <tr>
                         <th style={{ textAlign:'left', padding:'8px 12px' }}>Firma Ünvanı</th>
-                        <th style={{ textAlign:'center', padding:'8px 12px', width:100 }}>Durum</th>
+                        <th style={{ textAlign:'left', padding:'8px 12px', width:120 }}>SGK Sicil</th>
+                        <th style={{ textAlign:'center', padding:'8px 12px', width:110 }}>İşlem</th>
                       </tr>
                     </thead>
                     <tbody>
                       {topluImportSonuc.map((r,i) => (
                         <tr key={i} style={{ borderTop:'1px solid var(--border)' }}>
-                          <td style={{ padding:'8px 12px' }}>{r.unvan}</td>
+                          <td style={{ padding:'8px 12px', fontSize:12 }}>{r.unvan}</td>
+                          <td style={{ padding:'8px 12px', fontSize:11, color:'var(--text-faint)' }}>{r.sgk || '—'}</td>
                           <td style={{ textAlign:'center', padding:'8px 12px' }}>
-                            {r.eslesti
-                              ? <span style={{ color:'var(--green)', fontWeight:600 }}>✅ Eşleşti</span>
-                              : <span style={{ color:'var(--red)', fontWeight:600 }}>❌ Bulunamadı</span>
+                            {r.islem === 'guncelle'
+                              ? <span style={{ color:'var(--blue)', fontWeight:600, fontSize:12 }}>✏️ Güncelle</span>
+                              : <span style={{ color:'var(--green)', fontWeight:600, fontSize:12 }}>➕ Yeni Ekle</span>
                             }
                           </td>
                         </tr>
@@ -1520,8 +1547,8 @@ export default function Firmalar() {
                 </div>
                 <div style={{ display:'flex', gap:10 }}>
                   <button onClick={()=>{ setTopluImportSonuc([]); setTopluImportModal(false) }} className="btn-ghost btn" style={{ flex:1, justifyContent:'center' }}>İptal</button>
-                  <button onClick={topluImportKaydet} disabled={!topluImportSonuc.some(r=>r.eslesti)} style={{ flex:2, padding:'10px', borderRadius:8, background:'var(--accent)', border:'none', color:'white', cursor:'pointer', fontWeight:700, fontSize:13, fontFamily:'inherit', opacity: topluImportSonuc.some(r=>r.eslesti) ? 1 : 0.4 }}>
-                    ✅ {topluImportSonuc.filter(r=>r.eslesti).length} Firmayı Güncelle
+                  <button onClick={topluImportKaydet} disabled={topluImportSonuc.length === 0} style={{ flex:2, padding:'10px', borderRadius:8, background:'var(--accent)', border:'none', color:'white', cursor:'pointer', fontWeight:700, fontSize:13, fontFamily:'inherit', opacity: topluImportSonuc.length > 0 ? 1 : 0.4 }}>
+                    ✅ {topluImportSonuc.filter(r=>r.islem==='guncelle').length} Güncelle{topluImportSonuc.filter(r=>r.islem==='ekle').length > 0 ? ` + ${topluImportSonuc.filter(r=>r.islem==='ekle').length} Ekle` : ''}
                   </button>
                 </div>
               </>
