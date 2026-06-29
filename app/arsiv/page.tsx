@@ -99,6 +99,8 @@ export default function Arsiv() {
     setAktYukleniyor(false)
   }
 
+  const MAX_DOSYA_BOYUT = 70 * 1024 * 1024 // 70 MB
+
   async function tikle(firmaId: string, evrakId: string) {
     const mevcut = durumlar[firmaId]?.[evrakId]
     const rol = personel?.rol
@@ -120,6 +122,7 @@ export default function Arsiv() {
   async function yeniEvrakKaydet() {
     if (!yeniEkleModal) return
     if (!yeniDosya) { alert('Lütfen evrak dosyası yükleyin.'); return }
+    if (yeniDosya.size > MAX_DOSYA_BOYUT) { alert(`Dosya çok büyük! Maksimum boyut 70 MB, seçilen dosya ${(yeniDosya.size/1024/1024).toFixed(1)} MB.`); return }
     setYeniKayitYukleniyor(true)
     const { firmaId, evrakId, firma, evrak } = yeniEkleModal
 
@@ -163,6 +166,7 @@ export default function Arsiv() {
   async function dosyaYukle(file: File) {
     if (!detayModal) return
     if (!izin.dosya_yukle) { alert('Dosya yükleme yetkiniz yok.'); return }
+    if (file.size > MAX_DOSYA_BOYUT) { alert(`Dosya çok büyük! Maksimum boyut 70 MB, seçilen dosya ${(file.size/1024/1024).toFixed(1)} MB.`); return }
     setDosyaYukleniyor(true)
     const { firma, evrak, kayit } = detayModal
     const ext = file.name.split('.').pop()
@@ -612,3 +616,4 @@ export default function Arsiv() {
     </div>
   )
 }
+
